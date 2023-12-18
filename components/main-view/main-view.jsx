@@ -5,20 +5,21 @@ import { MovieView } from "../movie-view/movie-view";
 export const MainView = () => {
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
-  
+
   useEffect(() => {
-    fetch("https://openlibrary.org/search.json?q=star+wars")
+    fetch("http://localhost:1234/movies")
       .then((response) => response.json())
       .then((data) => {
-        const booksFromApi = data.docs.map((doc) => {
+        const mvDB = data.docs.map((doc) => {
           return {
             id: doc.key,
             title: doc.title,
-            image: `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`,
-            author: doc.author_name?.[0],
+            image: ``,
+            director: doc.director_name?.[0],
+            genre: doc.genre
           };
         });
-        setBooks(booksFromApi);
+        setMovies(mvDB);
        });
   }, []);
 
