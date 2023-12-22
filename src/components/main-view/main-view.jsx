@@ -35,7 +35,7 @@ export const MainView = () => {
   const [selectedMovie, setSelectedMovie] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:1234/movies")
+    fetch("https://movies-api-sqg3.onrender.com/movies")
       .then((response) => response.json())
       .then((data) => {
         const mvDB = data.docs.map((doc) => {
