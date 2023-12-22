@@ -1,50 +1,74 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
 
-export const MainView = () => {
-  const [movies, setMovies] = useState([
-    {
-      id: 1,
-      title: "Eloquent JavaScript",
-      image:
-        "https://images-na.ssl-images-amazon.com/images/I/51InjRPaF7L._SX377_BO1,204,203,200_.jpg",
-      director: "Marijn Haverbeke"
-    },
-    {
-      id: 2,
-      title: "Mastering JavaScript Functional Programming",
-      image:
-        "https://images-na.ssl-images-amazon.com/images/I/51WAikRq37L._SX218_BO1,204,203,200_QL40_FMwebp_.jpg",
-        director: "Federico Kereki"
-    },
-    {
-      id: 3,
-      title: "JavaScript: The Good Parts",
-      image:
-        "https://images-na.ssl-images-amazon.com/images/I/5131OWtQRaL._SX381_BO1,204,203,200_.jpg",
-        director: "Douglas Crockford"
-    },
-    {
-      id: 4,
-      title: "JavaScript: The Definitive Guide",
-      image:
-        "https://images-na.ssl-images-amazon.com/images/I/51HbNW6RzhL._SX218_BO1,204,203,200_QL40_FMwebp_.jpg",
-        director: "David Flanagan"
-    },
-    {
-      id: 5,
-      title: "The Road to React",
-      image:
-        "https://images-na.ssl-images-amazon.com/images/I/41MBLi5a4jL._SX384_BO1,204,203,200_.jpg",
-        director: "Robin Wieruch"
+const SimilarMovies = ({ selectedMovie, movies, onMovieClick }) => {
+    if (!selectedMovie) {
+      return null;
     }
-  ]);
+    let similarMovies = movies.filter((movie) => {
+      if (movie.id === selectedMovie.id) {
+        return false;
+      }
+      return movie.genre.some((genre) => selectedMovie.genre.includes(genre));
+    });
+  
+    return (
+      <>
+        <hr />
+        <h2>Similar Movies</h2>
+        {similarMovies.map((similarMovie) => (
+          <MovieCard
+            key={similarMovie.id}
+            movie={similarMovie}
+            onMovieClick={() => {
+              onMovieClick(similarMovie);
+            }}
+          />
+        ))}
+      </>
+    );
+  };
 
+export const MainView = () => {
+  const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
 
+  useEffect(() => {
+    fetch("http://localhost:1234/movies")
+      .then((response) => response.json())
+      .then((data) => {
+        const mvDB = data.docs.map((doc) => {
+          return {
+            id: doc.key,
+            title: doc.title,
+            image: "",
+            director: doc.director_name?.[0],
+            genre: doc.genre
+          };
+        });
+        setMovies(mvDB);
+       });
+  }, []);
+
   if (selectedMovie) {
-    return <MovieView movie={selectedMovie} />;
+    return (
+      <>
+      <MovieView movie={selectedMovie} onBackClick={() => setSelectedMovie(null)} />
+      <div>
+          {movies.map((movie) => (
+            <MovieCard
+              key={movie.id}
+              movie={movie}
+              onMovieClick={() => {
+                setSelectedMovie(movie);
+              }}
+            />
+          ))}
+        </div>
+        <SimilarMovies selectedMovie={selectedMovie} movies={movies} onMovieClick={setSelectedMovie} />
+      </>
+    );
   }
 
   if (movies.length === 0) {
@@ -62,6 +86,7 @@ export const MainView = () => {
           }}
         />
       ))}
+      <SimilarMovies selectedMovie={selectedMovie} movies={movies} onMovieClick={setSelectedMovie} />
     </div>
   );
-}
+};
