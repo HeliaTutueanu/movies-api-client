@@ -40,14 +40,14 @@ export const MainView = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:1234/movies")
+    fetch("https://movies-api-sqg3.onrender.com/movies")
     .then((response) => response.json())
     .then((data) => {
       const moviesFromApi = data.docs.map((doc) => {
         return {
           id: doc.key,
           title: doc.title,
-          image: `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`,
+          image: ``,
           director: doc.director_name?.[0]
         };
       });
