@@ -43,7 +43,7 @@ export const MainView = () => {
   useEffect(() => {
     if (!token) return;
  
-    fetch("http://localhost:1234/movies", {
+    fetch("https://movies-api-sqg3.onrender.com/movies", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => response.json())
