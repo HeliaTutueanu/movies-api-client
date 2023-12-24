@@ -35,21 +35,17 @@ export const MainView = () => {
   const [selectedMovie, setSelectedMovie] = useState(null);
 
   useEffect(() => {
-    fetch("https://movies-api-sqg3.onrender.com/movies")
+    if (!token) return;
+ 
+    fetch("https://movies-api-sqg3.onrender.com/movies", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((response) => response.json())
-      .then((data) => {
-        const mvDB = data.docs.map((doc) => {
-          return {
-            id: doc.key,
-            title: doc.title,
-            image: "",
-            director: doc.director_name?.[0],
-            genre: doc.genre
-          };
-        });
-        setMovies(mvDB);
-       });
-  }, []);
+      .then((movies) => {
+        setMovies(movies);
+ 
+      });
+  }, [token]);
 
   if (selectedMovie) {
     return (
