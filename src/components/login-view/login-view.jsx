@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 
 export const LoginView = ({ onLoggedIn }) => {
-    fetch("https://openlibrary.org/account/login.json", {
+    fetch("https://movies-api-sqg3.onrender.com/users/login", {
         method: "POST",
         body: JSON.stringify(data)
       }).then((response) => {
