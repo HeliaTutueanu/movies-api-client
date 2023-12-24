@@ -14,7 +14,7 @@ export const LoginView = ({ onLoggedIn }) => {
       secret: password
     };
 
-    fetch("https://openlibrary.org/account/login.json", {
+    fetch("https://movies-api-sqg3.onrender.com/users/login", {
         method: "POST",
         body: JSON.stringify(data)
       }).then((response) => {
