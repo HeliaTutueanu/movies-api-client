@@ -6,34 +6,6 @@ import { SignupView } from "../signup-view/signup-view";
 import Row from "react-bootstrap/Row";
 import Col from 'react-bootstrap/Col';
 
-const SimilarMovies = ({ selectedMovie, movies, onMovieClick }) => {
-    if (!selectedMovie) {
-      return null;
-    }
-    let similarMovies = movies.filter((movie) => {
-      if (movie.id === selectedMovie.id) {
-        return false;
-      }
-      return movie.genre.some((genre) => selectedMovie.genre.includes(genre));
-    });
-  
-    return (
-      <>
-        <hr />
-        <h2>Similar Movies</h2>
-        {similarMovies.map((similarMovie) => (
-          <MovieCard
-            key={similarMovie.id}
-            movie={similarMovie}
-            onMovieClick={() => {
-              onMovieClick(similarMovie);
-            }}
-          />
-        ))}
-      </>
-    );
-  };
-
 export const MainView = () => {
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -82,7 +54,6 @@ return (
           />
         </Col>
         ))}
-        <SimilarMovies selectedMovie={selectedMovie} movies={movies} onMovieClick={setSelectedMovie} />
       </>
     )}
   </Row>
