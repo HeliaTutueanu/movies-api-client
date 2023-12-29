@@ -1,4 +1,4 @@
-import{ useState } from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 
@@ -18,7 +18,7 @@ export const SignupView = () => {
       Birthday: birthday
     };
 
-    fetch("SIGNUP_URL", {
+    fetch("https://movies-api-sqg3.onrender.com/users/register", {
       method: "POST",
       body: JSON.stringify(data),
       headers: {
@@ -70,7 +70,7 @@ export const SignupView = () => {
     <Form.Group controlId="signUpFormBirthday">
       <Form.Label>Birthday:</Form.Label>
       <Form.Control
-        type="birthday"
+        type="date"
         value={birthday}
         onChange={(e) => setBirthday(e.target.value)}
         required

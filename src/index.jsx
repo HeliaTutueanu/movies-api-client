@@ -5,7 +5,7 @@ import "./index.scss";
 
 const MyFlix = () => {
     return (
-        <Container>
+      <Container>
         <MainView />
       </Container>
     );
@@ -14,4 +14,4 @@ const MyFlix = () => {
 const container = document.querySelector("#root");
 const root = createRoot(container);
 
-root.render(<MyFlix />);
+root.render(<movies-api />);
