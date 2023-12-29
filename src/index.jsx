@@ -3,7 +3,7 @@ import { MainView } from "./components/main-view/main-view.jsx";
 import Container from 'react-bootstrap/Container';
 import "./index.scss";
 
-const MyFlix = () => {
+const moviesApi = () => {
     return (
       <Container>
         <MainView />
@@ -14,4 +14,4 @@ const MyFlix = () => {
 const container = document.querySelector("#root");
 const root = createRoot(container);
 
-root.render(<movies-api />);
+root.render(<moviesApi />);
