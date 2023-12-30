@@ -2790,7 +2790,7 @@ var process = require("2d7a91aee9140773");
     ]);
 });
 
-},{"2d7a91aee9140773":"d5jf4"}],"d5jf4":[function(require,module,exports) {
+},{"2d7a91aee9140773":"gQlrH"}],"gQlrH":[function(require,module,exports) {
 // shim for using process in browser
 var process = module.exports = {};
 // cached from whatever global is present so that test runners that stub it
@@ -2949,7 +2949,7 @@ var _mainViewJsx = require("./components/main-view/main-view.jsx");
 var _container = require("react-bootstrap/Container");
 var _containerDefault = parcelHelpers.interopDefault(_container);
 var _indexScss = require("./index.scss");
-const moviesApi = ()=>{
+const MyFlixApplication = ()=>{
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _containerDefault.default), {
         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _mainViewJsx.MainView), {}, void 0, false, {
             fileName: "src/index.jsx",
@@ -2962,16 +2962,16 @@ const moviesApi = ()=>{
         columnNumber: 7
     }, undefined);
 };
-_c = moviesApi;
+_c = MyFlixApplication;
 const container = document.querySelector("#root");
 const root = (0, _client.createRoot)(container);
-root.render(/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("moviesApi", {}, void 0, false, {
+root.render(/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(MyFlixApplication, {}, void 0, false, {
     fileName: "src/index.jsx",
     lineNumber: 17,
     columnNumber: 13
 }, undefined));
 var _c;
-$RefreshReg$(_c, "moviesApi");
+$RefreshReg$(_c, "MyFlixApplication");
 
   $parcel$ReactRefreshHelpers$98a3.postlude(module);
 } finally {
@@ -30801,7 +30801,7 @@ const LoginView = ({ onLoggedIn })=>{
             onSubmit: handleSubmit,
             children: [
                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Label, {
-                    children: "Login:"
+                    children: "Login"
                 }, void 0, false, {
                     fileName: "src/components/login-view/login-view.jsx",
                     lineNumber: 41,
@@ -30935,7 +30935,7 @@ const SignupView = ()=>{
         onSubmit: handleSubmit,
         children: [
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Label, {
-                children: "Register:"
+                children: "Register"
             }, void 0, false, {
                 fileName: "src/components/signup-view/signup-view.jsx",
                 lineNumber: 39,
