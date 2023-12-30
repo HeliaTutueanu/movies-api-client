@@ -3,17 +3,6 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 
 export const LoginView = ({ onLoggedIn }) => {
-    fetch("https://openlibrary.org/account/login.json", {
-        method: "POST",
-        body: JSON.stringify(data)
-      }).then((response) => {
-        if (response.ok) {
-          onLoggedIn(username);
-        } else {
-          alert("Login failed");
-        }
-      });
-
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -25,27 +14,27 @@ export const LoginView = ({ onLoggedIn }) => {
       Password: password
     };
 
-  fetch("https://openlibrary.org/account/login.json", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Login response: ", data);
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("token", data.token);
-        onLoggedIn(data.user, data.token);
-      } else {
-        alert("No such user");
-      }
+    fetch("https://movies-api-sqg3.onrender.com/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
     })
-    .catch((e) => {
-      alert("Something went wrong");
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Login response: ", data);
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+          localStorage.setItem("token", data.token);
+          onLoggedIn(data.user, data.token);
+        } else {
+          alert("No such user");
+        }
+      })
+      .catch((e) => {
+        alert("Something went wrong");
+      });
 
   return (
     <Form onSubmit={handleSubmit}>
