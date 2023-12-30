@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
+import { LoginView } from "../login-view/login-view";
+import { SignupView } from "../signup-view/signup-view";
 
 const SimilarMovies = ({ selectedMovie, movies, onMovieClick }) => {
     if (!selectedMovie) {
@@ -37,15 +39,27 @@ export const MainView = () => {
   useEffect(() => {
     if (!token) return;
  
-    fetch("https://movies-api-sqg3.onrender.com/movies", {
+    fetch("http://localhost:1234/movies", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => response.json())
       .then((movies) => {
         setMovies(movies);
- 
       });
   }, [token]);
+  
+  if (!user) {
+    return (
+      <>
+        <LoginView onLoggedIn={(user, token) => {
+          setUser(user);
+          setToken(token);
+        }} />
+        or
+        <SignupView />
+      </>
+    );
+  }
 
   if (selectedMovie) {
     return (
@@ -54,7 +68,6 @@ export const MainView = () => {
       <div>
           {movies.map((movie) => (
             <MovieCard
-              key={movie.id}
               movie={movie}
               onMovieClick={() => {
                 setSelectedMovie(movie);
@@ -73,6 +86,7 @@ export const MainView = () => {
 
   return (
     <div>
+      <button onClick={() => { setUser(null); setToken(null); localStorage.clear(); }}>Logout</button>
       {movies.map((movie) => (
         <MovieCard
           key={movie.id}

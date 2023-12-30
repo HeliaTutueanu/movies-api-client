@@ -1,8 +1,9 @@
-import React from "react";
 import { useState } from "react";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
 
 export const LoginView = ({ onLoggedIn }) => {
-    fetch("https://movies-api-sqg3.onrender.com/users/login", {
+    fetch("https://openlibrary.org/account/login.json", {
         method: "POST",
         body: JSON.stringify(data)
       }).then((response) => {
@@ -14,28 +15,17 @@ export const LoginView = ({ onLoggedIn }) => {
       });
 
   const [username, setUsername] = useState("");
-    <input
-      type="text"
-      value={username}
-      onChange={(e) => setUsername(e.target.value)}
-    />
-
   const [password, setPassword] = useState("");
-    <input
-      type="text"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-    />
 
   const handleSubmit = (event) => {
     event.preventDefault();   // prevents the default behavior of the form which is to reload the entire page
 
-  const data = {
-    Username: username,
-    Password: password
-  };
+    const data = {
+      Username: username,
+      Password: password
+    };
 
-  fetch("https://movies-api-sqg3.onrender.com/users/login", {
+  fetch("https://openlibrary.org/account/login.json", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -58,26 +48,31 @@ export const LoginView = ({ onLoggedIn }) => {
     });
 
   return (
-    <form onSubmit={handleSubmit}>
-    <label>
-      Username:
-      <input
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        required
-      />
-    </label>
-    <label>
-      Password:
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-    </label>
-    <button type="submit">Submit</button>
-  </form>
-  );
+    <Form onSubmit={handleSubmit}>
+      <Form.Label>Login</Form.Label>
+      <Form.Group controlId="formUsername">
+        <Form.Label>Username:</Form.Label>
+        <Form.Control
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          minLength="3" 
+        />
+      </Form.Group>
+      
+      <Form.Group controlId="formPassword">
+        <Form.Label>Password:</Form.Label>
+        <Form.Control
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </Form.Group>
+      <Button variant="primary" type="submit">
+        Submit
+      </Button>
+  </Form>
+);
 }};
