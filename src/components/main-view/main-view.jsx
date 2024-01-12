@@ -27,42 +27,48 @@ export const MainView = () => {
       });
   }, [token]);
 
-return (
-  <Row className="justify-content-md-center">
-    {!user ? (
-       <Col md={5}>
-          <LoginView
-            onLoggedIn={(user, token) => {
-              setUser(user);
-              setToken(token);
-            }}
-          />
-          or
-         <SignupView />
-     </Col>
-    ) : selectedMovie ? (
-      <Col md={8}>
-        <MovieView 
-          movie={selectedMovie} 
-          onBackClick={() => setSelectedMovie(null)} 
-        />
-      </Col>
-    ) : movies.length === 0 ? (
-      <div>The list is empty!</div>
-    ) : (
-      <>
-        {movies.map((movie) => (
-          <Col key={movie.id} className="mb-5" md={3}>
-            <MovieCard
-              movie={movie}
-              onMovieClick={(newSelectedMovie) => {
-                setSelectedMovie(newSelectedMovie);
-              }}
-            />
+
+  return (
+    <Row className="justify-content-md-center">
+      {!user ? (
+        <Col md={5}>
+          <div>
+            <div>Login:</div>
+            <LoginView
+              onLoggedIn={(user, token) => {
+                setUser(user);
+                setToken(token);
+            }}/>
+            <br />
+            <div>Register:</div>
+            <SignupView />
+          </div>
         </Col>
-        ))}
-      </>
-    )}
-  </Row>
-);
+      ) : selectedMovie ? (
+        <Col md={8}>
+          <MovieView
+            movie={selectedMovie}
+            onBackClick={() => setSelectedMovie(null)}
+          />
+        </Col>
+      ) : movies.length === 0 ? (
+        <Col md={12}>
+          <div>The list is empty!</div>
+        </Col>
+      ) : (
+        <>
+          {movies.map((movie) => (
+            <Col key={movie.id} className="mb-5" md={3}>
+              <MovieCard
+                movie={movie}
+                onMovieClick={(newSelectedMovie) => {
+                  setSelectedMovie(newSelectedMovie);
+                }}
+              />
+            </Col>
+          ))}
+        </>
+      )}
+    </Row>
+  );
 };
