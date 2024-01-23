@@ -11,9 +11,9 @@ export const MovieView = ({ movies, onFavoriteToggle  }) => {
 
   return (
     <div>
-      {/* <div>
+      <div>
         <img className="w-100" src={movie.image} alt={movie.Title} />
-      </div> */}
+      </div>
       <div>
         <span>Title: </span>
         <span>{movie.Title}</span>
@@ -45,6 +45,6 @@ export const MovieView = ({ movies, onFavoriteToggle  }) => {
 };
 
 MovieView.propTypes = {
-  movies: PropTypes.array.isRequired,              // Array of movie objects
-  onFavoriteToggle: PropTypes.func.isRequired,     // Function to toggle favorite status
+  movies: PropTypes.array.isRequired,
+  onFavoriteToggle: PropTypes.func.isRequired,
 };
