@@ -27180,80 +27180,111 @@ var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _react = require("react");
 var _movieCard = require("../movie-card/movie-card");
 var _movieView = require("../movie-view/movie-view");
-var _loginView = require("../login-view/login-view");
-var _signupView = require("../signup-view/signup-view");
-var _navigationBar = require("../navigation-bar/navigation-bar");
-var _profileView = require("../profile-view/profile-view");
-var _row = require("react-bootstrap/Row");
-var _rowDefault = parcelHelpers.interopDefault(_row);
-var _col = require("react-bootstrap/Col");
-var _colDefault = parcelHelpers.interopDefault(_col);
+var _loginViewJsx = require("../login-view/login-view.jsx");
+var _signupViewJsx = require("../signup-view/signup-view.jsx");
+var _navigationBarJsx = require("../navigation-bar/navigation-bar.jsx");
+var _profileViewJsx = require("../profile-view/profile-view.jsx");
+// import "./main-view.scss";
+var _reactBootstrap = require("react-bootstrap");
 var _reactRouterDom = require("react-router-dom");
 var _s = $RefreshSig$();
-const MainView = ({ onUserUpdate, onDeregister })=>{
+const MainView = ()=>{
     _s();
     const storedUser = JSON.parse(localStorage.getItem("user"));
     const storedToken = localStorage.getItem("token");
     const [user, setUser] = (0, _react.useState)(storedUser ? storedUser : null);
     const [token, setToken] = (0, _react.useState)(storedToken ? storedToken : null);
     const [movies, setMovies] = (0, _react.useState)([]);
-    const [favoriteMovies, setFavoriteMovies] = (0, _react.useState)([]);
-    (0, _react.useEffect)(()=>{
-        if (user) setFavoriteMovies(user.FavoriteMovies || []);
-    }, [
-        user
-    ]);
-    const handleFavoriteToggle = (movieId)=>{
-        const url = `https://movies-api-sqg3.onrender.com/users/${user.Username}/movies/${movieId}`;
-        const isFavorite = favoriteMovies.includes(movieId);
-        const method = isFavorite ? "DELETE" : "POST";
-        fetch(url, {
-            method: method,
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            }
-        }).then((response)=>response.json()).then((updatedUser)=>{
-            setFavoriteMovies(updatedUser.FavoriteMovies || []);
-        }).catch((error)=>{
-            console.error(`Error toggling favorite for movie with ID ${movieId}:`, error);
-        });
-    };
-    const handleUserUpdate = (updatedUser)=>{
-        console.log("Updating user:", updatedUser);
-        onUserUpdate(updatedUser);
-    };
-    const handleDeregister = ()=>{
-        console.log("Deregistering user:", user);
-        onDeregister();
-    };
+    const [search, setSearch] = (0, _react.useState)("");
+    const [selectedGenre, setSelectedGenre] = (0, _react.useState)("");
+    // Connect App to API with Hook
     (0, _react.useEffect)(()=>{
         if (!token) return;
         fetch("https://movies-api-sqg3.onrender.com/movies", {
             headers: {
                 Authorization: `Bearer ${token}`
             }
-        }).then((response)=>response.json()).then((movies)=>{
-            setMovies(movies);
+        }).then((response)=>response.json()).then((data)=>{
+            console.log(data);
+            const moviesFromApi = data.map((movie)=>{
+                return {
+                    _id: movie._id,
+                    Title: movie.Title,
+                    ImagePath: movie.ImagePath,
+                    Description: movie.Description,
+                    Genre: {
+                        Name: movie.Genre.Name
+                    },
+                    Director: {
+                        Name: movie.Director.Name
+                    }
+                };
+            });
+            setMovies(moviesFromApi);
         });
     }, [
         token
     ]);
+    // Add Favorite Movie
+    const addFav = (id)=>{
+        fetch(`https://movies-api-sqg3.onrender.com/users/${user.Username}/favorites/${id}`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then((response)=>{
+            console.log("Add Response:", response); // Add this line for debugging
+            if (response.ok) return response.json();
+            else alert("Failed to add");
+        }).then((user)=>{
+            console.log("User after add:", user); // Add this line for debugging
+            if (user) {
+                localStorage.setItem("user", JSON.stringify(user));
+                setUser(user);
+            // setIsFavorite(true);
+            }
+        }).catch((error)=>{
+            console.error("Error: ", error);
+        });
+    };
+    // Remove Favorite Movie
+    const removeFav = (id)=>{
+        fetch(`https://movies-api-sqg3.onrender.com/users/${user.Username}/favorites/${id}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then((response)=>{
+            console.log("Remove Response:", response); // Add this line for debugging
+            if (response.ok) return response.json();
+            else alert("Failed to remove");
+        }).then((user)=>{
+            console.log("User after remove:", user); // Add this line for debugging
+            if (user) {
+                localStorage.setItem("user", JSON.stringify(user));
+                setUser(user);
+            // setIsFavorite(false);
+            }
+        }).catch((error)=>{
+            console.error("Error: ", error);
+        });
+    };
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.BrowserRouter), {
         children: [
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _navigationBar.NavigationBar), {
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _navigationBarJsx.NavigationBar), {
                 user: user,
                 onLoggedOut: ()=>{
                     setUser(null);
-                },
-                token: token
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                }
             }, void 0, false, {
                 fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 73,
-                columnNumber: 7
+                lineNumber: 106,
+                columnNumber: 13
             }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _rowDefault.default), {
-                className: "justify-content-md-center",
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
+                className: "justify-content-center my-5",
                 children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Routes), {
                     children: [
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
@@ -27261,32 +27292,35 @@ const MainView = ({ onUserUpdate, onDeregister })=>{
                             element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
                                 children: user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Navigate), {
                                     to: "/"
-                                }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _colDefault.default), {
+                                }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
                                     md: 5,
-                                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _signupView.SignupView), {}, void 0, false, void 0, void 0)
+                                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _signupViewJsx.SignupView), {}, void 0, false, void 0, void 0)
                                 }, void 0, false, void 0, void 0)
                             }, void 0, false)
                         }, void 0, false, {
                             fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 82,
-                            columnNumber: 11
+                            lineNumber: 117,
+                            columnNumber: 21
                         }, undefined),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
                             path: "/login",
                             element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
                                 children: user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Navigate), {
                                     to: "/"
-                                }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _colDefault.default), {
+                                }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
                                     md: 5,
-                                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _loginView.LoginView), {
-                                        onLoggedIn: (user)=>setUser(user)
+                                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _loginViewJsx.LoginView), {
+                                        onLoggedIn: (user, token)=>{
+                                            setUser(user);
+                                            setToken(token);
+                                        }
                                     }, void 0, false, void 0, void 0)
                                 }, void 0, false, void 0, void 0)
                             }, void 0, false)
                         }, void 0, false, {
                             fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 96,
-                            columnNumber: 11
+                            lineNumber: 132,
+                            columnNumber: 21
                         }, undefined),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
                             path: "/movies/:movieId",
@@ -27294,20 +27328,21 @@ const MainView = ({ onUserUpdate, onDeregister })=>{
                                 children: !user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Navigate), {
                                     to: "/login",
                                     replace: true
-                                }, void 0, false, void 0, void 0) : movies.length === 0 ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _colDefault.default), {
-                                    children: "The list is empty!"
-                                }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _colDefault.default), {
-                                    md: 8,
+                                }, void 0, false, void 0, void 0) : movies.length === 0 ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                    children: "There is no movie"
+                                }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                    md: 12,
                                     children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieView.MovieView), {
                                         movies: movies,
-                                        onFavoriteToggle: handleFavoriteToggle
+                                        removeFav: removeFav,
+                                        addFav: addFav
                                     }, void 0, false, void 0, void 0)
                                 }, void 0, false, void 0, void 0)
                             }, void 0, false)
                         }, void 0, false, {
                             fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 110,
-                            columnNumber: 11
+                            lineNumber: 152,
+                            columnNumber: 21
                         }, undefined),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
                             path: "/",
@@ -27315,68 +27350,119 @@ const MainView = ({ onUserUpdate, onDeregister })=>{
                                 children: !user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Navigate), {
                                     to: "/login",
                                     replace: true
-                                }, void 0, false, void 0, void 0) : movies.length === 0 ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _colDefault.default), {
-                                    children: "The list is empty!"
+                                }, void 0, false, void 0, void 0) : movies.length === 0 ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                    children: "The list is empty"
                                 }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
-                                    children: movies.map((movie)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _colDefault.default), {
-                                            className: "mb-4",
-                                            md: 3,
-                                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieCard.MovieCard), {
-                                                movie: movie,
-                                                onFavoriteToggle: handleFavoriteToggle,
-                                                favoriteMovies: favoriteMovies
-                                            }, void 0, false, void 0, void 0)
-                                        }, movie.id, false, void 0, void 0))
-                                }, void 0, false)
+                                    children: [
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form), {
+                                            className: "form-inline mt-5 d-flex justify-content-center",
+                                            children: [
+                                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                                    className: "ms-5 mx-md-0",
+                                                    type: "search",
+                                                    id: "searchForm",
+                                                    onChange: (e)=>setSearch(e.target.value),
+                                                    placeholder: "Search for ...",
+                                                    "aria-label": "Search"
+                                                }, void 0, false, void 0, void 0),
+                                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Select, {
+                                                    className: "ms-1 ms-md-3 w-25",
+                                                    "aria-label": "Default select genre",
+                                                    onChange: (e)=>setSelectedGenre(e.target.value),
+                                                    children: [
+                                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("option", {
+                                                            value: "",
+                                                            selected: true,
+                                                            children: "Search by genre"
+                                                        }, void 0, false, void 0, void 0),
+                                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("option", {
+                                                            value: "Comedy Horror",
+                                                            children: "Comedy Horror"
+                                                        }, void 0, false, void 0, void 0),
+                                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("option", {
+                                                            value: "Horror",
+                                                            children: "Horror"
+                                                        }, void 0, false, void 0, void 0),
+                                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("option", {
+                                                            value: "Musical",
+                                                            children: "Musical"
+                                                        }, void 0, false, void 0, void 0),
+                                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("option", {
+                                                            value: "Fantasy",
+                                                            children: "Fantasy"
+                                                        }, void 0, false, void 0, void 0),
+                                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("option", {
+                                                            value: "Thriller",
+                                                            children: "Thriller"
+                                                        }, void 0, false, void 0, void 0)
+                                                    ]
+                                                }, void 0, true, void 0, void 0)
+                                            ]
+                                        }, void 0, true, void 0, void 0),
+                                        movies.filter((movie)=>{
+                                            return selectedGenre === "" ? movie : movie.Genre.Name === selectedGenre;
+                                        }).filter((movie)=>{
+                                            return search === "" ? movie : movie.Title.toLowerCase().includes(search.toLowerCase());
+                                        }).map((movie, movieId)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                                md: 6,
+                                                lg: 4,
+                                                xl: 3,
+                                                className: "mb-5 col-8",
+                                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieCard.MovieCard), {
+                                                    movie: movie,
+                                                    removeFav: removeFav,
+                                                    addFav: addFav,
+                                                    isFavorite: user.FavoriteMovies.includes(movie._id)
+                                                }, void 0, false, void 0, void 0)
+                                            }, movieId, false, void 0, void 0))
+                                    ]
+                                }, void 0, true)
                             }, void 0, false)
                         }, void 0, false, {
                             fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 126,
-                            columnNumber: 11
+                            lineNumber: 173,
+                            columnNumber: 21
                         }, undefined),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
                             path: "/profile",
-                            element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _profileView.ProfileView), {
-                                user: user,
-                                onUserUpdate: handleUserUpdate,
-                                onDeregister: handleDeregister
-                            }, void 0, false, void 0, void 0)
+                            element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+                                children: !user ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Navigate), {
+                                    to: "/login",
+                                    replace: true
+                                }, void 0, false, void 0, void 0) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _profileViewJsx.ProfileView), {
+                                        user: user,
+                                        movies: movies,
+                                        removeFav: removeFav,
+                                        addFav: addFav,
+                                        setUser: setUser
+                                    }, void 0, false, void 0, void 0)
+                                }, void 0, false, void 0, void 0)
+                            }, void 0, false)
                         }, void 0, false, {
                             fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 148,
-                            columnNumber: 11
-                        }, undefined),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
-                            path: "/profile/favorites",
-                            element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _profileView.ProfileView), {
-                                user: user,
-                                onFavoriteToggle: handleFavoriteToggle,
-                                token: token
-                            }, void 0, false, void 0, void 0)
-                        }, void 0, false, {
-                            fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 158,
-                            columnNumber: 11
+                            lineNumber: 227,
+                            columnNumber: 21
                         }, undefined)
                     ]
                 }, void 0, true, {
                     fileName: "src/components/main-view/main-view.jsx",
-                    lineNumber: 81,
-                    columnNumber: 9
+                    lineNumber: 115,
+                    columnNumber: 17
                 }, undefined)
             }, void 0, false, {
                 fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 80,
-                columnNumber: 7
+                lineNumber: 114,
+                columnNumber: 13
             }, undefined)
         ]
     }, void 0, true, {
         fileName: "src/components/main-view/main-view.jsx",
-        lineNumber: 72,
-        columnNumber: 5
+        lineNumber: 105,
+        columnNumber: 9
     }, undefined);
 };
-_s(MainView, "p6QH1dhsV04ei64jKaNZQPbUILI=");
+_s(MainView, "AnvOnhYbzfkTdsEaQR2pkhY78OM=");
 _c = MainView;
 var _c;
 $RefreshReg$(_c, "MainView");
@@ -27386,7 +27472,7 @@ $RefreshReg$(_c, "MainView");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../movie-card/movie-card":"bwuIu","../movie-view/movie-view":"ggaUx","../login-view/login-view":"9YtA0","../signup-view/signup-view":"4OGiN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","../navigation-bar/navigation-bar":"bsPVM","../profile-view/profile-view":"2vVqf","react-bootstrap/Row":"cMC39","react-bootstrap/Col":"2L2I6","react-router-dom":"9xmpe"}],"bwuIu":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../movie-card/movie-card":"bwuIu","../movie-view/movie-view":"ggaUx","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","../login-view/login-view.jsx":"9YtA0","../signup-view/signup-view.jsx":"4OGiN","../navigation-bar/navigation-bar.jsx":"bsPVM","../profile-view/profile-view.jsx":"2vVqf","react-bootstrap":"3AD9A","react-router-dom":"9xmpe"}],"bwuIu":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$67b2 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -27399,20 +27485,55 @@ parcelHelpers.export(exports, "MovieCard", ()=>MovieCard);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _propTypes = require("prop-types");
 var _propTypesDefault = parcelHelpers.interopDefault(_propTypes);
+// import "./movie-card.scss";
 var _reactBootstrap = require("react-bootstrap");
 var _reactRouterDom = require("react-router-dom");
-const MovieCard = ({ movie, onFavoriteToggle, favoriteMovies })=>{
-    const isFavorite = movie.isFavorite;
+var _reactBootstrapIcons = require("react-bootstrap-icons");
+const MovieCard = ({ movie, addFav, removeFav, isFavorite })=>{
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card), {
-        className: "h-100",
+        className: "h-100 mt-5 card-shadow",
         children: [
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Img, {
-                variant: "top",
-                src: movie.image
-            }, void 0, false, {
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                className: "position-relative .d-inline-block",
+                children: [
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Img, {
+                        variant: "top card-img",
+                        src: movie.ImagePath
+                    }, void 0, false, {
+                        fileName: "src/components/movie-card/movie-card.jsx",
+                        lineNumber: 11,
+                        columnNumber: 17
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                        children: isFavorite ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrapIcons.BookmarkHeartFill), {
+                            size: 40,
+                            color: "orange",
+                            className: "fav-button mt-2 me-2 top-0 end-0",
+                            onClick: ()=>removeFav(movie._id)
+                        }, void 0, false, {
+                            fileName: "src/components/movie-card/movie-card.jsx",
+                            lineNumber: 14,
+                            columnNumber: 25
+                        }, undefined) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrapIcons.BookmarkHeart), {
+                            size: 40,
+                            color: "orange",
+                            className: "fav-button mt-2 me-2 top-0 end-0",
+                            onClick: ()=>addFav(movie._id)
+                        }, void 0, false, {
+                            fileName: "src/components/movie-card/movie-card.jsx",
+                            lineNumber: 17,
+                            columnNumber: 25
+                        }, undefined)
+                    }, void 0, false, {
+                        fileName: "src/components/movie-card/movie-card.jsx",
+                        lineNumber: 12,
+                        columnNumber: 17
+                    }, undefined)
+                ]
+            }, void 0, true, {
                 fileName: "src/components/movie-card/movie-card.jsx",
                 lineNumber: 10,
-                columnNumber: 7
+                columnNumber: 13
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Body, {
                 children: [
@@ -27420,75 +27541,50 @@ const MovieCard = ({ movie, onFavoriteToggle, favoriteMovies })=>{
                         children: movie.Title
                     }, void 0, false, {
                         fileName: "src/components/movie-card/movie-card.jsx",
-                        lineNumber: 12,
-                        columnNumber: 9
-                    }, undefined),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Text, {
-                        children: movie.Description
-                    }, void 0, false, {
-                        fileName: "src/components/movie-card/movie-card.jsx",
-                        lineNumber: 13,
-                        columnNumber: 9
+                        lineNumber: 23,
+                        columnNumber: 17
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Text, {
                         children: movie.Director.Name
                     }, void 0, false, {
                         fileName: "src/components/movie-card/movie-card.jsx",
-                        lineNumber: 14,
-                        columnNumber: 9
+                        lineNumber: 24,
+                        columnNumber: 17
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Link), {
-                        to: `/movies/${encodeURIComponent(movie.id)}`,
+                        to: `/movies/${encodeURIComponent(movie._id)}`,
                         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
                             variant: "link",
                             children: "Open"
                         }, void 0, false, {
                             fileName: "src/components/movie-card/movie-card.jsx",
-                            lineNumber: 16,
-                            columnNumber: 11
+                            lineNumber: 26,
+                            columnNumber: 21
                         }, undefined)
                     }, void 0, false, {
                         fileName: "src/components/movie-card/movie-card.jsx",
-                        lineNumber: 15,
-                        columnNumber: 9
-                    }, undefined),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
-                        variant: "outline-primary",
-                        style: {
-                            cursor: "pointer"
-                        },
-                        onClick: ()=>onFavoriteToggle(movie._id),
-                        children: favoriteMovies.includes(movie._id) ? "Remove from Favorites" : "Add to Favorites"
-                    }, void 0, false, {
-                        fileName: "src/components/movie-card/movie-card.jsx",
-                        lineNumber: 18,
-                        columnNumber: 9
+                        lineNumber: 25,
+                        columnNumber: 17
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/movie-card/movie-card.jsx",
-                lineNumber: 11,
-                columnNumber: 7
+                lineNumber: 22,
+                columnNumber: 13
             }, undefined)
         ]
     }, void 0, true, {
         fileName: "src/components/movie-card/movie-card.jsx",
         lineNumber: 9,
-        columnNumber: 5
+        columnNumber: 9
     }, undefined);
 };
 _c = MovieCard;
+// define all the props constraints for the MovieCard
 MovieCard.propTypes = {
     movie: (0, _propTypesDefault.default).shape({
-        _id: (0, _propTypesDefault.default).string.isRequired,
-        Title: (0, _propTypesDefault.default).string.isRequired,
-        Description: (0, _propTypesDefault.default).string,
-        Director: (0, _propTypesDefault.default).shape({
-            Name: (0, _propTypesDefault.default).string
-        }),
-        isFavorite: (0, _propTypesDefault.default).bool
-    }).isRequired,
-    onFavoriteToggle: (0, _propTypesDefault.default).func.isRequired
+        Title: (0, _propTypesDefault.default).string
+    }).isRequired
 };
 var _c;
 $RefreshReg$(_c, "MovieCard");
@@ -27498,7 +27594,7 @@ $RefreshReg$(_c, "MovieCard");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","prop-types":"7wKI2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react-bootstrap":"3AD9A","react-router-dom":"9xmpe"}],"7wKI2":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","prop-types":"7wKI2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react-bootstrap":"3AD9A","react-router-dom":"9xmpe","react-bootstrap-icons":"c9Gza"}],"7wKI2":[function(require,module,exports) {
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -28748,7 +28844,7 @@ var _toggleButtonGroupDefault = parcelHelpers.interopDefault(_toggleButtonGroup)
 var _tooltip = require("./Tooltip");
 var _tooltipDefault = parcelHelpers.interopDefault(_tooltip);
 
-},{"./Accordion":false,"./AccordionContext":false,"./AccordionCollapse":false,"./AccordionButton":false,"./AccordionHeader":false,"./AccordionItem":false,"./Alert":false,"./AlertHeading":false,"./AlertLink":false,"./Anchor":false,"./Badge":false,"./Breadcrumb":false,"./BreadcrumbItem":false,"./Button":"aPzUt","./ButtonGroup":false,"./ButtonToolbar":false,"./Card":"lAynp","./CardBody":false,"./CardFooter":false,"./CardGroup":false,"./CardHeader":false,"./CardImg":false,"./CardImgOverlay":false,"./CardLink":false,"./CardSubtitle":false,"./CardText":false,"./CardTitle":false,"./Carousel":false,"./CarouselCaption":false,"./CarouselItem":false,"./CloseButton":false,"./Col":"2L2I6","./Collapse":false,"./Container":"hEdsw","./Dropdown":false,"./DropdownButton":false,"./DropdownDivider":false,"./DropdownHeader":false,"./DropdownItem":false,"./DropdownItemText":false,"./DropdownMenu":false,"./DropdownToggle":false,"./Fade":false,"./Figure":"7Eckp","./FigureCaption":false,"./FigureImage":false,"./Form":false,"./FormControl":false,"./FormCheck":false,"./FormFloating":false,"./FloatingLabel":false,"./FormGroup":false,"./FormLabel":false,"./FormText":false,"./FormSelect":false,"./Image":false,"./InputGroup":false,"./ListGroup":false,"./ListGroupItem":false,"./Modal":false,"./ModalBody":false,"./ModalDialog":false,"./ModalFooter":false,"./ModalHeader":false,"./ModalTitle":false,"./Nav":"cXyL2","./Navbar":"1mHjo","./NavbarBrand":false,"./NavbarCollapse":false,"./NavbarOffcanvas":false,"./NavbarText":false,"./NavbarToggle":false,"./NavDropdown":false,"./NavItem":false,"./NavLink":false,"./Offcanvas":false,"./OffcanvasBody":false,"./OffcanvasHeader":false,"./OffcanvasTitle":false,"./OffcanvasToggling":false,"./Overlay":false,"./OverlayTrigger":false,"./PageItem":false,"./Pagination":false,"./Placeholder":false,"./PlaceholderButton":false,"./Popover":false,"./PopoverBody":false,"./PopoverHeader":false,"./ProgressBar":false,"./Ratio":false,"./Row":"cMC39","./Spinner":false,"./SplitButton":false,"./SSRProvider":false,"./Stack":false,"./Tab":false,"./TabContainer":false,"./TabContent":false,"./Table":false,"./TabPane":false,"./Tabs":false,"./ThemeProvider":false,"./Toast":false,"./ToastBody":false,"./ToastContainer":false,"./ToastHeader":false,"./ToggleButton":false,"./ToggleButtonGroup":false,"./Tooltip":false,"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aPzUt":[function(require,module,exports) {
+},{"./Accordion":false,"./AccordionContext":false,"./AccordionCollapse":false,"./AccordionButton":false,"./AccordionHeader":false,"./AccordionItem":false,"./Alert":false,"./AlertHeading":false,"./AlertLink":false,"./Anchor":false,"./Badge":false,"./Breadcrumb":false,"./BreadcrumbItem":false,"./Button":"aPzUt","./ButtonGroup":false,"./ButtonToolbar":false,"./Card":"lAynp","./CardBody":false,"./CardFooter":false,"./CardGroup":false,"./CardHeader":false,"./CardImg":false,"./CardImgOverlay":false,"./CardLink":false,"./CardSubtitle":false,"./CardText":false,"./CardTitle":false,"./Carousel":false,"./CarouselCaption":false,"./CarouselItem":false,"./CloseButton":false,"./Col":"2L2I6","./Collapse":false,"./Container":"hEdsw","./Dropdown":false,"./DropdownButton":false,"./DropdownDivider":false,"./DropdownHeader":false,"./DropdownItem":false,"./DropdownItemText":false,"./DropdownMenu":false,"./DropdownToggle":false,"./Fade":false,"./Figure":false,"./FigureCaption":false,"./FigureImage":false,"./Form":"iBZ80","./FormControl":false,"./FormCheck":false,"./FormFloating":false,"./FloatingLabel":false,"./FormGroup":false,"./FormLabel":false,"./FormText":false,"./FormSelect":false,"./Image":false,"./InputGroup":false,"./ListGroup":false,"./ListGroupItem":false,"./Modal":false,"./ModalBody":false,"./ModalDialog":false,"./ModalFooter":false,"./ModalHeader":false,"./ModalTitle":false,"./Nav":"cXyL2","./Navbar":"1mHjo","./NavbarBrand":false,"./NavbarCollapse":false,"./NavbarOffcanvas":false,"./NavbarText":false,"./NavbarToggle":false,"./NavDropdown":false,"./NavItem":false,"./NavLink":false,"./Offcanvas":false,"./OffcanvasBody":false,"./OffcanvasHeader":false,"./OffcanvasTitle":false,"./OffcanvasToggling":false,"./Overlay":false,"./OverlayTrigger":false,"./PageItem":false,"./Pagination":false,"./Placeholder":false,"./PlaceholderButton":false,"./Popover":false,"./PopoverBody":false,"./PopoverHeader":false,"./ProgressBar":false,"./Ratio":false,"./Row":"cMC39","./Spinner":false,"./SplitButton":false,"./SSRProvider":false,"./Stack":false,"./Tab":false,"./TabContainer":false,"./TabContent":false,"./Table":false,"./TabPane":false,"./Tabs":false,"./ThemeProvider":false,"./Toast":false,"./ToastBody":false,"./ToastContainer":false,"./ToastHeader":false,"./ToggleButton":false,"./ToggleButtonGroup":false,"./Tooltip":false,"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aPzUt":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _classnames = require("classnames");
@@ -31393,114 +31489,7 @@ const Fade = /*#__PURE__*/ _react.forwardRef(({ className, children, transitionC
 Fade.displayName = "Fade";
 exports.default = Fade;
 
-},{"classnames":"jocGM","react":"21dqq","react-transition-group/Transition":"cKsrS","./transitionEndListener":"68oh7","./triggerBrowserReflow":"eWjs5","./TransitionWrapper":"jKUqZ","react/jsx-runtime":"6AEwr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Eckp":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _react = require("react");
-var _classnames = require("classnames");
-var _classnamesDefault = parcelHelpers.interopDefault(_classnames);
-var _figureImage = require("./FigureImage");
-var _figureImageDefault = parcelHelpers.interopDefault(_figureImage);
-var _figureCaption = require("./FigureCaption");
-var _figureCaptionDefault = parcelHelpers.interopDefault(_figureCaption);
-var _themeProvider = require("./ThemeProvider");
-var _jsxRuntime = require("react/jsx-runtime");
-"use client";
-const Figure = /*#__PURE__*/ _react.forwardRef(({ className, bsPrefix, as: Component = "figure", ...props }, ref)=>{
-    bsPrefix = (0, _themeProvider.useBootstrapPrefix)(bsPrefix, "figure");
-    return /*#__PURE__*/ (0, _jsxRuntime.jsx)(Component, {
-        ref: ref,
-        className: (0, _classnamesDefault.default)(className, bsPrefix),
-        ...props
-    });
-});
-Figure.displayName = "Figure";
-exports.default = Object.assign(Figure, {
-    Image: (0, _figureImageDefault.default),
-    Caption: (0, _figureCaptionDefault.default)
-});
-
-},{"react":"21dqq","classnames":"jocGM","./FigureImage":"jhS47","./FigureCaption":"aGvgd","./ThemeProvider":"dVixI","react/jsx-runtime":"6AEwr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jhS47":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _classnames = require("classnames");
-var _classnamesDefault = parcelHelpers.interopDefault(_classnames);
-var _react = require("react");
-var _image = require("./Image");
-var _imageDefault = parcelHelpers.interopDefault(_image);
-var _jsxRuntime = require("react/jsx-runtime");
-const FigureImage = /*#__PURE__*/ _react.forwardRef(({ className, fluid = true, ...props }, ref)=>/*#__PURE__*/ (0, _jsxRuntime.jsx)((0, _imageDefault.default), {
-        ref: ref,
-        ...props,
-        fluid: fluid,
-        className: (0, _classnamesDefault.default)(className, "figure-img")
-    }));
-FigureImage.displayName = "FigureImage";
-FigureImage.propTypes = (0, _image.propTypes);
-exports.default = FigureImage;
-
-},{"classnames":"jocGM","react":"21dqq","./Image":"cyVPa","react/jsx-runtime":"6AEwr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cyVPa":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "propTypes", ()=>propTypes);
-var _classnames = require("classnames");
-var _classnamesDefault = parcelHelpers.interopDefault(_classnames);
-var _react = require("react");
-var _propTypes = require("prop-types");
-var _propTypesDefault = parcelHelpers.interopDefault(_propTypes);
-var _themeProvider = require("./ThemeProvider");
-var _jsxRuntime = require("react/jsx-runtime");
-"use client";
-const propTypes = {
-    /**
-   * @default 'img'
-   */ bsPrefix: (0, _propTypesDefault.default).string,
-    /**
-   * Sets image as fluid image.
-   */ fluid: (0, _propTypesDefault.default).bool,
-    /**
-   * Sets image shape as rounded.
-   */ rounded: (0, _propTypesDefault.default).bool,
-    /**
-   * Sets image shape as circle.
-   */ roundedCircle: (0, _propTypesDefault.default).bool,
-    /**
-   * Sets image shape as thumbnail.
-   */ thumbnail: (0, _propTypesDefault.default).bool
-};
-const Image = /*#__PURE__*/ _react.forwardRef(({ bsPrefix, className, fluid = false, rounded = false, roundedCircle = false, thumbnail = false, ...props }, ref)=>{
-    bsPrefix = (0, _themeProvider.useBootstrapPrefix)(bsPrefix, "img");
-    return /*#__PURE__*/ (0, _jsxRuntime.jsx)("img", {
-        // eslint-disable-line jsx-a11y/alt-text
-        ref: ref,
-        ...props,
-        className: (0, _classnamesDefault.default)(className, fluid && `${bsPrefix}-fluid`, rounded && `rounded`, roundedCircle && `rounded-circle`, thumbnail && `${bsPrefix}-thumbnail`)
-    });
-});
-Image.displayName = "Image";
-exports.default = Image;
-
-},{"classnames":"jocGM","react":"21dqq","prop-types":"7wKI2","./ThemeProvider":"dVixI","react/jsx-runtime":"6AEwr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aGvgd":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _react = require("react");
-var _classnames = require("classnames");
-var _classnamesDefault = parcelHelpers.interopDefault(_classnames);
-var _themeProvider = require("./ThemeProvider");
-var _jsxRuntime = require("react/jsx-runtime");
-"use client";
-const FigureCaption = /*#__PURE__*/ _react.forwardRef(({ className, bsPrefix, as: Component = "figcaption", ...props }, ref)=>{
-    bsPrefix = (0, _themeProvider.useBootstrapPrefix)(bsPrefix, "figure-caption");
-    return /*#__PURE__*/ (0, _jsxRuntime.jsx)(Component, {
-        ref: ref,
-        className: (0, _classnamesDefault.default)(className, bsPrefix),
-        ...props
-    });
-});
-FigureCaption.displayName = "FigureCaption";
-exports.default = FigureCaption;
-
-},{"react":"21dqq","classnames":"jocGM","./ThemeProvider":"dVixI","react/jsx-runtime":"6AEwr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iBZ80":[function(require,module,exports) {
+},{"classnames":"jocGM","react":"21dqq","react-transition-group/Transition":"cKsrS","./transitionEndListener":"68oh7","./triggerBrowserReflow":"eWjs5","./TransitionWrapper":"jKUqZ","react/jsx-runtime":"6AEwr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iBZ80":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _classnames = require("classnames");
@@ -41234,7 +41223,6106 @@ function persistAppliedTransitions(_window, transitions) {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ggaUx":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"c9Gza":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Icon0CircleFill", ()=>(0, _0CircleFillDefault.default));
+parcelHelpers.export(exports, "Icon0Circle", ()=>(0, _0CircleDefault.default));
+parcelHelpers.export(exports, "Icon0SquareFill", ()=>(0, _0SquareFillDefault.default));
+parcelHelpers.export(exports, "Icon0Square", ()=>(0, _0SquareDefault.default));
+parcelHelpers.export(exports, "Icon1CircleFill", ()=>(0, _1CircleFillDefault.default));
+parcelHelpers.export(exports, "Icon1Circle", ()=>(0, _1CircleDefault.default));
+parcelHelpers.export(exports, "Icon1SquareFill", ()=>(0, _1SquareFillDefault.default));
+parcelHelpers.export(exports, "Icon1Square", ()=>(0, _1SquareDefault.default));
+parcelHelpers.export(exports, "Icon123", ()=>(0, _123Default.default));
+parcelHelpers.export(exports, "Icon2CircleFill", ()=>(0, _2CircleFillDefault.default));
+parcelHelpers.export(exports, "Icon2Circle", ()=>(0, _2CircleDefault.default));
+parcelHelpers.export(exports, "Icon2SquareFill", ()=>(0, _2SquareFillDefault.default));
+parcelHelpers.export(exports, "Icon2Square", ()=>(0, _2SquareDefault.default));
+parcelHelpers.export(exports, "Icon3CircleFill", ()=>(0, _3CircleFillDefault.default));
+parcelHelpers.export(exports, "Icon3Circle", ()=>(0, _3CircleDefault.default));
+parcelHelpers.export(exports, "Icon3SquareFill", ()=>(0, _3SquareFillDefault.default));
+parcelHelpers.export(exports, "Icon3Square", ()=>(0, _3SquareDefault.default));
+parcelHelpers.export(exports, "Icon4CircleFill", ()=>(0, _4CircleFillDefault.default));
+parcelHelpers.export(exports, "Icon4Circle", ()=>(0, _4CircleDefault.default));
+parcelHelpers.export(exports, "Icon4SquareFill", ()=>(0, _4SquareFillDefault.default));
+parcelHelpers.export(exports, "Icon4Square", ()=>(0, _4SquareDefault.default));
+parcelHelpers.export(exports, "Icon5CircleFill", ()=>(0, _5CircleFillDefault.default));
+parcelHelpers.export(exports, "Icon5Circle", ()=>(0, _5CircleDefault.default));
+parcelHelpers.export(exports, "Icon5SquareFill", ()=>(0, _5SquareFillDefault.default));
+parcelHelpers.export(exports, "Icon5Square", ()=>(0, _5SquareDefault.default));
+parcelHelpers.export(exports, "Icon6CircleFill", ()=>(0, _6CircleFillDefault.default));
+parcelHelpers.export(exports, "Icon6Circle", ()=>(0, _6CircleDefault.default));
+parcelHelpers.export(exports, "Icon6SquareFill", ()=>(0, _6SquareFillDefault.default));
+parcelHelpers.export(exports, "Icon6Square", ()=>(0, _6SquareDefault.default));
+parcelHelpers.export(exports, "Icon7CircleFill", ()=>(0, _7CircleFillDefault.default));
+parcelHelpers.export(exports, "Icon7Circle", ()=>(0, _7CircleDefault.default));
+parcelHelpers.export(exports, "Icon7SquareFill", ()=>(0, _7SquareFillDefault.default));
+parcelHelpers.export(exports, "Icon7Square", ()=>(0, _7SquareDefault.default));
+parcelHelpers.export(exports, "Icon8CircleFill", ()=>(0, _8CircleFillDefault.default));
+parcelHelpers.export(exports, "Icon8Circle", ()=>(0, _8CircleDefault.default));
+parcelHelpers.export(exports, "Icon8SquareFill", ()=>(0, _8SquareFillDefault.default));
+parcelHelpers.export(exports, "Icon8Square", ()=>(0, _8SquareDefault.default));
+parcelHelpers.export(exports, "Icon9CircleFill", ()=>(0, _9CircleFillDefault.default));
+parcelHelpers.export(exports, "Icon9Circle", ()=>(0, _9CircleDefault.default));
+parcelHelpers.export(exports, "Icon9SquareFill", ()=>(0, _9SquareFillDefault.default));
+parcelHelpers.export(exports, "Icon9Square", ()=>(0, _9SquareDefault.default));
+parcelHelpers.export(exports, "Activity", ()=>(0, _activityDefault.default));
+parcelHelpers.export(exports, "AirplaneEnginesFill", ()=>(0, _airplaneEnginesFillDefault.default));
+parcelHelpers.export(exports, "AirplaneEngines", ()=>(0, _airplaneEnginesDefault.default));
+parcelHelpers.export(exports, "AirplaneFill", ()=>(0, _airplaneFillDefault.default));
+parcelHelpers.export(exports, "Airplane", ()=>(0, _airplaneDefault.default));
+parcelHelpers.export(exports, "AlarmFill", ()=>(0, _alarmFillDefault.default));
+parcelHelpers.export(exports, "Alarm", ()=>(0, _alarmDefault.default));
+parcelHelpers.export(exports, "Alexa", ()=>(0, _alexaDefault.default));
+parcelHelpers.export(exports, "AlignBottom", ()=>(0, _alignBottomDefault.default));
+parcelHelpers.export(exports, "AlignCenter", ()=>(0, _alignCenterDefault.default));
+parcelHelpers.export(exports, "AlignEnd", ()=>(0, _alignEndDefault.default));
+parcelHelpers.export(exports, "AlignMiddle", ()=>(0, _alignMiddleDefault.default));
+parcelHelpers.export(exports, "AlignStart", ()=>(0, _alignStartDefault.default));
+parcelHelpers.export(exports, "AlignTop", ()=>(0, _alignTopDefault.default));
+parcelHelpers.export(exports, "Alipay", ()=>(0, _alipayDefault.default));
+parcelHelpers.export(exports, "Alt", ()=>(0, _altDefault.default));
+parcelHelpers.export(exports, "Amd", ()=>(0, _amdDefault.default));
+parcelHelpers.export(exports, "Android", ()=>(0, _androidDefault.default));
+parcelHelpers.export(exports, "Android2", ()=>(0, _android2Default.default));
+parcelHelpers.export(exports, "AppIndicator", ()=>(0, _appIndicatorDefault.default));
+parcelHelpers.export(exports, "App", ()=>(0, _appDefault.default));
+parcelHelpers.export(exports, "Apple", ()=>(0, _appleDefault.default));
+parcelHelpers.export(exports, "ArchiveFill", ()=>(0, _archiveFillDefault.default));
+parcelHelpers.export(exports, "Archive", ()=>(0, _archiveDefault.default));
+parcelHelpers.export(exports, "Arrow90degDown", ()=>(0, _arrow90DegDownDefault.default));
+parcelHelpers.export(exports, "Arrow90degLeft", ()=>(0, _arrow90DegLeftDefault.default));
+parcelHelpers.export(exports, "Arrow90degRight", ()=>(0, _arrow90DegRightDefault.default));
+parcelHelpers.export(exports, "Arrow90degUp", ()=>(0, _arrow90DegUpDefault.default));
+parcelHelpers.export(exports, "ArrowBarDown", ()=>(0, _arrowBarDownDefault.default));
+parcelHelpers.export(exports, "ArrowBarLeft", ()=>(0, _arrowBarLeftDefault.default));
+parcelHelpers.export(exports, "ArrowBarRight", ()=>(0, _arrowBarRightDefault.default));
+parcelHelpers.export(exports, "ArrowBarUp", ()=>(0, _arrowBarUpDefault.default));
+parcelHelpers.export(exports, "ArrowClockwise", ()=>(0, _arrowClockwiseDefault.default));
+parcelHelpers.export(exports, "ArrowCounterclockwise", ()=>(0, _arrowCounterclockwiseDefault.default));
+parcelHelpers.export(exports, "ArrowDownCircleFill", ()=>(0, _arrowDownCircleFillDefault.default));
+parcelHelpers.export(exports, "ArrowDownCircle", ()=>(0, _arrowDownCircleDefault.default));
+parcelHelpers.export(exports, "ArrowDownLeftCircleFill", ()=>(0, _arrowDownLeftCircleFillDefault.default));
+parcelHelpers.export(exports, "ArrowDownLeftCircle", ()=>(0, _arrowDownLeftCircleDefault.default));
+parcelHelpers.export(exports, "ArrowDownLeftSquareFill", ()=>(0, _arrowDownLeftSquareFillDefault.default));
+parcelHelpers.export(exports, "ArrowDownLeftSquare", ()=>(0, _arrowDownLeftSquareDefault.default));
+parcelHelpers.export(exports, "ArrowDownLeft", ()=>(0, _arrowDownLeftDefault.default));
+parcelHelpers.export(exports, "ArrowDownRightCircleFill", ()=>(0, _arrowDownRightCircleFillDefault.default));
+parcelHelpers.export(exports, "ArrowDownRightCircle", ()=>(0, _arrowDownRightCircleDefault.default));
+parcelHelpers.export(exports, "ArrowDownRightSquareFill", ()=>(0, _arrowDownRightSquareFillDefault.default));
+parcelHelpers.export(exports, "ArrowDownRightSquare", ()=>(0, _arrowDownRightSquareDefault.default));
+parcelHelpers.export(exports, "ArrowDownRight", ()=>(0, _arrowDownRightDefault.default));
+parcelHelpers.export(exports, "ArrowDownShort", ()=>(0, _arrowDownShortDefault.default));
+parcelHelpers.export(exports, "ArrowDownSquareFill", ()=>(0, _arrowDownSquareFillDefault.default));
+parcelHelpers.export(exports, "ArrowDownSquare", ()=>(0, _arrowDownSquareDefault.default));
+parcelHelpers.export(exports, "ArrowDownUp", ()=>(0, _arrowDownUpDefault.default));
+parcelHelpers.export(exports, "ArrowDown", ()=>(0, _arrowDownDefault.default));
+parcelHelpers.export(exports, "ArrowLeftCircleFill", ()=>(0, _arrowLeftCircleFillDefault.default));
+parcelHelpers.export(exports, "ArrowLeftCircle", ()=>(0, _arrowLeftCircleDefault.default));
+parcelHelpers.export(exports, "ArrowLeftRight", ()=>(0, _arrowLeftRightDefault.default));
+parcelHelpers.export(exports, "ArrowLeftShort", ()=>(0, _arrowLeftShortDefault.default));
+parcelHelpers.export(exports, "ArrowLeftSquareFill", ()=>(0, _arrowLeftSquareFillDefault.default));
+parcelHelpers.export(exports, "ArrowLeftSquare", ()=>(0, _arrowLeftSquareDefault.default));
+parcelHelpers.export(exports, "ArrowLeft", ()=>(0, _arrowLeftDefault.default));
+parcelHelpers.export(exports, "ArrowRepeat", ()=>(0, _arrowRepeatDefault.default));
+parcelHelpers.export(exports, "ArrowReturnLeft", ()=>(0, _arrowReturnLeftDefault.default));
+parcelHelpers.export(exports, "ArrowReturnRight", ()=>(0, _arrowReturnRightDefault.default));
+parcelHelpers.export(exports, "ArrowRightCircleFill", ()=>(0, _arrowRightCircleFillDefault.default));
+parcelHelpers.export(exports, "ArrowRightCircle", ()=>(0, _arrowRightCircleDefault.default));
+parcelHelpers.export(exports, "ArrowRightShort", ()=>(0, _arrowRightShortDefault.default));
+parcelHelpers.export(exports, "ArrowRightSquareFill", ()=>(0, _arrowRightSquareFillDefault.default));
+parcelHelpers.export(exports, "ArrowRightSquare", ()=>(0, _arrowRightSquareDefault.default));
+parcelHelpers.export(exports, "ArrowRight", ()=>(0, _arrowRightDefault.default));
+parcelHelpers.export(exports, "ArrowThroughHeartFill", ()=>(0, _arrowThroughHeartFillDefault.default));
+parcelHelpers.export(exports, "ArrowThroughHeart", ()=>(0, _arrowThroughHeartDefault.default));
+parcelHelpers.export(exports, "ArrowUpCircleFill", ()=>(0, _arrowUpCircleFillDefault.default));
+parcelHelpers.export(exports, "ArrowUpCircle", ()=>(0, _arrowUpCircleDefault.default));
+parcelHelpers.export(exports, "ArrowUpLeftCircleFill", ()=>(0, _arrowUpLeftCircleFillDefault.default));
+parcelHelpers.export(exports, "ArrowUpLeftCircle", ()=>(0, _arrowUpLeftCircleDefault.default));
+parcelHelpers.export(exports, "ArrowUpLeftSquareFill", ()=>(0, _arrowUpLeftSquareFillDefault.default));
+parcelHelpers.export(exports, "ArrowUpLeftSquare", ()=>(0, _arrowUpLeftSquareDefault.default));
+parcelHelpers.export(exports, "ArrowUpLeft", ()=>(0, _arrowUpLeftDefault.default));
+parcelHelpers.export(exports, "ArrowUpRightCircleFill", ()=>(0, _arrowUpRightCircleFillDefault.default));
+parcelHelpers.export(exports, "ArrowUpRightCircle", ()=>(0, _arrowUpRightCircleDefault.default));
+parcelHelpers.export(exports, "ArrowUpRightSquareFill", ()=>(0, _arrowUpRightSquareFillDefault.default));
+parcelHelpers.export(exports, "ArrowUpRightSquare", ()=>(0, _arrowUpRightSquareDefault.default));
+parcelHelpers.export(exports, "ArrowUpRight", ()=>(0, _arrowUpRightDefault.default));
+parcelHelpers.export(exports, "ArrowUpShort", ()=>(0, _arrowUpShortDefault.default));
+parcelHelpers.export(exports, "ArrowUpSquareFill", ()=>(0, _arrowUpSquareFillDefault.default));
+parcelHelpers.export(exports, "ArrowUpSquare", ()=>(0, _arrowUpSquareDefault.default));
+parcelHelpers.export(exports, "ArrowUp", ()=>(0, _arrowUpDefault.default));
+parcelHelpers.export(exports, "ArrowsAngleContract", ()=>(0, _arrowsAngleContractDefault.default));
+parcelHelpers.export(exports, "ArrowsAngleExpand", ()=>(0, _arrowsAngleExpandDefault.default));
+parcelHelpers.export(exports, "ArrowsCollapse", ()=>(0, _arrowsCollapseDefault.default));
+parcelHelpers.export(exports, "ArrowsExpand", ()=>(0, _arrowsExpandDefault.default));
+parcelHelpers.export(exports, "ArrowsFullscreen", ()=>(0, _arrowsFullscreenDefault.default));
+parcelHelpers.export(exports, "ArrowsMove", ()=>(0, _arrowsMoveDefault.default));
+parcelHelpers.export(exports, "AspectRatioFill", ()=>(0, _aspectRatioFillDefault.default));
+parcelHelpers.export(exports, "AspectRatio", ()=>(0, _aspectRatioDefault.default));
+parcelHelpers.export(exports, "Asterisk", ()=>(0, _asteriskDefault.default));
+parcelHelpers.export(exports, "At", ()=>(0, _atDefault.default));
+parcelHelpers.export(exports, "AwardFill", ()=>(0, _awardFillDefault.default));
+parcelHelpers.export(exports, "Award", ()=>(0, _awardDefault.default));
+parcelHelpers.export(exports, "Back", ()=>(0, _backDefault.default));
+parcelHelpers.export(exports, "BackspaceFill", ()=>(0, _backspaceFillDefault.default));
+parcelHelpers.export(exports, "BackspaceReverseFill", ()=>(0, _backspaceReverseFillDefault.default));
+parcelHelpers.export(exports, "BackspaceReverse", ()=>(0, _backspaceReverseDefault.default));
+parcelHelpers.export(exports, "Backspace", ()=>(0, _backspaceDefault.default));
+parcelHelpers.export(exports, "Badge3dFill", ()=>(0, _badge3DFillDefault.default));
+parcelHelpers.export(exports, "Badge3d", ()=>(0, _badge3DDefault.default));
+parcelHelpers.export(exports, "Badge4kFill", ()=>(0, _badge4KFillDefault.default));
+parcelHelpers.export(exports, "Badge4k", ()=>(0, _badge4KDefault.default));
+parcelHelpers.export(exports, "Badge8kFill", ()=>(0, _badge8KFillDefault.default));
+parcelHelpers.export(exports, "Badge8k", ()=>(0, _badge8KDefault.default));
+parcelHelpers.export(exports, "BadgeAdFill", ()=>(0, _badgeAdFillDefault.default));
+parcelHelpers.export(exports, "BadgeAd", ()=>(0, _badgeAdDefault.default));
+parcelHelpers.export(exports, "BadgeArFill", ()=>(0, _badgeArFillDefault.default));
+parcelHelpers.export(exports, "BadgeAr", ()=>(0, _badgeArDefault.default));
+parcelHelpers.export(exports, "BadgeCcFill", ()=>(0, _badgeCcFillDefault.default));
+parcelHelpers.export(exports, "BadgeCc", ()=>(0, _badgeCcDefault.default));
+parcelHelpers.export(exports, "BadgeHdFill", ()=>(0, _badgeHdFillDefault.default));
+parcelHelpers.export(exports, "BadgeHd", ()=>(0, _badgeHdDefault.default));
+parcelHelpers.export(exports, "BadgeSdFill", ()=>(0, _badgeSdFillDefault.default));
+parcelHelpers.export(exports, "BadgeSd", ()=>(0, _badgeSdDefault.default));
+parcelHelpers.export(exports, "BadgeTmFill", ()=>(0, _badgeTmFillDefault.default));
+parcelHelpers.export(exports, "BadgeTm", ()=>(0, _badgeTmDefault.default));
+parcelHelpers.export(exports, "BadgeVoFill", ()=>(0, _badgeVoFillDefault.default));
+parcelHelpers.export(exports, "BadgeVo", ()=>(0, _badgeVoDefault.default));
+parcelHelpers.export(exports, "BadgeVrFill", ()=>(0, _badgeVrFillDefault.default));
+parcelHelpers.export(exports, "BadgeVr", ()=>(0, _badgeVrDefault.default));
+parcelHelpers.export(exports, "BadgeWcFill", ()=>(0, _badgeWcFillDefault.default));
+parcelHelpers.export(exports, "BadgeWc", ()=>(0, _badgeWcDefault.default));
+parcelHelpers.export(exports, "BagCheckFill", ()=>(0, _bagCheckFillDefault.default));
+parcelHelpers.export(exports, "BagCheck", ()=>(0, _bagCheckDefault.default));
+parcelHelpers.export(exports, "BagDashFill", ()=>(0, _bagDashFillDefault.default));
+parcelHelpers.export(exports, "BagDash", ()=>(0, _bagDashDefault.default));
+parcelHelpers.export(exports, "BagFill", ()=>(0, _bagFillDefault.default));
+parcelHelpers.export(exports, "BagHeartFill", ()=>(0, _bagHeartFillDefault.default));
+parcelHelpers.export(exports, "BagHeart", ()=>(0, _bagHeartDefault.default));
+parcelHelpers.export(exports, "BagPlusFill", ()=>(0, _bagPlusFillDefault.default));
+parcelHelpers.export(exports, "BagPlus", ()=>(0, _bagPlusDefault.default));
+parcelHelpers.export(exports, "BagXFill", ()=>(0, _bagXFillDefault.default));
+parcelHelpers.export(exports, "BagX", ()=>(0, _bagXDefault.default));
+parcelHelpers.export(exports, "Bag", ()=>(0, _bagDefault.default));
+parcelHelpers.export(exports, "BalloonFill", ()=>(0, _balloonFillDefault.default));
+parcelHelpers.export(exports, "BalloonHeartFill", ()=>(0, _balloonHeartFillDefault.default));
+parcelHelpers.export(exports, "BalloonHeart", ()=>(0, _balloonHeartDefault.default));
+parcelHelpers.export(exports, "Balloon", ()=>(0, _balloonDefault.default));
+parcelHelpers.export(exports, "BandaidFill", ()=>(0, _bandaidFillDefault.default));
+parcelHelpers.export(exports, "Bandaid", ()=>(0, _bandaidDefault.default));
+parcelHelpers.export(exports, "Bank", ()=>(0, _bankDefault.default));
+parcelHelpers.export(exports, "Bank2", ()=>(0, _bank2Default.default));
+parcelHelpers.export(exports, "BarChartFill", ()=>(0, _barChartFillDefault.default));
+parcelHelpers.export(exports, "BarChartLineFill", ()=>(0, _barChartLineFillDefault.default));
+parcelHelpers.export(exports, "BarChartLine", ()=>(0, _barChartLineDefault.default));
+parcelHelpers.export(exports, "BarChartSteps", ()=>(0, _barChartStepsDefault.default));
+parcelHelpers.export(exports, "BarChart", ()=>(0, _barChartDefault.default));
+parcelHelpers.export(exports, "BasketFill", ()=>(0, _basketFillDefault.default));
+parcelHelpers.export(exports, "Basket", ()=>(0, _basketDefault.default));
+parcelHelpers.export(exports, "Basket2Fill", ()=>(0, _basket2FillDefault.default));
+parcelHelpers.export(exports, "Basket2", ()=>(0, _basket2Default.default));
+parcelHelpers.export(exports, "Basket3Fill", ()=>(0, _basket3FillDefault.default));
+parcelHelpers.export(exports, "Basket3", ()=>(0, _basket3Default.default));
+parcelHelpers.export(exports, "BatteryCharging", ()=>(0, _batteryChargingDefault.default));
+parcelHelpers.export(exports, "BatteryFull", ()=>(0, _batteryFullDefault.default));
+parcelHelpers.export(exports, "BatteryHalf", ()=>(0, _batteryHalfDefault.default));
+parcelHelpers.export(exports, "Battery", ()=>(0, _batteryDefault.default));
+parcelHelpers.export(exports, "Behance", ()=>(0, _behanceDefault.default));
+parcelHelpers.export(exports, "BellFill", ()=>(0, _bellFillDefault.default));
+parcelHelpers.export(exports, "BellSlashFill", ()=>(0, _bellSlashFillDefault.default));
+parcelHelpers.export(exports, "BellSlash", ()=>(0, _bellSlashDefault.default));
+parcelHelpers.export(exports, "Bell", ()=>(0, _bellDefault.default));
+parcelHelpers.export(exports, "Bezier", ()=>(0, _bezierDefault.default));
+parcelHelpers.export(exports, "Bezier2", ()=>(0, _bezier2Default.default));
+parcelHelpers.export(exports, "Bicycle", ()=>(0, _bicycleDefault.default));
+parcelHelpers.export(exports, "BinocularsFill", ()=>(0, _binocularsFillDefault.default));
+parcelHelpers.export(exports, "Binoculars", ()=>(0, _binocularsDefault.default));
+parcelHelpers.export(exports, "BlockquoteLeft", ()=>(0, _blockquoteLeftDefault.default));
+parcelHelpers.export(exports, "BlockquoteRight", ()=>(0, _blockquoteRightDefault.default));
+parcelHelpers.export(exports, "Bluetooth", ()=>(0, _bluetoothDefault.default));
+parcelHelpers.export(exports, "BodyText", ()=>(0, _bodyTextDefault.default));
+parcelHelpers.export(exports, "BookFill", ()=>(0, _bookFillDefault.default));
+parcelHelpers.export(exports, "BookHalf", ()=>(0, _bookHalfDefault.default));
+parcelHelpers.export(exports, "Book", ()=>(0, _bookDefault.default));
+parcelHelpers.export(exports, "BookmarkCheckFill", ()=>(0, _bookmarkCheckFillDefault.default));
+parcelHelpers.export(exports, "BookmarkCheck", ()=>(0, _bookmarkCheckDefault.default));
+parcelHelpers.export(exports, "BookmarkDashFill", ()=>(0, _bookmarkDashFillDefault.default));
+parcelHelpers.export(exports, "BookmarkDash", ()=>(0, _bookmarkDashDefault.default));
+parcelHelpers.export(exports, "BookmarkFill", ()=>(0, _bookmarkFillDefault.default));
+parcelHelpers.export(exports, "BookmarkHeartFill", ()=>(0, _bookmarkHeartFillDefault.default));
+parcelHelpers.export(exports, "BookmarkHeart", ()=>(0, _bookmarkHeartDefault.default));
+parcelHelpers.export(exports, "BookmarkPlusFill", ()=>(0, _bookmarkPlusFillDefault.default));
+parcelHelpers.export(exports, "BookmarkPlus", ()=>(0, _bookmarkPlusDefault.default));
+parcelHelpers.export(exports, "BookmarkStarFill", ()=>(0, _bookmarkStarFillDefault.default));
+parcelHelpers.export(exports, "BookmarkStar", ()=>(0, _bookmarkStarDefault.default));
+parcelHelpers.export(exports, "BookmarkXFill", ()=>(0, _bookmarkXFillDefault.default));
+parcelHelpers.export(exports, "BookmarkX", ()=>(0, _bookmarkXDefault.default));
+parcelHelpers.export(exports, "Bookmark", ()=>(0, _bookmarkDefault.default));
+parcelHelpers.export(exports, "BookmarksFill", ()=>(0, _bookmarksFillDefault.default));
+parcelHelpers.export(exports, "Bookmarks", ()=>(0, _bookmarksDefault.default));
+parcelHelpers.export(exports, "Bookshelf", ()=>(0, _bookshelfDefault.default));
+parcelHelpers.export(exports, "BoomboxFill", ()=>(0, _boomboxFillDefault.default));
+parcelHelpers.export(exports, "Boombox", ()=>(0, _boomboxDefault.default));
+parcelHelpers.export(exports, "BootstrapFill", ()=>(0, _bootstrapFillDefault.default));
+parcelHelpers.export(exports, "BootstrapReboot", ()=>(0, _bootstrapRebootDefault.default));
+parcelHelpers.export(exports, "Bootstrap", ()=>(0, _bootstrapDefault.default));
+parcelHelpers.export(exports, "BorderAll", ()=>(0, _borderAllDefault.default));
+parcelHelpers.export(exports, "BorderBottom", ()=>(0, _borderBottomDefault.default));
+parcelHelpers.export(exports, "BorderCenter", ()=>(0, _borderCenterDefault.default));
+parcelHelpers.export(exports, "BorderInner", ()=>(0, _borderInnerDefault.default));
+parcelHelpers.export(exports, "BorderLeft", ()=>(0, _borderLeftDefault.default));
+parcelHelpers.export(exports, "BorderMiddle", ()=>(0, _borderMiddleDefault.default));
+parcelHelpers.export(exports, "BorderOuter", ()=>(0, _borderOuterDefault.default));
+parcelHelpers.export(exports, "BorderRight", ()=>(0, _borderRightDefault.default));
+parcelHelpers.export(exports, "BorderStyle", ()=>(0, _borderStyleDefault.default));
+parcelHelpers.export(exports, "BorderTop", ()=>(0, _borderTopDefault.default));
+parcelHelpers.export(exports, "BorderWidth", ()=>(0, _borderWidthDefault.default));
+parcelHelpers.export(exports, "Border", ()=>(0, _borderDefault.default));
+parcelHelpers.export(exports, "BoundingBoxCircles", ()=>(0, _boundingBoxCirclesDefault.default));
+parcelHelpers.export(exports, "BoundingBox", ()=>(0, _boundingBoxDefault.default));
+parcelHelpers.export(exports, "BoxArrowDownLeft", ()=>(0, _boxArrowDownLeftDefault.default));
+parcelHelpers.export(exports, "BoxArrowDownRight", ()=>(0, _boxArrowDownRightDefault.default));
+parcelHelpers.export(exports, "BoxArrowDown", ()=>(0, _boxArrowDownDefault.default));
+parcelHelpers.export(exports, "BoxArrowInDownLeft", ()=>(0, _boxArrowInDownLeftDefault.default));
+parcelHelpers.export(exports, "BoxArrowInDownRight", ()=>(0, _boxArrowInDownRightDefault.default));
+parcelHelpers.export(exports, "BoxArrowInDown", ()=>(0, _boxArrowInDownDefault.default));
+parcelHelpers.export(exports, "BoxArrowInLeft", ()=>(0, _boxArrowInLeftDefault.default));
+parcelHelpers.export(exports, "BoxArrowInRight", ()=>(0, _boxArrowInRightDefault.default));
+parcelHelpers.export(exports, "BoxArrowInUpLeft", ()=>(0, _boxArrowInUpLeftDefault.default));
+parcelHelpers.export(exports, "BoxArrowInUpRight", ()=>(0, _boxArrowInUpRightDefault.default));
+parcelHelpers.export(exports, "BoxArrowInUp", ()=>(0, _boxArrowInUpDefault.default));
+parcelHelpers.export(exports, "BoxArrowLeft", ()=>(0, _boxArrowLeftDefault.default));
+parcelHelpers.export(exports, "BoxArrowRight", ()=>(0, _boxArrowRightDefault.default));
+parcelHelpers.export(exports, "BoxArrowUpLeft", ()=>(0, _boxArrowUpLeftDefault.default));
+parcelHelpers.export(exports, "BoxArrowUpRight", ()=>(0, _boxArrowUpRightDefault.default));
+parcelHelpers.export(exports, "BoxArrowUp", ()=>(0, _boxArrowUpDefault.default));
+parcelHelpers.export(exports, "BoxFill", ()=>(0, _boxFillDefault.default));
+parcelHelpers.export(exports, "BoxSeamFill", ()=>(0, _boxSeamFillDefault.default));
+parcelHelpers.export(exports, "BoxSeam", ()=>(0, _boxSeamDefault.default));
+parcelHelpers.export(exports, "Box", ()=>(0, _boxDefault.default));
+parcelHelpers.export(exports, "Box2Fill", ()=>(0, _box2FillDefault.default));
+parcelHelpers.export(exports, "Box2HeartFill", ()=>(0, _box2HeartFillDefault.default));
+parcelHelpers.export(exports, "Box2Heart", ()=>(0, _box2HeartDefault.default));
+parcelHelpers.export(exports, "Box2", ()=>(0, _box2Default.default));
+parcelHelpers.export(exports, "Boxes", ()=>(0, _boxesDefault.default));
+parcelHelpers.export(exports, "BracesAsterisk", ()=>(0, _bracesAsteriskDefault.default));
+parcelHelpers.export(exports, "Braces", ()=>(0, _bracesDefault.default));
+parcelHelpers.export(exports, "Bricks", ()=>(0, _bricksDefault.default));
+parcelHelpers.export(exports, "BriefcaseFill", ()=>(0, _briefcaseFillDefault.default));
+parcelHelpers.export(exports, "Briefcase", ()=>(0, _briefcaseDefault.default));
+parcelHelpers.export(exports, "BrightnessAltHighFill", ()=>(0, _brightnessAltHighFillDefault.default));
+parcelHelpers.export(exports, "BrightnessAltHigh", ()=>(0, _brightnessAltHighDefault.default));
+parcelHelpers.export(exports, "BrightnessAltLowFill", ()=>(0, _brightnessAltLowFillDefault.default));
+parcelHelpers.export(exports, "BrightnessAltLow", ()=>(0, _brightnessAltLowDefault.default));
+parcelHelpers.export(exports, "BrightnessHighFill", ()=>(0, _brightnessHighFillDefault.default));
+parcelHelpers.export(exports, "BrightnessHigh", ()=>(0, _brightnessHighDefault.default));
+parcelHelpers.export(exports, "BrightnessLowFill", ()=>(0, _brightnessLowFillDefault.default));
+parcelHelpers.export(exports, "BrightnessLow", ()=>(0, _brightnessLowDefault.default));
+parcelHelpers.export(exports, "BroadcastPin", ()=>(0, _broadcastPinDefault.default));
+parcelHelpers.export(exports, "Broadcast", ()=>(0, _broadcastDefault.default));
+parcelHelpers.export(exports, "BrowserChrome", ()=>(0, _browserChromeDefault.default));
+parcelHelpers.export(exports, "BrowserEdge", ()=>(0, _browserEdgeDefault.default));
+parcelHelpers.export(exports, "BrowserFirefox", ()=>(0, _browserFirefoxDefault.default));
+parcelHelpers.export(exports, "BrowserSafari", ()=>(0, _browserSafariDefault.default));
+parcelHelpers.export(exports, "BrushFill", ()=>(0, _brushFillDefault.default));
+parcelHelpers.export(exports, "Brush", ()=>(0, _brushDefault.default));
+parcelHelpers.export(exports, "BucketFill", ()=>(0, _bucketFillDefault.default));
+parcelHelpers.export(exports, "Bucket", ()=>(0, _bucketDefault.default));
+parcelHelpers.export(exports, "BugFill", ()=>(0, _bugFillDefault.default));
+parcelHelpers.export(exports, "Bug", ()=>(0, _bugDefault.default));
+parcelHelpers.export(exports, "BuildingAdd", ()=>(0, _buildingAddDefault.default));
+parcelHelpers.export(exports, "BuildingCheck", ()=>(0, _buildingCheckDefault.default));
+parcelHelpers.export(exports, "BuildingDash", ()=>(0, _buildingDashDefault.default));
+parcelHelpers.export(exports, "BuildingDown", ()=>(0, _buildingDownDefault.default));
+parcelHelpers.export(exports, "BuildingExclamation", ()=>(0, _buildingExclamationDefault.default));
+parcelHelpers.export(exports, "BuildingFillAdd", ()=>(0, _buildingFillAddDefault.default));
+parcelHelpers.export(exports, "BuildingFillCheck", ()=>(0, _buildingFillCheckDefault.default));
+parcelHelpers.export(exports, "BuildingFillDash", ()=>(0, _buildingFillDashDefault.default));
+parcelHelpers.export(exports, "BuildingFillDown", ()=>(0, _buildingFillDownDefault.default));
+parcelHelpers.export(exports, "BuildingFillExclamation", ()=>(0, _buildingFillExclamationDefault.default));
+parcelHelpers.export(exports, "BuildingFillGear", ()=>(0, _buildingFillGearDefault.default));
+parcelHelpers.export(exports, "BuildingFillLock", ()=>(0, _buildingFillLockDefault.default));
+parcelHelpers.export(exports, "BuildingFillSlash", ()=>(0, _buildingFillSlashDefault.default));
+parcelHelpers.export(exports, "BuildingFillUp", ()=>(0, _buildingFillUpDefault.default));
+parcelHelpers.export(exports, "BuildingFillX", ()=>(0, _buildingFillXDefault.default));
+parcelHelpers.export(exports, "BuildingFill", ()=>(0, _buildingFillDefault.default));
+parcelHelpers.export(exports, "BuildingGear", ()=>(0, _buildingGearDefault.default));
+parcelHelpers.export(exports, "BuildingLock", ()=>(0, _buildingLockDefault.default));
+parcelHelpers.export(exports, "BuildingSlash", ()=>(0, _buildingSlashDefault.default));
+parcelHelpers.export(exports, "BuildingUp", ()=>(0, _buildingUpDefault.default));
+parcelHelpers.export(exports, "BuildingX", ()=>(0, _buildingXDefault.default));
+parcelHelpers.export(exports, "Building", ()=>(0, _buildingDefault.default));
+parcelHelpers.export(exports, "BuildingsFill", ()=>(0, _buildingsFillDefault.default));
+parcelHelpers.export(exports, "Buildings", ()=>(0, _buildingsDefault.default));
+parcelHelpers.export(exports, "Bullseye", ()=>(0, _bullseyeDefault.default));
+parcelHelpers.export(exports, "BusFrontFill", ()=>(0, _busFrontFillDefault.default));
+parcelHelpers.export(exports, "BusFront", ()=>(0, _busFrontDefault.default));
+parcelHelpers.export(exports, "CCircleFill", ()=>(0, _cCircleFillDefault.default));
+parcelHelpers.export(exports, "CCircle", ()=>(0, _cCircleDefault.default));
+parcelHelpers.export(exports, "CSquareFill", ()=>(0, _cSquareFillDefault.default));
+parcelHelpers.export(exports, "CSquare", ()=>(0, _cSquareDefault.default));
+parcelHelpers.export(exports, "CalculatorFill", ()=>(0, _calculatorFillDefault.default));
+parcelHelpers.export(exports, "Calculator", ()=>(0, _calculatorDefault.default));
+parcelHelpers.export(exports, "CalendarCheckFill", ()=>(0, _calendarCheckFillDefault.default));
+parcelHelpers.export(exports, "CalendarCheck", ()=>(0, _calendarCheckDefault.default));
+parcelHelpers.export(exports, "CalendarDateFill", ()=>(0, _calendarDateFillDefault.default));
+parcelHelpers.export(exports, "CalendarDate", ()=>(0, _calendarDateDefault.default));
+parcelHelpers.export(exports, "CalendarDayFill", ()=>(0, _calendarDayFillDefault.default));
+parcelHelpers.export(exports, "CalendarDay", ()=>(0, _calendarDayDefault.default));
+parcelHelpers.export(exports, "CalendarEventFill", ()=>(0, _calendarEventFillDefault.default));
+parcelHelpers.export(exports, "CalendarEvent", ()=>(0, _calendarEventDefault.default));
+parcelHelpers.export(exports, "CalendarFill", ()=>(0, _calendarFillDefault.default));
+parcelHelpers.export(exports, "CalendarHeartFill", ()=>(0, _calendarHeartFillDefault.default));
+parcelHelpers.export(exports, "CalendarHeart", ()=>(0, _calendarHeartDefault.default));
+parcelHelpers.export(exports, "CalendarMinusFill", ()=>(0, _calendarMinusFillDefault.default));
+parcelHelpers.export(exports, "CalendarMinus", ()=>(0, _calendarMinusDefault.default));
+parcelHelpers.export(exports, "CalendarMonthFill", ()=>(0, _calendarMonthFillDefault.default));
+parcelHelpers.export(exports, "CalendarMonth", ()=>(0, _calendarMonthDefault.default));
+parcelHelpers.export(exports, "CalendarPlusFill", ()=>(0, _calendarPlusFillDefault.default));
+parcelHelpers.export(exports, "CalendarPlus", ()=>(0, _calendarPlusDefault.default));
+parcelHelpers.export(exports, "CalendarRangeFill", ()=>(0, _calendarRangeFillDefault.default));
+parcelHelpers.export(exports, "CalendarRange", ()=>(0, _calendarRangeDefault.default));
+parcelHelpers.export(exports, "CalendarWeekFill", ()=>(0, _calendarWeekFillDefault.default));
+parcelHelpers.export(exports, "CalendarWeek", ()=>(0, _calendarWeekDefault.default));
+parcelHelpers.export(exports, "CalendarXFill", ()=>(0, _calendarXFillDefault.default));
+parcelHelpers.export(exports, "CalendarX", ()=>(0, _calendarXDefault.default));
+parcelHelpers.export(exports, "Calendar", ()=>(0, _calendarDefault.default));
+parcelHelpers.export(exports, "Calendar2CheckFill", ()=>(0, _calendar2CheckFillDefault.default));
+parcelHelpers.export(exports, "Calendar2Check", ()=>(0, _calendar2CheckDefault.default));
+parcelHelpers.export(exports, "Calendar2DateFill", ()=>(0, _calendar2DateFillDefault.default));
+parcelHelpers.export(exports, "Calendar2Date", ()=>(0, _calendar2DateDefault.default));
+parcelHelpers.export(exports, "Calendar2DayFill", ()=>(0, _calendar2DayFillDefault.default));
+parcelHelpers.export(exports, "Calendar2Day", ()=>(0, _calendar2DayDefault.default));
+parcelHelpers.export(exports, "Calendar2EventFill", ()=>(0, _calendar2EventFillDefault.default));
+parcelHelpers.export(exports, "Calendar2Event", ()=>(0, _calendar2EventDefault.default));
+parcelHelpers.export(exports, "Calendar2Fill", ()=>(0, _calendar2FillDefault.default));
+parcelHelpers.export(exports, "Calendar2HeartFill", ()=>(0, _calendar2HeartFillDefault.default));
+parcelHelpers.export(exports, "Calendar2Heart", ()=>(0, _calendar2HeartDefault.default));
+parcelHelpers.export(exports, "Calendar2MinusFill", ()=>(0, _calendar2MinusFillDefault.default));
+parcelHelpers.export(exports, "Calendar2Minus", ()=>(0, _calendar2MinusDefault.default));
+parcelHelpers.export(exports, "Calendar2MonthFill", ()=>(0, _calendar2MonthFillDefault.default));
+parcelHelpers.export(exports, "Calendar2Month", ()=>(0, _calendar2MonthDefault.default));
+parcelHelpers.export(exports, "Calendar2PlusFill", ()=>(0, _calendar2PlusFillDefault.default));
+parcelHelpers.export(exports, "Calendar2Plus", ()=>(0, _calendar2PlusDefault.default));
+parcelHelpers.export(exports, "Calendar2RangeFill", ()=>(0, _calendar2RangeFillDefault.default));
+parcelHelpers.export(exports, "Calendar2Range", ()=>(0, _calendar2RangeDefault.default));
+parcelHelpers.export(exports, "Calendar2WeekFill", ()=>(0, _calendar2WeekFillDefault.default));
+parcelHelpers.export(exports, "Calendar2Week", ()=>(0, _calendar2WeekDefault.default));
+parcelHelpers.export(exports, "Calendar2XFill", ()=>(0, _calendar2XFillDefault.default));
+parcelHelpers.export(exports, "Calendar2X", ()=>(0, _calendar2XDefault.default));
+parcelHelpers.export(exports, "Calendar2", ()=>(0, _calendar2Default.default));
+parcelHelpers.export(exports, "Calendar3EventFill", ()=>(0, _calendar3EventFillDefault.default));
+parcelHelpers.export(exports, "Calendar3Event", ()=>(0, _calendar3EventDefault.default));
+parcelHelpers.export(exports, "Calendar3Fill", ()=>(0, _calendar3FillDefault.default));
+parcelHelpers.export(exports, "Calendar3RangeFill", ()=>(0, _calendar3RangeFillDefault.default));
+parcelHelpers.export(exports, "Calendar3Range", ()=>(0, _calendar3RangeDefault.default));
+parcelHelpers.export(exports, "Calendar3WeekFill", ()=>(0, _calendar3WeekFillDefault.default));
+parcelHelpers.export(exports, "Calendar3Week", ()=>(0, _calendar3WeekDefault.default));
+parcelHelpers.export(exports, "Calendar3", ()=>(0, _calendar3Default.default));
+parcelHelpers.export(exports, "Calendar4Event", ()=>(0, _calendar4EventDefault.default));
+parcelHelpers.export(exports, "Calendar4Range", ()=>(0, _calendar4RangeDefault.default));
+parcelHelpers.export(exports, "Calendar4Week", ()=>(0, _calendar4WeekDefault.default));
+parcelHelpers.export(exports, "Calendar4", ()=>(0, _calendar4Default.default));
+parcelHelpers.export(exports, "CameraFill", ()=>(0, _cameraFillDefault.default));
+parcelHelpers.export(exports, "CameraReelsFill", ()=>(0, _cameraReelsFillDefault.default));
+parcelHelpers.export(exports, "CameraReels", ()=>(0, _cameraReelsDefault.default));
+parcelHelpers.export(exports, "CameraVideoFill", ()=>(0, _cameraVideoFillDefault.default));
+parcelHelpers.export(exports, "CameraVideoOffFill", ()=>(0, _cameraVideoOffFillDefault.default));
+parcelHelpers.export(exports, "CameraVideoOff", ()=>(0, _cameraVideoOffDefault.default));
+parcelHelpers.export(exports, "CameraVideo", ()=>(0, _cameraVideoDefault.default));
+parcelHelpers.export(exports, "Camera", ()=>(0, _cameraDefault.default));
+parcelHelpers.export(exports, "Camera2", ()=>(0, _camera2Default.default));
+parcelHelpers.export(exports, "CapslockFill", ()=>(0, _capslockFillDefault.default));
+parcelHelpers.export(exports, "Capslock", ()=>(0, _capslockDefault.default));
+parcelHelpers.export(exports, "CapsulePill", ()=>(0, _capsulePillDefault.default));
+parcelHelpers.export(exports, "Capsule", ()=>(0, _capsuleDefault.default));
+parcelHelpers.export(exports, "CarFrontFill", ()=>(0, _carFrontFillDefault.default));
+parcelHelpers.export(exports, "CarFront", ()=>(0, _carFrontDefault.default));
+parcelHelpers.export(exports, "CardChecklist", ()=>(0, _cardChecklistDefault.default));
+parcelHelpers.export(exports, "CardHeading", ()=>(0, _cardHeadingDefault.default));
+parcelHelpers.export(exports, "CardImage", ()=>(0, _cardImageDefault.default));
+parcelHelpers.export(exports, "CardList", ()=>(0, _cardListDefault.default));
+parcelHelpers.export(exports, "CardText", ()=>(0, _cardTextDefault.default));
+parcelHelpers.export(exports, "CaretDownFill", ()=>(0, _caretDownFillDefault.default));
+parcelHelpers.export(exports, "CaretDownSquareFill", ()=>(0, _caretDownSquareFillDefault.default));
+parcelHelpers.export(exports, "CaretDownSquare", ()=>(0, _caretDownSquareDefault.default));
+parcelHelpers.export(exports, "CaretDown", ()=>(0, _caretDownDefault.default));
+parcelHelpers.export(exports, "CaretLeftFill", ()=>(0, _caretLeftFillDefault.default));
+parcelHelpers.export(exports, "CaretLeftSquareFill", ()=>(0, _caretLeftSquareFillDefault.default));
+parcelHelpers.export(exports, "CaretLeftSquare", ()=>(0, _caretLeftSquareDefault.default));
+parcelHelpers.export(exports, "CaretLeft", ()=>(0, _caretLeftDefault.default));
+parcelHelpers.export(exports, "CaretRightFill", ()=>(0, _caretRightFillDefault.default));
+parcelHelpers.export(exports, "CaretRightSquareFill", ()=>(0, _caretRightSquareFillDefault.default));
+parcelHelpers.export(exports, "CaretRightSquare", ()=>(0, _caretRightSquareDefault.default));
+parcelHelpers.export(exports, "CaretRight", ()=>(0, _caretRightDefault.default));
+parcelHelpers.export(exports, "CaretUpFill", ()=>(0, _caretUpFillDefault.default));
+parcelHelpers.export(exports, "CaretUpSquareFill", ()=>(0, _caretUpSquareFillDefault.default));
+parcelHelpers.export(exports, "CaretUpSquare", ()=>(0, _caretUpSquareDefault.default));
+parcelHelpers.export(exports, "CaretUp", ()=>(0, _caretUpDefault.default));
+parcelHelpers.export(exports, "CartCheckFill", ()=>(0, _cartCheckFillDefault.default));
+parcelHelpers.export(exports, "CartCheck", ()=>(0, _cartCheckDefault.default));
+parcelHelpers.export(exports, "CartDashFill", ()=>(0, _cartDashFillDefault.default));
+parcelHelpers.export(exports, "CartDash", ()=>(0, _cartDashDefault.default));
+parcelHelpers.export(exports, "CartFill", ()=>(0, _cartFillDefault.default));
+parcelHelpers.export(exports, "CartPlusFill", ()=>(0, _cartPlusFillDefault.default));
+parcelHelpers.export(exports, "CartPlus", ()=>(0, _cartPlusDefault.default));
+parcelHelpers.export(exports, "CartXFill", ()=>(0, _cartXFillDefault.default));
+parcelHelpers.export(exports, "CartX", ()=>(0, _cartXDefault.default));
+parcelHelpers.export(exports, "Cart", ()=>(0, _cartDefault.default));
+parcelHelpers.export(exports, "Cart2", ()=>(0, _cart2Default.default));
+parcelHelpers.export(exports, "Cart3", ()=>(0, _cart3Default.default));
+parcelHelpers.export(exports, "Cart4", ()=>(0, _cart4Default.default));
+parcelHelpers.export(exports, "CashCoin", ()=>(0, _cashCoinDefault.default));
+parcelHelpers.export(exports, "CashStack", ()=>(0, _cashStackDefault.default));
+parcelHelpers.export(exports, "Cash", ()=>(0, _cashDefault.default));
+parcelHelpers.export(exports, "CassetteFill", ()=>(0, _cassetteFillDefault.default));
+parcelHelpers.export(exports, "Cassette", ()=>(0, _cassetteDefault.default));
+parcelHelpers.export(exports, "Cast", ()=>(0, _castDefault.default));
+parcelHelpers.export(exports, "CcCircleFill", ()=>(0, _ccCircleFillDefault.default));
+parcelHelpers.export(exports, "CcCircle", ()=>(0, _ccCircleDefault.default));
+parcelHelpers.export(exports, "CcSquareFill", ()=>(0, _ccSquareFillDefault.default));
+parcelHelpers.export(exports, "CcSquare", ()=>(0, _ccSquareDefault.default));
+parcelHelpers.export(exports, "ChatDotsFill", ()=>(0, _chatDotsFillDefault.default));
+parcelHelpers.export(exports, "ChatDots", ()=>(0, _chatDotsDefault.default));
+parcelHelpers.export(exports, "ChatFill", ()=>(0, _chatFillDefault.default));
+parcelHelpers.export(exports, "ChatHeartFill", ()=>(0, _chatHeartFillDefault.default));
+parcelHelpers.export(exports, "ChatHeart", ()=>(0, _chatHeartDefault.default));
+parcelHelpers.export(exports, "ChatLeftDotsFill", ()=>(0, _chatLeftDotsFillDefault.default));
+parcelHelpers.export(exports, "ChatLeftDots", ()=>(0, _chatLeftDotsDefault.default));
+parcelHelpers.export(exports, "ChatLeftFill", ()=>(0, _chatLeftFillDefault.default));
+parcelHelpers.export(exports, "ChatLeftHeartFill", ()=>(0, _chatLeftHeartFillDefault.default));
+parcelHelpers.export(exports, "ChatLeftHeart", ()=>(0, _chatLeftHeartDefault.default));
+parcelHelpers.export(exports, "ChatLeftQuoteFill", ()=>(0, _chatLeftQuoteFillDefault.default));
+parcelHelpers.export(exports, "ChatLeftQuote", ()=>(0, _chatLeftQuoteDefault.default));
+parcelHelpers.export(exports, "ChatLeftTextFill", ()=>(0, _chatLeftTextFillDefault.default));
+parcelHelpers.export(exports, "ChatLeftText", ()=>(0, _chatLeftTextDefault.default));
+parcelHelpers.export(exports, "ChatLeft", ()=>(0, _chatLeftDefault.default));
+parcelHelpers.export(exports, "ChatQuoteFill", ()=>(0, _chatQuoteFillDefault.default));
+parcelHelpers.export(exports, "ChatQuote", ()=>(0, _chatQuoteDefault.default));
+parcelHelpers.export(exports, "ChatRightDotsFill", ()=>(0, _chatRightDotsFillDefault.default));
+parcelHelpers.export(exports, "ChatRightDots", ()=>(0, _chatRightDotsDefault.default));
+parcelHelpers.export(exports, "ChatRightFill", ()=>(0, _chatRightFillDefault.default));
+parcelHelpers.export(exports, "ChatRightHeartFill", ()=>(0, _chatRightHeartFillDefault.default));
+parcelHelpers.export(exports, "ChatRightHeart", ()=>(0, _chatRightHeartDefault.default));
+parcelHelpers.export(exports, "ChatRightQuoteFill", ()=>(0, _chatRightQuoteFillDefault.default));
+parcelHelpers.export(exports, "ChatRightQuote", ()=>(0, _chatRightQuoteDefault.default));
+parcelHelpers.export(exports, "ChatRightTextFill", ()=>(0, _chatRightTextFillDefault.default));
+parcelHelpers.export(exports, "ChatRightText", ()=>(0, _chatRightTextDefault.default));
+parcelHelpers.export(exports, "ChatRight", ()=>(0, _chatRightDefault.default));
+parcelHelpers.export(exports, "ChatSquareDotsFill", ()=>(0, _chatSquareDotsFillDefault.default));
+parcelHelpers.export(exports, "ChatSquareDots", ()=>(0, _chatSquareDotsDefault.default));
+parcelHelpers.export(exports, "ChatSquareFill", ()=>(0, _chatSquareFillDefault.default));
+parcelHelpers.export(exports, "ChatSquareHeartFill", ()=>(0, _chatSquareHeartFillDefault.default));
+parcelHelpers.export(exports, "ChatSquareHeart", ()=>(0, _chatSquareHeartDefault.default));
+parcelHelpers.export(exports, "ChatSquareQuoteFill", ()=>(0, _chatSquareQuoteFillDefault.default));
+parcelHelpers.export(exports, "ChatSquareQuote", ()=>(0, _chatSquareQuoteDefault.default));
+parcelHelpers.export(exports, "ChatSquareTextFill", ()=>(0, _chatSquareTextFillDefault.default));
+parcelHelpers.export(exports, "ChatSquareText", ()=>(0, _chatSquareTextDefault.default));
+parcelHelpers.export(exports, "ChatSquare", ()=>(0, _chatSquareDefault.default));
+parcelHelpers.export(exports, "ChatTextFill", ()=>(0, _chatTextFillDefault.default));
+parcelHelpers.export(exports, "ChatText", ()=>(0, _chatTextDefault.default));
+parcelHelpers.export(exports, "Chat", ()=>(0, _chatDefault.default));
+parcelHelpers.export(exports, "CheckAll", ()=>(0, _checkAllDefault.default));
+parcelHelpers.export(exports, "CheckCircleFill", ()=>(0, _checkCircleFillDefault.default));
+parcelHelpers.export(exports, "CheckCircle", ()=>(0, _checkCircleDefault.default));
+parcelHelpers.export(exports, "CheckLg", ()=>(0, _checkLgDefault.default));
+parcelHelpers.export(exports, "CheckSquareFill", ()=>(0, _checkSquareFillDefault.default));
+parcelHelpers.export(exports, "CheckSquare", ()=>(0, _checkSquareDefault.default));
+parcelHelpers.export(exports, "Check", ()=>(0, _checkDefault.default));
+parcelHelpers.export(exports, "Check2All", ()=>(0, _check2AllDefault.default));
+parcelHelpers.export(exports, "Check2Circle", ()=>(0, _check2CircleDefault.default));
+parcelHelpers.export(exports, "Check2Square", ()=>(0, _check2SquareDefault.default));
+parcelHelpers.export(exports, "Check2", ()=>(0, _check2Default.default));
+parcelHelpers.export(exports, "ChevronBarContract", ()=>(0, _chevronBarContractDefault.default));
+parcelHelpers.export(exports, "ChevronBarDown", ()=>(0, _chevronBarDownDefault.default));
+parcelHelpers.export(exports, "ChevronBarExpand", ()=>(0, _chevronBarExpandDefault.default));
+parcelHelpers.export(exports, "ChevronBarLeft", ()=>(0, _chevronBarLeftDefault.default));
+parcelHelpers.export(exports, "ChevronBarRight", ()=>(0, _chevronBarRightDefault.default));
+parcelHelpers.export(exports, "ChevronBarUp", ()=>(0, _chevronBarUpDefault.default));
+parcelHelpers.export(exports, "ChevronCompactDown", ()=>(0, _chevronCompactDownDefault.default));
+parcelHelpers.export(exports, "ChevronCompactLeft", ()=>(0, _chevronCompactLeftDefault.default));
+parcelHelpers.export(exports, "ChevronCompactRight", ()=>(0, _chevronCompactRightDefault.default));
+parcelHelpers.export(exports, "ChevronCompactUp", ()=>(0, _chevronCompactUpDefault.default));
+parcelHelpers.export(exports, "ChevronContract", ()=>(0, _chevronContractDefault.default));
+parcelHelpers.export(exports, "ChevronDoubleDown", ()=>(0, _chevronDoubleDownDefault.default));
+parcelHelpers.export(exports, "ChevronDoubleLeft", ()=>(0, _chevronDoubleLeftDefault.default));
+parcelHelpers.export(exports, "ChevronDoubleRight", ()=>(0, _chevronDoubleRightDefault.default));
+parcelHelpers.export(exports, "ChevronDoubleUp", ()=>(0, _chevronDoubleUpDefault.default));
+parcelHelpers.export(exports, "ChevronDown", ()=>(0, _chevronDownDefault.default));
+parcelHelpers.export(exports, "ChevronExpand", ()=>(0, _chevronExpandDefault.default));
+parcelHelpers.export(exports, "ChevronLeft", ()=>(0, _chevronLeftDefault.default));
+parcelHelpers.export(exports, "ChevronRight", ()=>(0, _chevronRightDefault.default));
+parcelHelpers.export(exports, "ChevronUp", ()=>(0, _chevronUpDefault.default));
+parcelHelpers.export(exports, "CircleFill", ()=>(0, _circleFillDefault.default));
+parcelHelpers.export(exports, "CircleHalf", ()=>(0, _circleHalfDefault.default));
+parcelHelpers.export(exports, "CircleSquare", ()=>(0, _circleSquareDefault.default));
+parcelHelpers.export(exports, "Circle", ()=>(0, _circleDefault.default));
+parcelHelpers.export(exports, "ClipboardCheckFill", ()=>(0, _clipboardCheckFillDefault.default));
+parcelHelpers.export(exports, "ClipboardCheck", ()=>(0, _clipboardCheckDefault.default));
+parcelHelpers.export(exports, "ClipboardDataFill", ()=>(0, _clipboardDataFillDefault.default));
+parcelHelpers.export(exports, "ClipboardData", ()=>(0, _clipboardDataDefault.default));
+parcelHelpers.export(exports, "ClipboardFill", ()=>(0, _clipboardFillDefault.default));
+parcelHelpers.export(exports, "ClipboardHeartFill", ()=>(0, _clipboardHeartFillDefault.default));
+parcelHelpers.export(exports, "ClipboardHeart", ()=>(0, _clipboardHeartDefault.default));
+parcelHelpers.export(exports, "ClipboardMinusFill", ()=>(0, _clipboardMinusFillDefault.default));
+parcelHelpers.export(exports, "ClipboardMinus", ()=>(0, _clipboardMinusDefault.default));
+parcelHelpers.export(exports, "ClipboardPlusFill", ()=>(0, _clipboardPlusFillDefault.default));
+parcelHelpers.export(exports, "ClipboardPlus", ()=>(0, _clipboardPlusDefault.default));
+parcelHelpers.export(exports, "ClipboardPulse", ()=>(0, _clipboardPulseDefault.default));
+parcelHelpers.export(exports, "ClipboardXFill", ()=>(0, _clipboardXFillDefault.default));
+parcelHelpers.export(exports, "ClipboardX", ()=>(0, _clipboardXDefault.default));
+parcelHelpers.export(exports, "Clipboard", ()=>(0, _clipboardDefault.default));
+parcelHelpers.export(exports, "Clipboard2CheckFill", ()=>(0, _clipboard2CheckFillDefault.default));
+parcelHelpers.export(exports, "Clipboard2Check", ()=>(0, _clipboard2CheckDefault.default));
+parcelHelpers.export(exports, "Clipboard2DataFill", ()=>(0, _clipboard2DataFillDefault.default));
+parcelHelpers.export(exports, "Clipboard2Data", ()=>(0, _clipboard2DataDefault.default));
+parcelHelpers.export(exports, "Clipboard2Fill", ()=>(0, _clipboard2FillDefault.default));
+parcelHelpers.export(exports, "Clipboard2HeartFill", ()=>(0, _clipboard2HeartFillDefault.default));
+parcelHelpers.export(exports, "Clipboard2Heart", ()=>(0, _clipboard2HeartDefault.default));
+parcelHelpers.export(exports, "Clipboard2MinusFill", ()=>(0, _clipboard2MinusFillDefault.default));
+parcelHelpers.export(exports, "Clipboard2Minus", ()=>(0, _clipboard2MinusDefault.default));
+parcelHelpers.export(exports, "Clipboard2PlusFill", ()=>(0, _clipboard2PlusFillDefault.default));
+parcelHelpers.export(exports, "Clipboard2Plus", ()=>(0, _clipboard2PlusDefault.default));
+parcelHelpers.export(exports, "Clipboard2PulseFill", ()=>(0, _clipboard2PulseFillDefault.default));
+parcelHelpers.export(exports, "Clipboard2Pulse", ()=>(0, _clipboard2PulseDefault.default));
+parcelHelpers.export(exports, "Clipboard2XFill", ()=>(0, _clipboard2XFillDefault.default));
+parcelHelpers.export(exports, "Clipboard2X", ()=>(0, _clipboard2XDefault.default));
+parcelHelpers.export(exports, "Clipboard2", ()=>(0, _clipboard2Default.default));
+parcelHelpers.export(exports, "ClockFill", ()=>(0, _clockFillDefault.default));
+parcelHelpers.export(exports, "ClockHistory", ()=>(0, _clockHistoryDefault.default));
+parcelHelpers.export(exports, "Clock", ()=>(0, _clockDefault.default));
+parcelHelpers.export(exports, "CloudArrowDownFill", ()=>(0, _cloudArrowDownFillDefault.default));
+parcelHelpers.export(exports, "CloudArrowDown", ()=>(0, _cloudArrowDownDefault.default));
+parcelHelpers.export(exports, "CloudArrowUpFill", ()=>(0, _cloudArrowUpFillDefault.default));
+parcelHelpers.export(exports, "CloudArrowUp", ()=>(0, _cloudArrowUpDefault.default));
+parcelHelpers.export(exports, "CloudCheckFill", ()=>(0, _cloudCheckFillDefault.default));
+parcelHelpers.export(exports, "CloudCheck", ()=>(0, _cloudCheckDefault.default));
+parcelHelpers.export(exports, "CloudDownloadFill", ()=>(0, _cloudDownloadFillDefault.default));
+parcelHelpers.export(exports, "CloudDownload", ()=>(0, _cloudDownloadDefault.default));
+parcelHelpers.export(exports, "CloudDrizzleFill", ()=>(0, _cloudDrizzleFillDefault.default));
+parcelHelpers.export(exports, "CloudDrizzle", ()=>(0, _cloudDrizzleDefault.default));
+parcelHelpers.export(exports, "CloudFill", ()=>(0, _cloudFillDefault.default));
+parcelHelpers.export(exports, "CloudFogFill", ()=>(0, _cloudFogFillDefault.default));
+parcelHelpers.export(exports, "CloudFog", ()=>(0, _cloudFogDefault.default));
+parcelHelpers.export(exports, "CloudFog2Fill", ()=>(0, _cloudFog2FillDefault.default));
+parcelHelpers.export(exports, "CloudFog2", ()=>(0, _cloudFog2Default.default));
+parcelHelpers.export(exports, "CloudHailFill", ()=>(0, _cloudHailFillDefault.default));
+parcelHelpers.export(exports, "CloudHail", ()=>(0, _cloudHailDefault.default));
+parcelHelpers.export(exports, "CloudHazeFill", ()=>(0, _cloudHazeFillDefault.default));
+parcelHelpers.export(exports, "CloudHaze", ()=>(0, _cloudHazeDefault.default));
+parcelHelpers.export(exports, "CloudHaze2Fill", ()=>(0, _cloudHaze2FillDefault.default));
+parcelHelpers.export(exports, "CloudHaze2", ()=>(0, _cloudHaze2Default.default));
+parcelHelpers.export(exports, "CloudLightningFill", ()=>(0, _cloudLightningFillDefault.default));
+parcelHelpers.export(exports, "CloudLightningRainFill", ()=>(0, _cloudLightningRainFillDefault.default));
+parcelHelpers.export(exports, "CloudLightningRain", ()=>(0, _cloudLightningRainDefault.default));
+parcelHelpers.export(exports, "CloudLightning", ()=>(0, _cloudLightningDefault.default));
+parcelHelpers.export(exports, "CloudMinusFill", ()=>(0, _cloudMinusFillDefault.default));
+parcelHelpers.export(exports, "CloudMinus", ()=>(0, _cloudMinusDefault.default));
+parcelHelpers.export(exports, "CloudMoonFill", ()=>(0, _cloudMoonFillDefault.default));
+parcelHelpers.export(exports, "CloudMoon", ()=>(0, _cloudMoonDefault.default));
+parcelHelpers.export(exports, "CloudPlusFill", ()=>(0, _cloudPlusFillDefault.default));
+parcelHelpers.export(exports, "CloudPlus", ()=>(0, _cloudPlusDefault.default));
+parcelHelpers.export(exports, "CloudRainFill", ()=>(0, _cloudRainFillDefault.default));
+parcelHelpers.export(exports, "CloudRainHeavyFill", ()=>(0, _cloudRainHeavyFillDefault.default));
+parcelHelpers.export(exports, "CloudRainHeavy", ()=>(0, _cloudRainHeavyDefault.default));
+parcelHelpers.export(exports, "CloudRain", ()=>(0, _cloudRainDefault.default));
+parcelHelpers.export(exports, "CloudSlashFill", ()=>(0, _cloudSlashFillDefault.default));
+parcelHelpers.export(exports, "CloudSlash", ()=>(0, _cloudSlashDefault.default));
+parcelHelpers.export(exports, "CloudSleetFill", ()=>(0, _cloudSleetFillDefault.default));
+parcelHelpers.export(exports, "CloudSleet", ()=>(0, _cloudSleetDefault.default));
+parcelHelpers.export(exports, "CloudSnowFill", ()=>(0, _cloudSnowFillDefault.default));
+parcelHelpers.export(exports, "CloudSnow", ()=>(0, _cloudSnowDefault.default));
+parcelHelpers.export(exports, "CloudSunFill", ()=>(0, _cloudSunFillDefault.default));
+parcelHelpers.export(exports, "CloudSun", ()=>(0, _cloudSunDefault.default));
+parcelHelpers.export(exports, "CloudUploadFill", ()=>(0, _cloudUploadFillDefault.default));
+parcelHelpers.export(exports, "CloudUpload", ()=>(0, _cloudUploadDefault.default));
+parcelHelpers.export(exports, "Cloud", ()=>(0, _cloudDefault.default));
+parcelHelpers.export(exports, "CloudsFill", ()=>(0, _cloudsFillDefault.default));
+parcelHelpers.export(exports, "Clouds", ()=>(0, _cloudsDefault.default));
+parcelHelpers.export(exports, "CloudyFill", ()=>(0, _cloudyFillDefault.default));
+parcelHelpers.export(exports, "Cloudy", ()=>(0, _cloudyDefault.default));
+parcelHelpers.export(exports, "CodeSlash", ()=>(0, _codeSlashDefault.default));
+parcelHelpers.export(exports, "CodeSquare", ()=>(0, _codeSquareDefault.default));
+parcelHelpers.export(exports, "Code", ()=>(0, _codeDefault.default));
+parcelHelpers.export(exports, "Coin", ()=>(0, _coinDefault.default));
+parcelHelpers.export(exports, "CollectionFill", ()=>(0, _collectionFillDefault.default));
+parcelHelpers.export(exports, "CollectionPlayFill", ()=>(0, _collectionPlayFillDefault.default));
+parcelHelpers.export(exports, "CollectionPlay", ()=>(0, _collectionPlayDefault.default));
+parcelHelpers.export(exports, "Collection", ()=>(0, _collectionDefault.default));
+parcelHelpers.export(exports, "ColumnsGap", ()=>(0, _columnsGapDefault.default));
+parcelHelpers.export(exports, "Columns", ()=>(0, _columnsDefault.default));
+parcelHelpers.export(exports, "Command", ()=>(0, _commandDefault.default));
+parcelHelpers.export(exports, "CompassFill", ()=>(0, _compassFillDefault.default));
+parcelHelpers.export(exports, "Compass", ()=>(0, _compassDefault.default));
+parcelHelpers.export(exports, "ConeStriped", ()=>(0, _coneStripedDefault.default));
+parcelHelpers.export(exports, "Cone", ()=>(0, _coneDefault.default));
+parcelHelpers.export(exports, "Controller", ()=>(0, _controllerDefault.default));
+parcelHelpers.export(exports, "CpuFill", ()=>(0, _cpuFillDefault.default));
+parcelHelpers.export(exports, "Cpu", ()=>(0, _cpuDefault.default));
+parcelHelpers.export(exports, "CreditCard2BackFill", ()=>(0, _creditCard2BackFillDefault.default));
+parcelHelpers.export(exports, "CreditCard2Back", ()=>(0, _creditCard2BackDefault.default));
+parcelHelpers.export(exports, "CreditCard2FrontFill", ()=>(0, _creditCard2FrontFillDefault.default));
+parcelHelpers.export(exports, "CreditCard2Front", ()=>(0, _creditCard2FrontDefault.default));
+parcelHelpers.export(exports, "CreditCardFill", ()=>(0, _creditCardFillDefault.default));
+parcelHelpers.export(exports, "CreditCard", ()=>(0, _creditCardDefault.default));
+parcelHelpers.export(exports, "Crop", ()=>(0, _cropDefault.default));
+parcelHelpers.export(exports, "CupFill", ()=>(0, _cupFillDefault.default));
+parcelHelpers.export(exports, "CupHotFill", ()=>(0, _cupHotFillDefault.default));
+parcelHelpers.export(exports, "CupHot", ()=>(0, _cupHotDefault.default));
+parcelHelpers.export(exports, "CupStraw", ()=>(0, _cupStrawDefault.default));
+parcelHelpers.export(exports, "Cup", ()=>(0, _cupDefault.default));
+parcelHelpers.export(exports, "CurrencyBitcoin", ()=>(0, _currencyBitcoinDefault.default));
+parcelHelpers.export(exports, "CurrencyDollar", ()=>(0, _currencyDollarDefault.default));
+parcelHelpers.export(exports, "CurrencyEuro", ()=>(0, _currencyEuroDefault.default));
+parcelHelpers.export(exports, "CurrencyExchange", ()=>(0, _currencyExchangeDefault.default));
+parcelHelpers.export(exports, "CurrencyPound", ()=>(0, _currencyPoundDefault.default));
+parcelHelpers.export(exports, "CurrencyRupee", ()=>(0, _currencyRupeeDefault.default));
+parcelHelpers.export(exports, "CurrencyYen", ()=>(0, _currencyYenDefault.default));
+parcelHelpers.export(exports, "CursorFill", ()=>(0, _cursorFillDefault.default));
+parcelHelpers.export(exports, "CursorText", ()=>(0, _cursorTextDefault.default));
+parcelHelpers.export(exports, "Cursor", ()=>(0, _cursorDefault.default));
+parcelHelpers.export(exports, "DashCircleDotted", ()=>(0, _dashCircleDottedDefault.default));
+parcelHelpers.export(exports, "DashCircleFill", ()=>(0, _dashCircleFillDefault.default));
+parcelHelpers.export(exports, "DashCircle", ()=>(0, _dashCircleDefault.default));
+parcelHelpers.export(exports, "DashLg", ()=>(0, _dashLgDefault.default));
+parcelHelpers.export(exports, "DashSquareDotted", ()=>(0, _dashSquareDottedDefault.default));
+parcelHelpers.export(exports, "DashSquareFill", ()=>(0, _dashSquareFillDefault.default));
+parcelHelpers.export(exports, "DashSquare", ()=>(0, _dashSquareDefault.default));
+parcelHelpers.export(exports, "Dash", ()=>(0, _dashDefault.default));
+parcelHelpers.export(exports, "DatabaseAdd", ()=>(0, _databaseAddDefault.default));
+parcelHelpers.export(exports, "DatabaseCheck", ()=>(0, _databaseCheckDefault.default));
+parcelHelpers.export(exports, "DatabaseDash", ()=>(0, _databaseDashDefault.default));
+parcelHelpers.export(exports, "DatabaseDown", ()=>(0, _databaseDownDefault.default));
+parcelHelpers.export(exports, "DatabaseExclamation", ()=>(0, _databaseExclamationDefault.default));
+parcelHelpers.export(exports, "DatabaseFillAdd", ()=>(0, _databaseFillAddDefault.default));
+parcelHelpers.export(exports, "DatabaseFillCheck", ()=>(0, _databaseFillCheckDefault.default));
+parcelHelpers.export(exports, "DatabaseFillDash", ()=>(0, _databaseFillDashDefault.default));
+parcelHelpers.export(exports, "DatabaseFillDown", ()=>(0, _databaseFillDownDefault.default));
+parcelHelpers.export(exports, "DatabaseFillExclamation", ()=>(0, _databaseFillExclamationDefault.default));
+parcelHelpers.export(exports, "DatabaseFillGear", ()=>(0, _databaseFillGearDefault.default));
+parcelHelpers.export(exports, "DatabaseFillLock", ()=>(0, _databaseFillLockDefault.default));
+parcelHelpers.export(exports, "DatabaseFillSlash", ()=>(0, _databaseFillSlashDefault.default));
+parcelHelpers.export(exports, "DatabaseFillUp", ()=>(0, _databaseFillUpDefault.default));
+parcelHelpers.export(exports, "DatabaseFillX", ()=>(0, _databaseFillXDefault.default));
+parcelHelpers.export(exports, "DatabaseFill", ()=>(0, _databaseFillDefault.default));
+parcelHelpers.export(exports, "DatabaseGear", ()=>(0, _databaseGearDefault.default));
+parcelHelpers.export(exports, "DatabaseLock", ()=>(0, _databaseLockDefault.default));
+parcelHelpers.export(exports, "DatabaseSlash", ()=>(0, _databaseSlashDefault.default));
+parcelHelpers.export(exports, "DatabaseUp", ()=>(0, _databaseUpDefault.default));
+parcelHelpers.export(exports, "DatabaseX", ()=>(0, _databaseXDefault.default));
+parcelHelpers.export(exports, "Database", ()=>(0, _databaseDefault.default));
+parcelHelpers.export(exports, "DeviceHddFill", ()=>(0, _deviceHddFillDefault.default));
+parcelHelpers.export(exports, "DeviceHdd", ()=>(0, _deviceHddDefault.default));
+parcelHelpers.export(exports, "DeviceSsdFill", ()=>(0, _deviceSsdFillDefault.default));
+parcelHelpers.export(exports, "DeviceSsd", ()=>(0, _deviceSsdDefault.default));
+parcelHelpers.export(exports, "Diagram2Fill", ()=>(0, _diagram2FillDefault.default));
+parcelHelpers.export(exports, "Diagram2", ()=>(0, _diagram2Default.default));
+parcelHelpers.export(exports, "Diagram3Fill", ()=>(0, _diagram3FillDefault.default));
+parcelHelpers.export(exports, "Diagram3", ()=>(0, _diagram3Default.default));
+parcelHelpers.export(exports, "DiamondFill", ()=>(0, _diamondFillDefault.default));
+parcelHelpers.export(exports, "DiamondHalf", ()=>(0, _diamondHalfDefault.default));
+parcelHelpers.export(exports, "Diamond", ()=>(0, _diamondDefault.default));
+parcelHelpers.export(exports, "Dice1Fill", ()=>(0, _dice1FillDefault.default));
+parcelHelpers.export(exports, "Dice1", ()=>(0, _dice1Default.default));
+parcelHelpers.export(exports, "Dice2Fill", ()=>(0, _dice2FillDefault.default));
+parcelHelpers.export(exports, "Dice2", ()=>(0, _dice2Default.default));
+parcelHelpers.export(exports, "Dice3Fill", ()=>(0, _dice3FillDefault.default));
+parcelHelpers.export(exports, "Dice3", ()=>(0, _dice3Default.default));
+parcelHelpers.export(exports, "Dice4Fill", ()=>(0, _dice4FillDefault.default));
+parcelHelpers.export(exports, "Dice4", ()=>(0, _dice4Default.default));
+parcelHelpers.export(exports, "Dice5Fill", ()=>(0, _dice5FillDefault.default));
+parcelHelpers.export(exports, "Dice5", ()=>(0, _dice5Default.default));
+parcelHelpers.export(exports, "Dice6Fill", ()=>(0, _dice6FillDefault.default));
+parcelHelpers.export(exports, "Dice6", ()=>(0, _dice6Default.default));
+parcelHelpers.export(exports, "DiscFill", ()=>(0, _discFillDefault.default));
+parcelHelpers.export(exports, "Disc", ()=>(0, _discDefault.default));
+parcelHelpers.export(exports, "Discord", ()=>(0, _discordDefault.default));
+parcelHelpers.export(exports, "DisplayFill", ()=>(0, _displayFillDefault.default));
+parcelHelpers.export(exports, "Display", ()=>(0, _displayDefault.default));
+parcelHelpers.export(exports, "DisplayportFill", ()=>(0, _displayportFillDefault.default));
+parcelHelpers.export(exports, "Displayport", ()=>(0, _displayportDefault.default));
+parcelHelpers.export(exports, "DistributeHorizontal", ()=>(0, _distributeHorizontalDefault.default));
+parcelHelpers.export(exports, "DistributeVertical", ()=>(0, _distributeVerticalDefault.default));
+parcelHelpers.export(exports, "DoorClosedFill", ()=>(0, _doorClosedFillDefault.default));
+parcelHelpers.export(exports, "DoorClosed", ()=>(0, _doorClosedDefault.default));
+parcelHelpers.export(exports, "DoorOpenFill", ()=>(0, _doorOpenFillDefault.default));
+parcelHelpers.export(exports, "DoorOpen", ()=>(0, _doorOpenDefault.default));
+parcelHelpers.export(exports, "Dot", ()=>(0, _dotDefault.default));
+parcelHelpers.export(exports, "Download", ()=>(0, _downloadDefault.default));
+parcelHelpers.export(exports, "DpadFill", ()=>(0, _dpadFillDefault.default));
+parcelHelpers.export(exports, "Dpad", ()=>(0, _dpadDefault.default));
+parcelHelpers.export(exports, "Dribbble", ()=>(0, _dribbbleDefault.default));
+parcelHelpers.export(exports, "Dropbox", ()=>(0, _dropboxDefault.default));
+parcelHelpers.export(exports, "DropletFill", ()=>(0, _dropletFillDefault.default));
+parcelHelpers.export(exports, "DropletHalf", ()=>(0, _dropletHalfDefault.default));
+parcelHelpers.export(exports, "Droplet", ()=>(0, _dropletDefault.default));
+parcelHelpers.export(exports, "EarFill", ()=>(0, _earFillDefault.default));
+parcelHelpers.export(exports, "Ear", ()=>(0, _earDefault.default));
+parcelHelpers.export(exports, "Earbuds", ()=>(0, _earbudsDefault.default));
+parcelHelpers.export(exports, "EaselFill", ()=>(0, _easelFillDefault.default));
+parcelHelpers.export(exports, "Easel", ()=>(0, _easelDefault.default));
+parcelHelpers.export(exports, "Easel2Fill", ()=>(0, _easel2FillDefault.default));
+parcelHelpers.export(exports, "Easel2", ()=>(0, _easel2Default.default));
+parcelHelpers.export(exports, "Easel3Fill", ()=>(0, _easel3FillDefault.default));
+parcelHelpers.export(exports, "Easel3", ()=>(0, _easel3Default.default));
+parcelHelpers.export(exports, "EggFill", ()=>(0, _eggFillDefault.default));
+parcelHelpers.export(exports, "EggFried", ()=>(0, _eggFriedDefault.default));
+parcelHelpers.export(exports, "Egg", ()=>(0, _eggDefault.default));
+parcelHelpers.export(exports, "EjectFill", ()=>(0, _ejectFillDefault.default));
+parcelHelpers.export(exports, "Eject", ()=>(0, _ejectDefault.default));
+parcelHelpers.export(exports, "EmojiAngryFill", ()=>(0, _emojiAngryFillDefault.default));
+parcelHelpers.export(exports, "EmojiAngry", ()=>(0, _emojiAngryDefault.default));
+parcelHelpers.export(exports, "EmojiDizzyFill", ()=>(0, _emojiDizzyFillDefault.default));
+parcelHelpers.export(exports, "EmojiDizzy", ()=>(0, _emojiDizzyDefault.default));
+parcelHelpers.export(exports, "EmojiExpressionlessFill", ()=>(0, _emojiExpressionlessFillDefault.default));
+parcelHelpers.export(exports, "EmojiExpressionless", ()=>(0, _emojiExpressionlessDefault.default));
+parcelHelpers.export(exports, "EmojiFrownFill", ()=>(0, _emojiFrownFillDefault.default));
+parcelHelpers.export(exports, "EmojiFrown", ()=>(0, _emojiFrownDefault.default));
+parcelHelpers.export(exports, "EmojiHeartEyesFill", ()=>(0, _emojiHeartEyesFillDefault.default));
+parcelHelpers.export(exports, "EmojiHeartEyes", ()=>(0, _emojiHeartEyesDefault.default));
+parcelHelpers.export(exports, "EmojiKissFill", ()=>(0, _emojiKissFillDefault.default));
+parcelHelpers.export(exports, "EmojiKiss", ()=>(0, _emojiKissDefault.default));
+parcelHelpers.export(exports, "EmojiLaughingFill", ()=>(0, _emojiLaughingFillDefault.default));
+parcelHelpers.export(exports, "EmojiLaughing", ()=>(0, _emojiLaughingDefault.default));
+parcelHelpers.export(exports, "EmojiNeutralFill", ()=>(0, _emojiNeutralFillDefault.default));
+parcelHelpers.export(exports, "EmojiNeutral", ()=>(0, _emojiNeutralDefault.default));
+parcelHelpers.export(exports, "EmojiSmileFill", ()=>(0, _emojiSmileFillDefault.default));
+parcelHelpers.export(exports, "EmojiSmileUpsideDownFill", ()=>(0, _emojiSmileUpsideDownFillDefault.default));
+parcelHelpers.export(exports, "EmojiSmileUpsideDown", ()=>(0, _emojiSmileUpsideDownDefault.default));
+parcelHelpers.export(exports, "EmojiSmile", ()=>(0, _emojiSmileDefault.default));
+parcelHelpers.export(exports, "EmojiSunglassesFill", ()=>(0, _emojiSunglassesFillDefault.default));
+parcelHelpers.export(exports, "EmojiSunglasses", ()=>(0, _emojiSunglassesDefault.default));
+parcelHelpers.export(exports, "EmojiWinkFill", ()=>(0, _emojiWinkFillDefault.default));
+parcelHelpers.export(exports, "EmojiWink", ()=>(0, _emojiWinkDefault.default));
+parcelHelpers.export(exports, "EnvelopeAtFill", ()=>(0, _envelopeAtFillDefault.default));
+parcelHelpers.export(exports, "EnvelopeAt", ()=>(0, _envelopeAtDefault.default));
+parcelHelpers.export(exports, "EnvelopeCheckFill", ()=>(0, _envelopeCheckFillDefault.default));
+parcelHelpers.export(exports, "EnvelopeCheck", ()=>(0, _envelopeCheckDefault.default));
+parcelHelpers.export(exports, "EnvelopeDashFill", ()=>(0, _envelopeDashFillDefault.default));
+parcelHelpers.export(exports, "EnvelopeDash", ()=>(0, _envelopeDashDefault.default));
+parcelHelpers.export(exports, "EnvelopeExclamationFill", ()=>(0, _envelopeExclamationFillDefault.default));
+parcelHelpers.export(exports, "EnvelopeExclamation", ()=>(0, _envelopeExclamationDefault.default));
+parcelHelpers.export(exports, "EnvelopeFill", ()=>(0, _envelopeFillDefault.default));
+parcelHelpers.export(exports, "EnvelopeHeartFill", ()=>(0, _envelopeHeartFillDefault.default));
+parcelHelpers.export(exports, "EnvelopeHeart", ()=>(0, _envelopeHeartDefault.default));
+parcelHelpers.export(exports, "EnvelopeOpenFill", ()=>(0, _envelopeOpenFillDefault.default));
+parcelHelpers.export(exports, "EnvelopeOpenHeartFill", ()=>(0, _envelopeOpenHeartFillDefault.default));
+parcelHelpers.export(exports, "EnvelopeOpenHeart", ()=>(0, _envelopeOpenHeartDefault.default));
+parcelHelpers.export(exports, "EnvelopeOpen", ()=>(0, _envelopeOpenDefault.default));
+parcelHelpers.export(exports, "EnvelopePaperFill", ()=>(0, _envelopePaperFillDefault.default));
+parcelHelpers.export(exports, "EnvelopePaperHeartFill", ()=>(0, _envelopePaperHeartFillDefault.default));
+parcelHelpers.export(exports, "EnvelopePaperHeart", ()=>(0, _envelopePaperHeartDefault.default));
+parcelHelpers.export(exports, "EnvelopePaper", ()=>(0, _envelopePaperDefault.default));
+parcelHelpers.export(exports, "EnvelopePlusFill", ()=>(0, _envelopePlusFillDefault.default));
+parcelHelpers.export(exports, "EnvelopePlus", ()=>(0, _envelopePlusDefault.default));
+parcelHelpers.export(exports, "EnvelopeSlashFill", ()=>(0, _envelopeSlashFillDefault.default));
+parcelHelpers.export(exports, "EnvelopeSlash", ()=>(0, _envelopeSlashDefault.default));
+parcelHelpers.export(exports, "EnvelopeXFill", ()=>(0, _envelopeXFillDefault.default));
+parcelHelpers.export(exports, "EnvelopeX", ()=>(0, _envelopeXDefault.default));
+parcelHelpers.export(exports, "Envelope", ()=>(0, _envelopeDefault.default));
+parcelHelpers.export(exports, "EraserFill", ()=>(0, _eraserFillDefault.default));
+parcelHelpers.export(exports, "Eraser", ()=>(0, _eraserDefault.default));
+parcelHelpers.export(exports, "Escape", ()=>(0, _escapeDefault.default));
+parcelHelpers.export(exports, "Ethernet", ()=>(0, _ethernetDefault.default));
+parcelHelpers.export(exports, "EvFrontFill", ()=>(0, _evFrontFillDefault.default));
+parcelHelpers.export(exports, "EvFront", ()=>(0, _evFrontDefault.default));
+parcelHelpers.export(exports, "EvStationFill", ()=>(0, _evStationFillDefault.default));
+parcelHelpers.export(exports, "EvStation", ()=>(0, _evStationDefault.default));
+parcelHelpers.export(exports, "ExclamationCircleFill", ()=>(0, _exclamationCircleFillDefault.default));
+parcelHelpers.export(exports, "ExclamationCircle", ()=>(0, _exclamationCircleDefault.default));
+parcelHelpers.export(exports, "ExclamationDiamondFill", ()=>(0, _exclamationDiamondFillDefault.default));
+parcelHelpers.export(exports, "ExclamationDiamond", ()=>(0, _exclamationDiamondDefault.default));
+parcelHelpers.export(exports, "ExclamationLg", ()=>(0, _exclamationLgDefault.default));
+parcelHelpers.export(exports, "ExclamationOctagonFill", ()=>(0, _exclamationOctagonFillDefault.default));
+parcelHelpers.export(exports, "ExclamationOctagon", ()=>(0, _exclamationOctagonDefault.default));
+parcelHelpers.export(exports, "ExclamationSquareFill", ()=>(0, _exclamationSquareFillDefault.default));
+parcelHelpers.export(exports, "ExclamationSquare", ()=>(0, _exclamationSquareDefault.default));
+parcelHelpers.export(exports, "ExclamationTriangleFill", ()=>(0, _exclamationTriangleFillDefault.default));
+parcelHelpers.export(exports, "ExclamationTriangle", ()=>(0, _exclamationTriangleDefault.default));
+parcelHelpers.export(exports, "Exclamation", ()=>(0, _exclamationDefault.default));
+parcelHelpers.export(exports, "Exclude", ()=>(0, _excludeDefault.default));
+parcelHelpers.export(exports, "ExplicitFill", ()=>(0, _explicitFillDefault.default));
+parcelHelpers.export(exports, "Explicit", ()=>(0, _explicitDefault.default));
+parcelHelpers.export(exports, "EyeFill", ()=>(0, _eyeFillDefault.default));
+parcelHelpers.export(exports, "EyeSlashFill", ()=>(0, _eyeSlashFillDefault.default));
+parcelHelpers.export(exports, "EyeSlash", ()=>(0, _eyeSlashDefault.default));
+parcelHelpers.export(exports, "Eye", ()=>(0, _eyeDefault.default));
+parcelHelpers.export(exports, "Eyedropper", ()=>(0, _eyedropperDefault.default));
+parcelHelpers.export(exports, "Eyeglasses", ()=>(0, _eyeglassesDefault.default));
+parcelHelpers.export(exports, "Facebook", ()=>(0, _facebookDefault.default));
+parcelHelpers.export(exports, "Fan", ()=>(0, _fanDefault.default));
+parcelHelpers.export(exports, "FastForwardBtnFill", ()=>(0, _fastForwardBtnFillDefault.default));
+parcelHelpers.export(exports, "FastForwardBtn", ()=>(0, _fastForwardBtnDefault.default));
+parcelHelpers.export(exports, "FastForwardCircleFill", ()=>(0, _fastForwardCircleFillDefault.default));
+parcelHelpers.export(exports, "FastForwardCircle", ()=>(0, _fastForwardCircleDefault.default));
+parcelHelpers.export(exports, "FastForwardFill", ()=>(0, _fastForwardFillDefault.default));
+parcelHelpers.export(exports, "FastForward", ()=>(0, _fastForwardDefault.default));
+parcelHelpers.export(exports, "FileArrowDownFill", ()=>(0, _fileArrowDownFillDefault.default));
+parcelHelpers.export(exports, "FileArrowDown", ()=>(0, _fileArrowDownDefault.default));
+parcelHelpers.export(exports, "FileArrowUpFill", ()=>(0, _fileArrowUpFillDefault.default));
+parcelHelpers.export(exports, "FileArrowUp", ()=>(0, _fileArrowUpDefault.default));
+parcelHelpers.export(exports, "FileBarGraphFill", ()=>(0, _fileBarGraphFillDefault.default));
+parcelHelpers.export(exports, "FileBarGraph", ()=>(0, _fileBarGraphDefault.default));
+parcelHelpers.export(exports, "FileBinaryFill", ()=>(0, _fileBinaryFillDefault.default));
+parcelHelpers.export(exports, "FileBinary", ()=>(0, _fileBinaryDefault.default));
+parcelHelpers.export(exports, "FileBreakFill", ()=>(0, _fileBreakFillDefault.default));
+parcelHelpers.export(exports, "FileBreak", ()=>(0, _fileBreakDefault.default));
+parcelHelpers.export(exports, "FileCheckFill", ()=>(0, _fileCheckFillDefault.default));
+parcelHelpers.export(exports, "FileCheck", ()=>(0, _fileCheckDefault.default));
+parcelHelpers.export(exports, "FileCodeFill", ()=>(0, _fileCodeFillDefault.default));
+parcelHelpers.export(exports, "FileCode", ()=>(0, _fileCodeDefault.default));
+parcelHelpers.export(exports, "FileDiffFill", ()=>(0, _fileDiffFillDefault.default));
+parcelHelpers.export(exports, "FileDiff", ()=>(0, _fileDiffDefault.default));
+parcelHelpers.export(exports, "FileEarmarkArrowDownFill", ()=>(0, _fileEarmarkArrowDownFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkArrowDown", ()=>(0, _fileEarmarkArrowDownDefault.default));
+parcelHelpers.export(exports, "FileEarmarkArrowUpFill", ()=>(0, _fileEarmarkArrowUpFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkArrowUp", ()=>(0, _fileEarmarkArrowUpDefault.default));
+parcelHelpers.export(exports, "FileEarmarkBarGraphFill", ()=>(0, _fileEarmarkBarGraphFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkBarGraph", ()=>(0, _fileEarmarkBarGraphDefault.default));
+parcelHelpers.export(exports, "FileEarmarkBinaryFill", ()=>(0, _fileEarmarkBinaryFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkBinary", ()=>(0, _fileEarmarkBinaryDefault.default));
+parcelHelpers.export(exports, "FileEarmarkBreakFill", ()=>(0, _fileEarmarkBreakFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkBreak", ()=>(0, _fileEarmarkBreakDefault.default));
+parcelHelpers.export(exports, "FileEarmarkCheckFill", ()=>(0, _fileEarmarkCheckFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkCheck", ()=>(0, _fileEarmarkCheckDefault.default));
+parcelHelpers.export(exports, "FileEarmarkCodeFill", ()=>(0, _fileEarmarkCodeFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkCode", ()=>(0, _fileEarmarkCodeDefault.default));
+parcelHelpers.export(exports, "FileEarmarkDiffFill", ()=>(0, _fileEarmarkDiffFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkDiff", ()=>(0, _fileEarmarkDiffDefault.default));
+parcelHelpers.export(exports, "FileEarmarkEaselFill", ()=>(0, _fileEarmarkEaselFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkEasel", ()=>(0, _fileEarmarkEaselDefault.default));
+parcelHelpers.export(exports, "FileEarmarkExcelFill", ()=>(0, _fileEarmarkExcelFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkExcel", ()=>(0, _fileEarmarkExcelDefault.default));
+parcelHelpers.export(exports, "FileEarmarkFill", ()=>(0, _fileEarmarkFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkFontFill", ()=>(0, _fileEarmarkFontFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkFont", ()=>(0, _fileEarmarkFontDefault.default));
+parcelHelpers.export(exports, "FileEarmarkImageFill", ()=>(0, _fileEarmarkImageFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkImage", ()=>(0, _fileEarmarkImageDefault.default));
+parcelHelpers.export(exports, "FileEarmarkLockFill", ()=>(0, _fileEarmarkLockFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkLock", ()=>(0, _fileEarmarkLockDefault.default));
+parcelHelpers.export(exports, "FileEarmarkLock2Fill", ()=>(0, _fileEarmarkLock2FillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkLock2", ()=>(0, _fileEarmarkLock2Default.default));
+parcelHelpers.export(exports, "FileEarmarkMedicalFill", ()=>(0, _fileEarmarkMedicalFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkMedical", ()=>(0, _fileEarmarkMedicalDefault.default));
+parcelHelpers.export(exports, "FileEarmarkMinusFill", ()=>(0, _fileEarmarkMinusFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkMinus", ()=>(0, _fileEarmarkMinusDefault.default));
+parcelHelpers.export(exports, "FileEarmarkMusicFill", ()=>(0, _fileEarmarkMusicFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkMusic", ()=>(0, _fileEarmarkMusicDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPdfFill", ()=>(0, _fileEarmarkPdfFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPdf", ()=>(0, _fileEarmarkPdfDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPersonFill", ()=>(0, _fileEarmarkPersonFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPerson", ()=>(0, _fileEarmarkPersonDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPlayFill", ()=>(0, _fileEarmarkPlayFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPlay", ()=>(0, _fileEarmarkPlayDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPlusFill", ()=>(0, _fileEarmarkPlusFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPlus", ()=>(0, _fileEarmarkPlusDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPostFill", ()=>(0, _fileEarmarkPostFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPost", ()=>(0, _fileEarmarkPostDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPptFill", ()=>(0, _fileEarmarkPptFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkPpt", ()=>(0, _fileEarmarkPptDefault.default));
+parcelHelpers.export(exports, "FileEarmarkRichtextFill", ()=>(0, _fileEarmarkRichtextFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkRichtext", ()=>(0, _fileEarmarkRichtextDefault.default));
+parcelHelpers.export(exports, "FileEarmarkRuledFill", ()=>(0, _fileEarmarkRuledFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkRuled", ()=>(0, _fileEarmarkRuledDefault.default));
+parcelHelpers.export(exports, "FileEarmarkSlidesFill", ()=>(0, _fileEarmarkSlidesFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkSlides", ()=>(0, _fileEarmarkSlidesDefault.default));
+parcelHelpers.export(exports, "FileEarmarkSpreadsheetFill", ()=>(0, _fileEarmarkSpreadsheetFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkSpreadsheet", ()=>(0, _fileEarmarkSpreadsheetDefault.default));
+parcelHelpers.export(exports, "FileEarmarkTextFill", ()=>(0, _fileEarmarkTextFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkText", ()=>(0, _fileEarmarkTextDefault.default));
+parcelHelpers.export(exports, "FileEarmarkWordFill", ()=>(0, _fileEarmarkWordFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkWord", ()=>(0, _fileEarmarkWordDefault.default));
+parcelHelpers.export(exports, "FileEarmarkXFill", ()=>(0, _fileEarmarkXFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkX", ()=>(0, _fileEarmarkXDefault.default));
+parcelHelpers.export(exports, "FileEarmarkZipFill", ()=>(0, _fileEarmarkZipFillDefault.default));
+parcelHelpers.export(exports, "FileEarmarkZip", ()=>(0, _fileEarmarkZipDefault.default));
+parcelHelpers.export(exports, "FileEarmark", ()=>(0, _fileEarmarkDefault.default));
+parcelHelpers.export(exports, "FileEaselFill", ()=>(0, _fileEaselFillDefault.default));
+parcelHelpers.export(exports, "FileEasel", ()=>(0, _fileEaselDefault.default));
+parcelHelpers.export(exports, "FileExcelFill", ()=>(0, _fileExcelFillDefault.default));
+parcelHelpers.export(exports, "FileExcel", ()=>(0, _fileExcelDefault.default));
+parcelHelpers.export(exports, "FileFill", ()=>(0, _fileFillDefault.default));
+parcelHelpers.export(exports, "FileFontFill", ()=>(0, _fileFontFillDefault.default));
+parcelHelpers.export(exports, "FileFont", ()=>(0, _fileFontDefault.default));
+parcelHelpers.export(exports, "FileImageFill", ()=>(0, _fileImageFillDefault.default));
+parcelHelpers.export(exports, "FileImage", ()=>(0, _fileImageDefault.default));
+parcelHelpers.export(exports, "FileLockFill", ()=>(0, _fileLockFillDefault.default));
+parcelHelpers.export(exports, "FileLock", ()=>(0, _fileLockDefault.default));
+parcelHelpers.export(exports, "FileLock2Fill", ()=>(0, _fileLock2FillDefault.default));
+parcelHelpers.export(exports, "FileLock2", ()=>(0, _fileLock2Default.default));
+parcelHelpers.export(exports, "FileMedicalFill", ()=>(0, _fileMedicalFillDefault.default));
+parcelHelpers.export(exports, "FileMedical", ()=>(0, _fileMedicalDefault.default));
+parcelHelpers.export(exports, "FileMinusFill", ()=>(0, _fileMinusFillDefault.default));
+parcelHelpers.export(exports, "FileMinus", ()=>(0, _fileMinusDefault.default));
+parcelHelpers.export(exports, "FileMusicFill", ()=>(0, _fileMusicFillDefault.default));
+parcelHelpers.export(exports, "FileMusic", ()=>(0, _fileMusicDefault.default));
+parcelHelpers.export(exports, "FilePdfFill", ()=>(0, _filePdfFillDefault.default));
+parcelHelpers.export(exports, "FilePdf", ()=>(0, _filePdfDefault.default));
+parcelHelpers.export(exports, "FilePersonFill", ()=>(0, _filePersonFillDefault.default));
+parcelHelpers.export(exports, "FilePerson", ()=>(0, _filePersonDefault.default));
+parcelHelpers.export(exports, "FilePlayFill", ()=>(0, _filePlayFillDefault.default));
+parcelHelpers.export(exports, "FilePlay", ()=>(0, _filePlayDefault.default));
+parcelHelpers.export(exports, "FilePlusFill", ()=>(0, _filePlusFillDefault.default));
+parcelHelpers.export(exports, "FilePlus", ()=>(0, _filePlusDefault.default));
+parcelHelpers.export(exports, "FilePostFill", ()=>(0, _filePostFillDefault.default));
+parcelHelpers.export(exports, "FilePost", ()=>(0, _filePostDefault.default));
+parcelHelpers.export(exports, "FilePptFill", ()=>(0, _filePptFillDefault.default));
+parcelHelpers.export(exports, "FilePpt", ()=>(0, _filePptDefault.default));
+parcelHelpers.export(exports, "FileRichtextFill", ()=>(0, _fileRichtextFillDefault.default));
+parcelHelpers.export(exports, "FileRichtext", ()=>(0, _fileRichtextDefault.default));
+parcelHelpers.export(exports, "FileRuledFill", ()=>(0, _fileRuledFillDefault.default));
+parcelHelpers.export(exports, "FileRuled", ()=>(0, _fileRuledDefault.default));
+parcelHelpers.export(exports, "FileSlidesFill", ()=>(0, _fileSlidesFillDefault.default));
+parcelHelpers.export(exports, "FileSlides", ()=>(0, _fileSlidesDefault.default));
+parcelHelpers.export(exports, "FileSpreadsheetFill", ()=>(0, _fileSpreadsheetFillDefault.default));
+parcelHelpers.export(exports, "FileSpreadsheet", ()=>(0, _fileSpreadsheetDefault.default));
+parcelHelpers.export(exports, "FileTextFill", ()=>(0, _fileTextFillDefault.default));
+parcelHelpers.export(exports, "FileText", ()=>(0, _fileTextDefault.default));
+parcelHelpers.export(exports, "FileWordFill", ()=>(0, _fileWordFillDefault.default));
+parcelHelpers.export(exports, "FileWord", ()=>(0, _fileWordDefault.default));
+parcelHelpers.export(exports, "FileXFill", ()=>(0, _fileXFillDefault.default));
+parcelHelpers.export(exports, "FileX", ()=>(0, _fileXDefault.default));
+parcelHelpers.export(exports, "FileZipFill", ()=>(0, _fileZipFillDefault.default));
+parcelHelpers.export(exports, "FileZip", ()=>(0, _fileZipDefault.default));
+parcelHelpers.export(exports, "File", ()=>(0, _fileDefault.default));
+parcelHelpers.export(exports, "FilesAlt", ()=>(0, _filesAltDefault.default));
+parcelHelpers.export(exports, "Files", ()=>(0, _filesDefault.default));
+parcelHelpers.export(exports, "FiletypeAac", ()=>(0, _filetypeAacDefault.default));
+parcelHelpers.export(exports, "FiletypeAi", ()=>(0, _filetypeAiDefault.default));
+parcelHelpers.export(exports, "FiletypeBmp", ()=>(0, _filetypeBmpDefault.default));
+parcelHelpers.export(exports, "FiletypeCs", ()=>(0, _filetypeCsDefault.default));
+parcelHelpers.export(exports, "FiletypeCss", ()=>(0, _filetypeCssDefault.default));
+parcelHelpers.export(exports, "FiletypeCsv", ()=>(0, _filetypeCsvDefault.default));
+parcelHelpers.export(exports, "FiletypeDoc", ()=>(0, _filetypeDocDefault.default));
+parcelHelpers.export(exports, "FiletypeDocx", ()=>(0, _filetypeDocxDefault.default));
+parcelHelpers.export(exports, "FiletypeExe", ()=>(0, _filetypeExeDefault.default));
+parcelHelpers.export(exports, "FiletypeGif", ()=>(0, _filetypeGifDefault.default));
+parcelHelpers.export(exports, "FiletypeHeic", ()=>(0, _filetypeHeicDefault.default));
+parcelHelpers.export(exports, "FiletypeHtml", ()=>(0, _filetypeHtmlDefault.default));
+parcelHelpers.export(exports, "FiletypeJava", ()=>(0, _filetypeJavaDefault.default));
+parcelHelpers.export(exports, "FiletypeJpg", ()=>(0, _filetypeJpgDefault.default));
+parcelHelpers.export(exports, "FiletypeJs", ()=>(0, _filetypeJsDefault.default));
+parcelHelpers.export(exports, "FiletypeJson", ()=>(0, _filetypeJsonDefault.default));
+parcelHelpers.export(exports, "FiletypeJsx", ()=>(0, _filetypeJsxDefault.default));
+parcelHelpers.export(exports, "FiletypeKey", ()=>(0, _filetypeKeyDefault.default));
+parcelHelpers.export(exports, "FiletypeM4p", ()=>(0, _filetypeM4PDefault.default));
+parcelHelpers.export(exports, "FiletypeMd", ()=>(0, _filetypeMdDefault.default));
+parcelHelpers.export(exports, "FiletypeMdx", ()=>(0, _filetypeMdxDefault.default));
+parcelHelpers.export(exports, "FiletypeMov", ()=>(0, _filetypeMovDefault.default));
+parcelHelpers.export(exports, "FiletypeMp3", ()=>(0, _filetypeMp3Default.default));
+parcelHelpers.export(exports, "FiletypeMp4", ()=>(0, _filetypeMp4Default.default));
+parcelHelpers.export(exports, "FiletypeOtf", ()=>(0, _filetypeOtfDefault.default));
+parcelHelpers.export(exports, "FiletypePdf", ()=>(0, _filetypePdfDefault.default));
+parcelHelpers.export(exports, "FiletypePhp", ()=>(0, _filetypePhpDefault.default));
+parcelHelpers.export(exports, "FiletypePng", ()=>(0, _filetypePngDefault.default));
+parcelHelpers.export(exports, "FiletypePpt", ()=>(0, _filetypePptDefault.default));
+parcelHelpers.export(exports, "FiletypePptx", ()=>(0, _filetypePptxDefault.default));
+parcelHelpers.export(exports, "FiletypePsd", ()=>(0, _filetypePsdDefault.default));
+parcelHelpers.export(exports, "FiletypePy", ()=>(0, _filetypePyDefault.default));
+parcelHelpers.export(exports, "FiletypeRaw", ()=>(0, _filetypeRawDefault.default));
+parcelHelpers.export(exports, "FiletypeRb", ()=>(0, _filetypeRbDefault.default));
+parcelHelpers.export(exports, "FiletypeSass", ()=>(0, _filetypeSassDefault.default));
+parcelHelpers.export(exports, "FiletypeScss", ()=>(0, _filetypeScssDefault.default));
+parcelHelpers.export(exports, "FiletypeSh", ()=>(0, _filetypeShDefault.default));
+parcelHelpers.export(exports, "FiletypeSql", ()=>(0, _filetypeSqlDefault.default));
+parcelHelpers.export(exports, "FiletypeSvg", ()=>(0, _filetypeSvgDefault.default));
+parcelHelpers.export(exports, "FiletypeTiff", ()=>(0, _filetypeTiffDefault.default));
+parcelHelpers.export(exports, "FiletypeTsx", ()=>(0, _filetypeTsxDefault.default));
+parcelHelpers.export(exports, "FiletypeTtf", ()=>(0, _filetypeTtfDefault.default));
+parcelHelpers.export(exports, "FiletypeTxt", ()=>(0, _filetypeTxtDefault.default));
+parcelHelpers.export(exports, "FiletypeWav", ()=>(0, _filetypeWavDefault.default));
+parcelHelpers.export(exports, "FiletypeWoff", ()=>(0, _filetypeWoffDefault.default));
+parcelHelpers.export(exports, "FiletypeXls", ()=>(0, _filetypeXlsDefault.default));
+parcelHelpers.export(exports, "FiletypeXlsx", ()=>(0, _filetypeXlsxDefault.default));
+parcelHelpers.export(exports, "FiletypeXml", ()=>(0, _filetypeXmlDefault.default));
+parcelHelpers.export(exports, "FiletypeYml", ()=>(0, _filetypeYmlDefault.default));
+parcelHelpers.export(exports, "Film", ()=>(0, _filmDefault.default));
+parcelHelpers.export(exports, "FilterCircleFill", ()=>(0, _filterCircleFillDefault.default));
+parcelHelpers.export(exports, "FilterCircle", ()=>(0, _filterCircleDefault.default));
+parcelHelpers.export(exports, "FilterLeft", ()=>(0, _filterLeftDefault.default));
+parcelHelpers.export(exports, "FilterRight", ()=>(0, _filterRightDefault.default));
+parcelHelpers.export(exports, "FilterSquareFill", ()=>(0, _filterSquareFillDefault.default));
+parcelHelpers.export(exports, "FilterSquare", ()=>(0, _filterSquareDefault.default));
+parcelHelpers.export(exports, "Filter", ()=>(0, _filterDefault.default));
+parcelHelpers.export(exports, "Fingerprint", ()=>(0, _fingerprintDefault.default));
+parcelHelpers.export(exports, "Fire", ()=>(0, _fireDefault.default));
+parcelHelpers.export(exports, "FlagFill", ()=>(0, _flagFillDefault.default));
+parcelHelpers.export(exports, "Flag", ()=>(0, _flagDefault.default));
+parcelHelpers.export(exports, "Flower1", ()=>(0, _flower1Default.default));
+parcelHelpers.export(exports, "Flower2", ()=>(0, _flower2Default.default));
+parcelHelpers.export(exports, "Flower3", ()=>(0, _flower3Default.default));
+parcelHelpers.export(exports, "FolderCheck", ()=>(0, _folderCheckDefault.default));
+parcelHelpers.export(exports, "FolderFill", ()=>(0, _folderFillDefault.default));
+parcelHelpers.export(exports, "FolderMinus", ()=>(0, _folderMinusDefault.default));
+parcelHelpers.export(exports, "FolderPlus", ()=>(0, _folderPlusDefault.default));
+parcelHelpers.export(exports, "FolderSymlinkFill", ()=>(0, _folderSymlinkFillDefault.default));
+parcelHelpers.export(exports, "FolderSymlink", ()=>(0, _folderSymlinkDefault.default));
+parcelHelpers.export(exports, "FolderX", ()=>(0, _folderXDefault.default));
+parcelHelpers.export(exports, "Folder", ()=>(0, _folderDefault.default));
+parcelHelpers.export(exports, "Folder2Open", ()=>(0, _folder2OpenDefault.default));
+parcelHelpers.export(exports, "Folder2", ()=>(0, _folder2Default.default));
+parcelHelpers.export(exports, "Fonts", ()=>(0, _fontsDefault.default));
+parcelHelpers.export(exports, "ForwardFill", ()=>(0, _forwardFillDefault.default));
+parcelHelpers.export(exports, "Forward", ()=>(0, _forwardDefault.default));
+parcelHelpers.export(exports, "Front", ()=>(0, _frontDefault.default));
+parcelHelpers.export(exports, "FuelPumpDieselFill", ()=>(0, _fuelPumpDieselFillDefault.default));
+parcelHelpers.export(exports, "FuelPumpDiesel", ()=>(0, _fuelPumpDieselDefault.default));
+parcelHelpers.export(exports, "FuelPumpFill", ()=>(0, _fuelPumpFillDefault.default));
+parcelHelpers.export(exports, "FuelPump", ()=>(0, _fuelPumpDefault.default));
+parcelHelpers.export(exports, "FullscreenExit", ()=>(0, _fullscreenExitDefault.default));
+parcelHelpers.export(exports, "Fullscreen", ()=>(0, _fullscreenDefault.default));
+parcelHelpers.export(exports, "FunnelFill", ()=>(0, _funnelFillDefault.default));
+parcelHelpers.export(exports, "Funnel", ()=>(0, _funnelDefault.default));
+parcelHelpers.export(exports, "GearFill", ()=>(0, _gearFillDefault.default));
+parcelHelpers.export(exports, "GearWideConnected", ()=>(0, _gearWideConnectedDefault.default));
+parcelHelpers.export(exports, "GearWide", ()=>(0, _gearWideDefault.default));
+parcelHelpers.export(exports, "Gear", ()=>(0, _gearDefault.default));
+parcelHelpers.export(exports, "Gem", ()=>(0, _gemDefault.default));
+parcelHelpers.export(exports, "GenderAmbiguous", ()=>(0, _genderAmbiguousDefault.default));
+parcelHelpers.export(exports, "GenderFemale", ()=>(0, _genderFemaleDefault.default));
+parcelHelpers.export(exports, "GenderMale", ()=>(0, _genderMaleDefault.default));
+parcelHelpers.export(exports, "GenderTrans", ()=>(0, _genderTransDefault.default));
+parcelHelpers.export(exports, "GeoAltFill", ()=>(0, _geoAltFillDefault.default));
+parcelHelpers.export(exports, "GeoAlt", ()=>(0, _geoAltDefault.default));
+parcelHelpers.export(exports, "GeoFill", ()=>(0, _geoFillDefault.default));
+parcelHelpers.export(exports, "Geo", ()=>(0, _geoDefault.default));
+parcelHelpers.export(exports, "GiftFill", ()=>(0, _giftFillDefault.default));
+parcelHelpers.export(exports, "Gift", ()=>(0, _giftDefault.default));
+parcelHelpers.export(exports, "Git", ()=>(0, _gitDefault.default));
+parcelHelpers.export(exports, "Github", ()=>(0, _githubDefault.default));
+parcelHelpers.export(exports, "GlobeAmericas", ()=>(0, _globeAmericasDefault.default));
+parcelHelpers.export(exports, "GlobeAsiaAustralia", ()=>(0, _globeAsiaAustraliaDefault.default));
+parcelHelpers.export(exports, "GlobeCentralSouthAsia", ()=>(0, _globeCentralSouthAsiaDefault.default));
+parcelHelpers.export(exports, "GlobeEuropeAfrica", ()=>(0, _globeEuropeAfricaDefault.default));
+parcelHelpers.export(exports, "Globe", ()=>(0, _globeDefault.default));
+parcelHelpers.export(exports, "Globe2", ()=>(0, _globe2Default.default));
+parcelHelpers.export(exports, "GooglePlay", ()=>(0, _googlePlayDefault.default));
+parcelHelpers.export(exports, "Google", ()=>(0, _googleDefault.default));
+parcelHelpers.export(exports, "GpuCard", ()=>(0, _gpuCardDefault.default));
+parcelHelpers.export(exports, "GraphDownArrow", ()=>(0, _graphDownArrowDefault.default));
+parcelHelpers.export(exports, "GraphDown", ()=>(0, _graphDownDefault.default));
+parcelHelpers.export(exports, "GraphUpArrow", ()=>(0, _graphUpArrowDefault.default));
+parcelHelpers.export(exports, "GraphUp", ()=>(0, _graphUpDefault.default));
+parcelHelpers.export(exports, "Grid1x2Fill", ()=>(0, _grid1X2FillDefault.default));
+parcelHelpers.export(exports, "Grid1x2", ()=>(0, _grid1X2Default.default));
+parcelHelpers.export(exports, "Grid3x2GapFill", ()=>(0, _grid3X2GapFillDefault.default));
+parcelHelpers.export(exports, "Grid3x2Gap", ()=>(0, _grid3X2GapDefault.default));
+parcelHelpers.export(exports, "Grid3x2", ()=>(0, _grid3X2Default.default));
+parcelHelpers.export(exports, "Grid3x3GapFill", ()=>(0, _grid3X3GapFillDefault.default));
+parcelHelpers.export(exports, "Grid3x3Gap", ()=>(0, _grid3X3GapDefault.default));
+parcelHelpers.export(exports, "Grid3x3", ()=>(0, _grid3X3Default.default));
+parcelHelpers.export(exports, "GridFill", ()=>(0, _gridFillDefault.default));
+parcelHelpers.export(exports, "Grid", ()=>(0, _gridDefault.default));
+parcelHelpers.export(exports, "GripHorizontal", ()=>(0, _gripHorizontalDefault.default));
+parcelHelpers.export(exports, "GripVertical", ()=>(0, _gripVerticalDefault.default));
+parcelHelpers.export(exports, "HCircleFill", ()=>(0, _hCircleFillDefault.default));
+parcelHelpers.export(exports, "HCircle", ()=>(0, _hCircleDefault.default));
+parcelHelpers.export(exports, "HSquareFill", ()=>(0, _hSquareFillDefault.default));
+parcelHelpers.export(exports, "HSquare", ()=>(0, _hSquareDefault.default));
+parcelHelpers.export(exports, "Hammer", ()=>(0, _hammerDefault.default));
+parcelHelpers.export(exports, "HandIndexFill", ()=>(0, _handIndexFillDefault.default));
+parcelHelpers.export(exports, "HandIndexThumbFill", ()=>(0, _handIndexThumbFillDefault.default));
+parcelHelpers.export(exports, "HandIndexThumb", ()=>(0, _handIndexThumbDefault.default));
+parcelHelpers.export(exports, "HandIndex", ()=>(0, _handIndexDefault.default));
+parcelHelpers.export(exports, "HandThumbsDownFill", ()=>(0, _handThumbsDownFillDefault.default));
+parcelHelpers.export(exports, "HandThumbsDown", ()=>(0, _handThumbsDownDefault.default));
+parcelHelpers.export(exports, "HandThumbsUpFill", ()=>(0, _handThumbsUpFillDefault.default));
+parcelHelpers.export(exports, "HandThumbsUp", ()=>(0, _handThumbsUpDefault.default));
+parcelHelpers.export(exports, "HandbagFill", ()=>(0, _handbagFillDefault.default));
+parcelHelpers.export(exports, "Handbag", ()=>(0, _handbagDefault.default));
+parcelHelpers.export(exports, "Hash", ()=>(0, _hashDefault.default));
+parcelHelpers.export(exports, "HddFill", ()=>(0, _hddFillDefault.default));
+parcelHelpers.export(exports, "HddNetworkFill", ()=>(0, _hddNetworkFillDefault.default));
+parcelHelpers.export(exports, "HddNetwork", ()=>(0, _hddNetworkDefault.default));
+parcelHelpers.export(exports, "HddRackFill", ()=>(0, _hddRackFillDefault.default));
+parcelHelpers.export(exports, "HddRack", ()=>(0, _hddRackDefault.default));
+parcelHelpers.export(exports, "HddStackFill", ()=>(0, _hddStackFillDefault.default));
+parcelHelpers.export(exports, "HddStack", ()=>(0, _hddStackDefault.default));
+parcelHelpers.export(exports, "Hdd", ()=>(0, _hddDefault.default));
+parcelHelpers.export(exports, "HdmiFill", ()=>(0, _hdmiFillDefault.default));
+parcelHelpers.export(exports, "Hdmi", ()=>(0, _hdmiDefault.default));
+parcelHelpers.export(exports, "Headphones", ()=>(0, _headphonesDefault.default));
+parcelHelpers.export(exports, "HeadsetVr", ()=>(0, _headsetVrDefault.default));
+parcelHelpers.export(exports, "Headset", ()=>(0, _headsetDefault.default));
+parcelHelpers.export(exports, "HeartArrow", ()=>(0, _heartArrowDefault.default));
+parcelHelpers.export(exports, "HeartFill", ()=>(0, _heartFillDefault.default));
+parcelHelpers.export(exports, "HeartHalf", ()=>(0, _heartHalfDefault.default));
+parcelHelpers.export(exports, "HeartPulseFill", ()=>(0, _heartPulseFillDefault.default));
+parcelHelpers.export(exports, "HeartPulse", ()=>(0, _heartPulseDefault.default));
+parcelHelpers.export(exports, "Heart", ()=>(0, _heartDefault.default));
+parcelHelpers.export(exports, "HeartbreakFill", ()=>(0, _heartbreakFillDefault.default));
+parcelHelpers.export(exports, "Heartbreak", ()=>(0, _heartbreakDefault.default));
+parcelHelpers.export(exports, "Hearts", ()=>(0, _heartsDefault.default));
+parcelHelpers.export(exports, "HeptagonFill", ()=>(0, _heptagonFillDefault.default));
+parcelHelpers.export(exports, "HeptagonHalf", ()=>(0, _heptagonHalfDefault.default));
+parcelHelpers.export(exports, "Heptagon", ()=>(0, _heptagonDefault.default));
+parcelHelpers.export(exports, "HexagonFill", ()=>(0, _hexagonFillDefault.default));
+parcelHelpers.export(exports, "HexagonHalf", ()=>(0, _hexagonHalfDefault.default));
+parcelHelpers.export(exports, "Hexagon", ()=>(0, _hexagonDefault.default));
+parcelHelpers.export(exports, "HospitalFill", ()=>(0, _hospitalFillDefault.default));
+parcelHelpers.export(exports, "Hospital", ()=>(0, _hospitalDefault.default));
+parcelHelpers.export(exports, "HourglassBottom", ()=>(0, _hourglassBottomDefault.default));
+parcelHelpers.export(exports, "HourglassSplit", ()=>(0, _hourglassSplitDefault.default));
+parcelHelpers.export(exports, "HourglassTop", ()=>(0, _hourglassTopDefault.default));
+parcelHelpers.export(exports, "Hourglass", ()=>(0, _hourglassDefault.default));
+parcelHelpers.export(exports, "HouseAddFill", ()=>(0, _houseAddFillDefault.default));
+parcelHelpers.export(exports, "HouseAdd", ()=>(0, _houseAddDefault.default));
+parcelHelpers.export(exports, "HouseCheckFill", ()=>(0, _houseCheckFillDefault.default));
+parcelHelpers.export(exports, "HouseCheck", ()=>(0, _houseCheckDefault.default));
+parcelHelpers.export(exports, "HouseDashFill", ()=>(0, _houseDashFillDefault.default));
+parcelHelpers.export(exports, "HouseDash", ()=>(0, _houseDashDefault.default));
+parcelHelpers.export(exports, "HouseDoorFill", ()=>(0, _houseDoorFillDefault.default));
+parcelHelpers.export(exports, "HouseDoor", ()=>(0, _houseDoorDefault.default));
+parcelHelpers.export(exports, "HouseDownFill", ()=>(0, _houseDownFillDefault.default));
+parcelHelpers.export(exports, "HouseDown", ()=>(0, _houseDownDefault.default));
+parcelHelpers.export(exports, "HouseExclamationFill", ()=>(0, _houseExclamationFillDefault.default));
+parcelHelpers.export(exports, "HouseExclamation", ()=>(0, _houseExclamationDefault.default));
+parcelHelpers.export(exports, "HouseFill", ()=>(0, _houseFillDefault.default));
+parcelHelpers.export(exports, "HouseGearFill", ()=>(0, _houseGearFillDefault.default));
+parcelHelpers.export(exports, "HouseGear", ()=>(0, _houseGearDefault.default));
+parcelHelpers.export(exports, "HouseHeartFill", ()=>(0, _houseHeartFillDefault.default));
+parcelHelpers.export(exports, "HouseHeart", ()=>(0, _houseHeartDefault.default));
+parcelHelpers.export(exports, "HouseLockFill", ()=>(0, _houseLockFillDefault.default));
+parcelHelpers.export(exports, "HouseLock", ()=>(0, _houseLockDefault.default));
+parcelHelpers.export(exports, "HouseSlashFill", ()=>(0, _houseSlashFillDefault.default));
+parcelHelpers.export(exports, "HouseSlash", ()=>(0, _houseSlashDefault.default));
+parcelHelpers.export(exports, "HouseUpFill", ()=>(0, _houseUpFillDefault.default));
+parcelHelpers.export(exports, "HouseUp", ()=>(0, _houseUpDefault.default));
+parcelHelpers.export(exports, "HouseXFill", ()=>(0, _houseXFillDefault.default));
+parcelHelpers.export(exports, "HouseX", ()=>(0, _houseXDefault.default));
+parcelHelpers.export(exports, "House", ()=>(0, _houseDefault.default));
+parcelHelpers.export(exports, "HousesFill", ()=>(0, _housesFillDefault.default));
+parcelHelpers.export(exports, "Houses", ()=>(0, _housesDefault.default));
+parcelHelpers.export(exports, "Hr", ()=>(0, _hrDefault.default));
+parcelHelpers.export(exports, "Hurricane", ()=>(0, _hurricaneDefault.default));
+parcelHelpers.export(exports, "Hypnotize", ()=>(0, _hypnotizeDefault.default));
+parcelHelpers.export(exports, "ImageAlt", ()=>(0, _imageAltDefault.default));
+parcelHelpers.export(exports, "ImageFill", ()=>(0, _imageFillDefault.default));
+parcelHelpers.export(exports, "Image", ()=>(0, _imageDefault.default));
+parcelHelpers.export(exports, "Images", ()=>(0, _imagesDefault.default));
+parcelHelpers.export(exports, "InboxFill", ()=>(0, _inboxFillDefault.default));
+parcelHelpers.export(exports, "Inbox", ()=>(0, _inboxDefault.default));
+parcelHelpers.export(exports, "InboxesFill", ()=>(0, _inboxesFillDefault.default));
+parcelHelpers.export(exports, "Inboxes", ()=>(0, _inboxesDefault.default));
+parcelHelpers.export(exports, "Incognito", ()=>(0, _incognitoDefault.default));
+parcelHelpers.export(exports, "Indent", ()=>(0, _indentDefault.default));
+parcelHelpers.export(exports, "Infinity", ()=>(0, _infinityDefault.default));
+parcelHelpers.export(exports, "InfoCircleFill", ()=>(0, _infoCircleFillDefault.default));
+parcelHelpers.export(exports, "InfoCircle", ()=>(0, _infoCircleDefault.default));
+parcelHelpers.export(exports, "InfoLg", ()=>(0, _infoLgDefault.default));
+parcelHelpers.export(exports, "InfoSquareFill", ()=>(0, _infoSquareFillDefault.default));
+parcelHelpers.export(exports, "InfoSquare", ()=>(0, _infoSquareDefault.default));
+parcelHelpers.export(exports, "Info", ()=>(0, _infoDefault.default));
+parcelHelpers.export(exports, "InputCursorText", ()=>(0, _inputCursorTextDefault.default));
+parcelHelpers.export(exports, "InputCursor", ()=>(0, _inputCursorDefault.default));
+parcelHelpers.export(exports, "Instagram", ()=>(0, _instagramDefault.default));
+parcelHelpers.export(exports, "Intersect", ()=>(0, _intersectDefault.default));
+parcelHelpers.export(exports, "JournalAlbum", ()=>(0, _journalAlbumDefault.default));
+parcelHelpers.export(exports, "JournalArrowDown", ()=>(0, _journalArrowDownDefault.default));
+parcelHelpers.export(exports, "JournalArrowUp", ()=>(0, _journalArrowUpDefault.default));
+parcelHelpers.export(exports, "JournalBookmarkFill", ()=>(0, _journalBookmarkFillDefault.default));
+parcelHelpers.export(exports, "JournalBookmark", ()=>(0, _journalBookmarkDefault.default));
+parcelHelpers.export(exports, "JournalCheck", ()=>(0, _journalCheckDefault.default));
+parcelHelpers.export(exports, "JournalCode", ()=>(0, _journalCodeDefault.default));
+parcelHelpers.export(exports, "JournalMedical", ()=>(0, _journalMedicalDefault.default));
+parcelHelpers.export(exports, "JournalMinus", ()=>(0, _journalMinusDefault.default));
+parcelHelpers.export(exports, "JournalPlus", ()=>(0, _journalPlusDefault.default));
+parcelHelpers.export(exports, "JournalRichtext", ()=>(0, _journalRichtextDefault.default));
+parcelHelpers.export(exports, "JournalText", ()=>(0, _journalTextDefault.default));
+parcelHelpers.export(exports, "JournalX", ()=>(0, _journalXDefault.default));
+parcelHelpers.export(exports, "Journal", ()=>(0, _journalDefault.default));
+parcelHelpers.export(exports, "Journals", ()=>(0, _journalsDefault.default));
+parcelHelpers.export(exports, "Joystick", ()=>(0, _joystickDefault.default));
+parcelHelpers.export(exports, "JustifyLeft", ()=>(0, _justifyLeftDefault.default));
+parcelHelpers.export(exports, "JustifyRight", ()=>(0, _justifyRightDefault.default));
+parcelHelpers.export(exports, "Justify", ()=>(0, _justifyDefault.default));
+parcelHelpers.export(exports, "KanbanFill", ()=>(0, _kanbanFillDefault.default));
+parcelHelpers.export(exports, "Kanban", ()=>(0, _kanbanDefault.default));
+parcelHelpers.export(exports, "KeyFill", ()=>(0, _keyFillDefault.default));
+parcelHelpers.export(exports, "Key", ()=>(0, _keyDefault.default));
+parcelHelpers.export(exports, "KeyboardFill", ()=>(0, _keyboardFillDefault.default));
+parcelHelpers.export(exports, "Keyboard", ()=>(0, _keyboardDefault.default));
+parcelHelpers.export(exports, "Ladder", ()=>(0, _ladderDefault.default));
+parcelHelpers.export(exports, "LampFill", ()=>(0, _lampFillDefault.default));
+parcelHelpers.export(exports, "Lamp", ()=>(0, _lampDefault.default));
+parcelHelpers.export(exports, "LaptopFill", ()=>(0, _laptopFillDefault.default));
+parcelHelpers.export(exports, "Laptop", ()=>(0, _laptopDefault.default));
+parcelHelpers.export(exports, "LayerBackward", ()=>(0, _layerBackwardDefault.default));
+parcelHelpers.export(exports, "LayerForward", ()=>(0, _layerForwardDefault.default));
+parcelHelpers.export(exports, "LayersFill", ()=>(0, _layersFillDefault.default));
+parcelHelpers.export(exports, "LayersHalf", ()=>(0, _layersHalfDefault.default));
+parcelHelpers.export(exports, "Layers", ()=>(0, _layersDefault.default));
+parcelHelpers.export(exports, "LayoutSidebarInsetReverse", ()=>(0, _layoutSidebarInsetReverseDefault.default));
+parcelHelpers.export(exports, "LayoutSidebarInset", ()=>(0, _layoutSidebarInsetDefault.default));
+parcelHelpers.export(exports, "LayoutSidebarReverse", ()=>(0, _layoutSidebarReverseDefault.default));
+parcelHelpers.export(exports, "LayoutSidebar", ()=>(0, _layoutSidebarDefault.default));
+parcelHelpers.export(exports, "LayoutSplit", ()=>(0, _layoutSplitDefault.default));
+parcelHelpers.export(exports, "LayoutTextSidebarReverse", ()=>(0, _layoutTextSidebarReverseDefault.default));
+parcelHelpers.export(exports, "LayoutTextSidebar", ()=>(0, _layoutTextSidebarDefault.default));
+parcelHelpers.export(exports, "LayoutTextWindowReverse", ()=>(0, _layoutTextWindowReverseDefault.default));
+parcelHelpers.export(exports, "LayoutTextWindow", ()=>(0, _layoutTextWindowDefault.default));
+parcelHelpers.export(exports, "LayoutThreeColumns", ()=>(0, _layoutThreeColumnsDefault.default));
+parcelHelpers.export(exports, "LayoutWtf", ()=>(0, _layoutWtfDefault.default));
+parcelHelpers.export(exports, "LifePreserver", ()=>(0, _lifePreserverDefault.default));
+parcelHelpers.export(exports, "LightbulbFill", ()=>(0, _lightbulbFillDefault.default));
+parcelHelpers.export(exports, "LightbulbOffFill", ()=>(0, _lightbulbOffFillDefault.default));
+parcelHelpers.export(exports, "LightbulbOff", ()=>(0, _lightbulbOffDefault.default));
+parcelHelpers.export(exports, "Lightbulb", ()=>(0, _lightbulbDefault.default));
+parcelHelpers.export(exports, "LightningChargeFill", ()=>(0, _lightningChargeFillDefault.default));
+parcelHelpers.export(exports, "LightningCharge", ()=>(0, _lightningChargeDefault.default));
+parcelHelpers.export(exports, "LightningFill", ()=>(0, _lightningFillDefault.default));
+parcelHelpers.export(exports, "Lightning", ()=>(0, _lightningDefault.default));
+parcelHelpers.export(exports, "Line", ()=>(0, _lineDefault.default));
+parcelHelpers.export(exports, "Link45deg", ()=>(0, _link45DegDefault.default));
+parcelHelpers.export(exports, "Link", ()=>(0, _linkDefault.default));
+parcelHelpers.export(exports, "Linkedin", ()=>(0, _linkedinDefault.default));
+parcelHelpers.export(exports, "ListCheck", ()=>(0, _listCheckDefault.default));
+parcelHelpers.export(exports, "ListColumnsReverse", ()=>(0, _listColumnsReverseDefault.default));
+parcelHelpers.export(exports, "ListColumns", ()=>(0, _listColumnsDefault.default));
+parcelHelpers.export(exports, "ListNested", ()=>(0, _listNestedDefault.default));
+parcelHelpers.export(exports, "ListOl", ()=>(0, _listOlDefault.default));
+parcelHelpers.export(exports, "ListStars", ()=>(0, _listStarsDefault.default));
+parcelHelpers.export(exports, "ListTask", ()=>(0, _listTaskDefault.default));
+parcelHelpers.export(exports, "ListUl", ()=>(0, _listUlDefault.default));
+parcelHelpers.export(exports, "List", ()=>(0, _listDefault.default));
+parcelHelpers.export(exports, "LockFill", ()=>(0, _lockFillDefault.default));
+parcelHelpers.export(exports, "Lock", ()=>(0, _lockDefault.default));
+parcelHelpers.export(exports, "LungsFill", ()=>(0, _lungsFillDefault.default));
+parcelHelpers.export(exports, "Lungs", ()=>(0, _lungsDefault.default));
+parcelHelpers.export(exports, "Magic", ()=>(0, _magicDefault.default));
+parcelHelpers.export(exports, "MagnetFill", ()=>(0, _magnetFillDefault.default));
+parcelHelpers.export(exports, "Magnet", ()=>(0, _magnetDefault.default));
+parcelHelpers.export(exports, "Mailbox", ()=>(0, _mailboxDefault.default));
+parcelHelpers.export(exports, "Mailbox2", ()=>(0, _mailbox2Default.default));
+parcelHelpers.export(exports, "MapFill", ()=>(0, _mapFillDefault.default));
+parcelHelpers.export(exports, "Map", ()=>(0, _mapDefault.default));
+parcelHelpers.export(exports, "MarkdownFill", ()=>(0, _markdownFillDefault.default));
+parcelHelpers.export(exports, "Markdown", ()=>(0, _markdownDefault.default));
+parcelHelpers.export(exports, "Mask", ()=>(0, _maskDefault.default));
+parcelHelpers.export(exports, "Mastodon", ()=>(0, _mastodonDefault.default));
+parcelHelpers.export(exports, "Medium", ()=>(0, _mediumDefault.default));
+parcelHelpers.export(exports, "MegaphoneFill", ()=>(0, _megaphoneFillDefault.default));
+parcelHelpers.export(exports, "Megaphone", ()=>(0, _megaphoneDefault.default));
+parcelHelpers.export(exports, "Memory", ()=>(0, _memoryDefault.default));
+parcelHelpers.export(exports, "MenuAppFill", ()=>(0, _menuAppFillDefault.default));
+parcelHelpers.export(exports, "MenuApp", ()=>(0, _menuAppDefault.default));
+parcelHelpers.export(exports, "MenuButtonFill", ()=>(0, _menuButtonFillDefault.default));
+parcelHelpers.export(exports, "MenuButtonWideFill", ()=>(0, _menuButtonWideFillDefault.default));
+parcelHelpers.export(exports, "MenuButtonWide", ()=>(0, _menuButtonWideDefault.default));
+parcelHelpers.export(exports, "MenuButton", ()=>(0, _menuButtonDefault.default));
+parcelHelpers.export(exports, "MenuDown", ()=>(0, _menuDownDefault.default));
+parcelHelpers.export(exports, "MenuUp", ()=>(0, _menuUpDefault.default));
+parcelHelpers.export(exports, "Messenger", ()=>(0, _messengerDefault.default));
+parcelHelpers.export(exports, "Meta", ()=>(0, _metaDefault.default));
+parcelHelpers.export(exports, "MicFill", ()=>(0, _micFillDefault.default));
+parcelHelpers.export(exports, "MicMuteFill", ()=>(0, _micMuteFillDefault.default));
+parcelHelpers.export(exports, "MicMute", ()=>(0, _micMuteDefault.default));
+parcelHelpers.export(exports, "Mic", ()=>(0, _micDefault.default));
+parcelHelpers.export(exports, "MicrosoftTeams", ()=>(0, _microsoftTeamsDefault.default));
+parcelHelpers.export(exports, "Microsoft", ()=>(0, _microsoftDefault.default));
+parcelHelpers.export(exports, "MinecartLoaded", ()=>(0, _minecartLoadedDefault.default));
+parcelHelpers.export(exports, "Minecart", ()=>(0, _minecartDefault.default));
+parcelHelpers.export(exports, "ModemFill", ()=>(0, _modemFillDefault.default));
+parcelHelpers.export(exports, "Modem", ()=>(0, _modemDefault.default));
+parcelHelpers.export(exports, "Moisture", ()=>(0, _moistureDefault.default));
+parcelHelpers.export(exports, "MoonFill", ()=>(0, _moonFillDefault.default));
+parcelHelpers.export(exports, "MoonStarsFill", ()=>(0, _moonStarsFillDefault.default));
+parcelHelpers.export(exports, "MoonStars", ()=>(0, _moonStarsDefault.default));
+parcelHelpers.export(exports, "Moon", ()=>(0, _moonDefault.default));
+parcelHelpers.export(exports, "MortarboardFill", ()=>(0, _mortarboardFillDefault.default));
+parcelHelpers.export(exports, "Mortarboard", ()=>(0, _mortarboardDefault.default));
+parcelHelpers.export(exports, "MotherboardFill", ()=>(0, _motherboardFillDefault.default));
+parcelHelpers.export(exports, "Motherboard", ()=>(0, _motherboardDefault.default));
+parcelHelpers.export(exports, "MouseFill", ()=>(0, _mouseFillDefault.default));
+parcelHelpers.export(exports, "Mouse", ()=>(0, _mouseDefault.default));
+parcelHelpers.export(exports, "Mouse2Fill", ()=>(0, _mouse2FillDefault.default));
+parcelHelpers.export(exports, "Mouse2", ()=>(0, _mouse2Default.default));
+parcelHelpers.export(exports, "Mouse3Fill", ()=>(0, _mouse3FillDefault.default));
+parcelHelpers.export(exports, "Mouse3", ()=>(0, _mouse3Default.default));
+parcelHelpers.export(exports, "MusicNoteBeamed", ()=>(0, _musicNoteBeamedDefault.default));
+parcelHelpers.export(exports, "MusicNoteList", ()=>(0, _musicNoteListDefault.default));
+parcelHelpers.export(exports, "MusicNote", ()=>(0, _musicNoteDefault.default));
+parcelHelpers.export(exports, "MusicPlayerFill", ()=>(0, _musicPlayerFillDefault.default));
+parcelHelpers.export(exports, "MusicPlayer", ()=>(0, _musicPlayerDefault.default));
+parcelHelpers.export(exports, "Newspaper", ()=>(0, _newspaperDefault.default));
+parcelHelpers.export(exports, "NintendoSwitch", ()=>(0, _nintendoSwitchDefault.default));
+parcelHelpers.export(exports, "NodeMinusFill", ()=>(0, _nodeMinusFillDefault.default));
+parcelHelpers.export(exports, "NodeMinus", ()=>(0, _nodeMinusDefault.default));
+parcelHelpers.export(exports, "NodePlusFill", ()=>(0, _nodePlusFillDefault.default));
+parcelHelpers.export(exports, "NodePlus", ()=>(0, _nodePlusDefault.default));
+parcelHelpers.export(exports, "NutFill", ()=>(0, _nutFillDefault.default));
+parcelHelpers.export(exports, "Nut", ()=>(0, _nutDefault.default));
+parcelHelpers.export(exports, "Nvidia", ()=>(0, _nvidiaDefault.default));
+parcelHelpers.export(exports, "OctagonFill", ()=>(0, _octagonFillDefault.default));
+parcelHelpers.export(exports, "OctagonHalf", ()=>(0, _octagonHalfDefault.default));
+parcelHelpers.export(exports, "Octagon", ()=>(0, _octagonDefault.default));
+parcelHelpers.export(exports, "OpticalAudioFill", ()=>(0, _opticalAudioFillDefault.default));
+parcelHelpers.export(exports, "OpticalAudio", ()=>(0, _opticalAudioDefault.default));
+parcelHelpers.export(exports, "Option", ()=>(0, _optionDefault.default));
+parcelHelpers.export(exports, "Outlet", ()=>(0, _outletDefault.default));
+parcelHelpers.export(exports, "PCircleFill", ()=>(0, _pCircleFillDefault.default));
+parcelHelpers.export(exports, "PCircle", ()=>(0, _pCircleDefault.default));
+parcelHelpers.export(exports, "PSquareFill", ()=>(0, _pSquareFillDefault.default));
+parcelHelpers.export(exports, "PSquare", ()=>(0, _pSquareDefault.default));
+parcelHelpers.export(exports, "PaintBucket", ()=>(0, _paintBucketDefault.default));
+parcelHelpers.export(exports, "PaletteFill", ()=>(0, _paletteFillDefault.default));
+parcelHelpers.export(exports, "Palette", ()=>(0, _paletteDefault.default));
+parcelHelpers.export(exports, "Palette2", ()=>(0, _palette2Default.default));
+parcelHelpers.export(exports, "Paperclip", ()=>(0, _paperclipDefault.default));
+parcelHelpers.export(exports, "Paragraph", ()=>(0, _paragraphDefault.default));
+parcelHelpers.export(exports, "PassFill", ()=>(0, _passFillDefault.default));
+parcelHelpers.export(exports, "Pass", ()=>(0, _passDefault.default));
+parcelHelpers.export(exports, "PatchCheckFill", ()=>(0, _patchCheckFillDefault.default));
+parcelHelpers.export(exports, "PatchCheck", ()=>(0, _patchCheckDefault.default));
+parcelHelpers.export(exports, "PatchExclamationFill", ()=>(0, _patchExclamationFillDefault.default));
+parcelHelpers.export(exports, "PatchExclamation", ()=>(0, _patchExclamationDefault.default));
+parcelHelpers.export(exports, "PatchMinusFill", ()=>(0, _patchMinusFillDefault.default));
+parcelHelpers.export(exports, "PatchMinus", ()=>(0, _patchMinusDefault.default));
+parcelHelpers.export(exports, "PatchPlusFill", ()=>(0, _patchPlusFillDefault.default));
+parcelHelpers.export(exports, "PatchPlus", ()=>(0, _patchPlusDefault.default));
+parcelHelpers.export(exports, "PatchQuestionFill", ()=>(0, _patchQuestionFillDefault.default));
+parcelHelpers.export(exports, "PatchQuestion", ()=>(0, _patchQuestionDefault.default));
+parcelHelpers.export(exports, "PauseBtnFill", ()=>(0, _pauseBtnFillDefault.default));
+parcelHelpers.export(exports, "PauseBtn", ()=>(0, _pauseBtnDefault.default));
+parcelHelpers.export(exports, "PauseCircleFill", ()=>(0, _pauseCircleFillDefault.default));
+parcelHelpers.export(exports, "PauseCircle", ()=>(0, _pauseCircleDefault.default));
+parcelHelpers.export(exports, "PauseFill", ()=>(0, _pauseFillDefault.default));
+parcelHelpers.export(exports, "Pause", ()=>(0, _pauseDefault.default));
+parcelHelpers.export(exports, "Paypal", ()=>(0, _paypalDefault.default));
+parcelHelpers.export(exports, "PcDisplayHorizontal", ()=>(0, _pcDisplayHorizontalDefault.default));
+parcelHelpers.export(exports, "PcDisplay", ()=>(0, _pcDisplayDefault.default));
+parcelHelpers.export(exports, "PcHorizontal", ()=>(0, _pcHorizontalDefault.default));
+parcelHelpers.export(exports, "Pc", ()=>(0, _pcDefault.default));
+parcelHelpers.export(exports, "PciCard", ()=>(0, _pciCardDefault.default));
+parcelHelpers.export(exports, "PeaceFill", ()=>(0, _peaceFillDefault.default));
+parcelHelpers.export(exports, "Peace", ()=>(0, _peaceDefault.default));
+parcelHelpers.export(exports, "PenFill", ()=>(0, _penFillDefault.default));
+parcelHelpers.export(exports, "Pen", ()=>(0, _penDefault.default));
+parcelHelpers.export(exports, "PencilFill", ()=>(0, _pencilFillDefault.default));
+parcelHelpers.export(exports, "PencilSquare", ()=>(0, _pencilSquareDefault.default));
+parcelHelpers.export(exports, "Pencil", ()=>(0, _pencilDefault.default));
+parcelHelpers.export(exports, "PentagonFill", ()=>(0, _pentagonFillDefault.default));
+parcelHelpers.export(exports, "PentagonHalf", ()=>(0, _pentagonHalfDefault.default));
+parcelHelpers.export(exports, "Pentagon", ()=>(0, _pentagonDefault.default));
+parcelHelpers.export(exports, "PeopleFill", ()=>(0, _peopleFillDefault.default));
+parcelHelpers.export(exports, "People", ()=>(0, _peopleDefault.default));
+parcelHelpers.export(exports, "Percent", ()=>(0, _percentDefault.default));
+parcelHelpers.export(exports, "PersonAdd", ()=>(0, _personAddDefault.default));
+parcelHelpers.export(exports, "PersonBadgeFill", ()=>(0, _personBadgeFillDefault.default));
+parcelHelpers.export(exports, "PersonBadge", ()=>(0, _personBadgeDefault.default));
+parcelHelpers.export(exports, "PersonBoundingBox", ()=>(0, _personBoundingBoxDefault.default));
+parcelHelpers.export(exports, "PersonCheckFill", ()=>(0, _personCheckFillDefault.default));
+parcelHelpers.export(exports, "PersonCheck", ()=>(0, _personCheckDefault.default));
+parcelHelpers.export(exports, "PersonCircle", ()=>(0, _personCircleDefault.default));
+parcelHelpers.export(exports, "PersonDashFill", ()=>(0, _personDashFillDefault.default));
+parcelHelpers.export(exports, "PersonDash", ()=>(0, _personDashDefault.default));
+parcelHelpers.export(exports, "PersonDown", ()=>(0, _personDownDefault.default));
+parcelHelpers.export(exports, "PersonExclamation", ()=>(0, _personExclamationDefault.default));
+parcelHelpers.export(exports, "PersonFillAdd", ()=>(0, _personFillAddDefault.default));
+parcelHelpers.export(exports, "PersonFillCheck", ()=>(0, _personFillCheckDefault.default));
+parcelHelpers.export(exports, "PersonFillDash", ()=>(0, _personFillDashDefault.default));
+parcelHelpers.export(exports, "PersonFillDown", ()=>(0, _personFillDownDefault.default));
+parcelHelpers.export(exports, "PersonFillExclamation", ()=>(0, _personFillExclamationDefault.default));
+parcelHelpers.export(exports, "PersonFillGear", ()=>(0, _personFillGearDefault.default));
+parcelHelpers.export(exports, "PersonFillLock", ()=>(0, _personFillLockDefault.default));
+parcelHelpers.export(exports, "PersonFillSlash", ()=>(0, _personFillSlashDefault.default));
+parcelHelpers.export(exports, "PersonFillUp", ()=>(0, _personFillUpDefault.default));
+parcelHelpers.export(exports, "PersonFillX", ()=>(0, _personFillXDefault.default));
+parcelHelpers.export(exports, "PersonFill", ()=>(0, _personFillDefault.default));
+parcelHelpers.export(exports, "PersonGear", ()=>(0, _personGearDefault.default));
+parcelHelpers.export(exports, "PersonHeart", ()=>(0, _personHeartDefault.default));
+parcelHelpers.export(exports, "PersonHearts", ()=>(0, _personHeartsDefault.default));
+parcelHelpers.export(exports, "PersonLinesFill", ()=>(0, _personLinesFillDefault.default));
+parcelHelpers.export(exports, "PersonLock", ()=>(0, _personLockDefault.default));
+parcelHelpers.export(exports, "PersonPlusFill", ()=>(0, _personPlusFillDefault.default));
+parcelHelpers.export(exports, "PersonPlus", ()=>(0, _personPlusDefault.default));
+parcelHelpers.export(exports, "PersonRolodex", ()=>(0, _personRolodexDefault.default));
+parcelHelpers.export(exports, "PersonSlash", ()=>(0, _personSlashDefault.default));
+parcelHelpers.export(exports, "PersonSquare", ()=>(0, _personSquareDefault.default));
+parcelHelpers.export(exports, "PersonUp", ()=>(0, _personUpDefault.default));
+parcelHelpers.export(exports, "PersonVcardFill", ()=>(0, _personVcardFillDefault.default));
+parcelHelpers.export(exports, "PersonVcard", ()=>(0, _personVcardDefault.default));
+parcelHelpers.export(exports, "PersonVideo", ()=>(0, _personVideoDefault.default));
+parcelHelpers.export(exports, "PersonVideo2", ()=>(0, _personVideo2Default.default));
+parcelHelpers.export(exports, "PersonVideo3", ()=>(0, _personVideo3Default.default));
+parcelHelpers.export(exports, "PersonWorkspace", ()=>(0, _personWorkspaceDefault.default));
+parcelHelpers.export(exports, "PersonXFill", ()=>(0, _personXFillDefault.default));
+parcelHelpers.export(exports, "PersonX", ()=>(0, _personXDefault.default));
+parcelHelpers.export(exports, "Person", ()=>(0, _personDefault.default));
+parcelHelpers.export(exports, "PhoneFill", ()=>(0, _phoneFillDefault.default));
+parcelHelpers.export(exports, "PhoneFlip", ()=>(0, _phoneFlipDefault.default));
+parcelHelpers.export(exports, "PhoneLandscapeFill", ()=>(0, _phoneLandscapeFillDefault.default));
+parcelHelpers.export(exports, "PhoneLandscape", ()=>(0, _phoneLandscapeDefault.default));
+parcelHelpers.export(exports, "PhoneVibrateFill", ()=>(0, _phoneVibrateFillDefault.default));
+parcelHelpers.export(exports, "PhoneVibrate", ()=>(0, _phoneVibrateDefault.default));
+parcelHelpers.export(exports, "Phone", ()=>(0, _phoneDefault.default));
+parcelHelpers.export(exports, "PieChartFill", ()=>(0, _pieChartFillDefault.default));
+parcelHelpers.export(exports, "PieChart", ()=>(0, _pieChartDefault.default));
+parcelHelpers.export(exports, "PiggyBankFill", ()=>(0, _piggyBankFillDefault.default));
+parcelHelpers.export(exports, "PiggyBank", ()=>(0, _piggyBankDefault.default));
+parcelHelpers.export(exports, "PinAngleFill", ()=>(0, _pinAngleFillDefault.default));
+parcelHelpers.export(exports, "PinAngle", ()=>(0, _pinAngleDefault.default));
+parcelHelpers.export(exports, "PinFill", ()=>(0, _pinFillDefault.default));
+parcelHelpers.export(exports, "PinMapFill", ()=>(0, _pinMapFillDefault.default));
+parcelHelpers.export(exports, "PinMap", ()=>(0, _pinMapDefault.default));
+parcelHelpers.export(exports, "Pin", ()=>(0, _pinDefault.default));
+parcelHelpers.export(exports, "Pinterest", ()=>(0, _pinterestDefault.default));
+parcelHelpers.export(exports, "PipFill", ()=>(0, _pipFillDefault.default));
+parcelHelpers.export(exports, "Pip", ()=>(0, _pipDefault.default));
+parcelHelpers.export(exports, "PlayBtnFill", ()=>(0, _playBtnFillDefault.default));
+parcelHelpers.export(exports, "PlayBtn", ()=>(0, _playBtnDefault.default));
+parcelHelpers.export(exports, "PlayCircleFill", ()=>(0, _playCircleFillDefault.default));
+parcelHelpers.export(exports, "PlayCircle", ()=>(0, _playCircleDefault.default));
+parcelHelpers.export(exports, "PlayFill", ()=>(0, _playFillDefault.default));
+parcelHelpers.export(exports, "Play", ()=>(0, _playDefault.default));
+parcelHelpers.export(exports, "Playstation", ()=>(0, _playstationDefault.default));
+parcelHelpers.export(exports, "PlugFill", ()=>(0, _plugFillDefault.default));
+parcelHelpers.export(exports, "Plug", ()=>(0, _plugDefault.default));
+parcelHelpers.export(exports, "Plugin", ()=>(0, _pluginDefault.default));
+parcelHelpers.export(exports, "PlusCircleDotted", ()=>(0, _plusCircleDottedDefault.default));
+parcelHelpers.export(exports, "PlusCircleFill", ()=>(0, _plusCircleFillDefault.default));
+parcelHelpers.export(exports, "PlusCircle", ()=>(0, _plusCircleDefault.default));
+parcelHelpers.export(exports, "PlusLg", ()=>(0, _plusLgDefault.default));
+parcelHelpers.export(exports, "PlusSlashMinus", ()=>(0, _plusSlashMinusDefault.default));
+parcelHelpers.export(exports, "PlusSquareDotted", ()=>(0, _plusSquareDottedDefault.default));
+parcelHelpers.export(exports, "PlusSquareFill", ()=>(0, _plusSquareFillDefault.default));
+parcelHelpers.export(exports, "PlusSquare", ()=>(0, _plusSquareDefault.default));
+parcelHelpers.export(exports, "Plus", ()=>(0, _plusDefault.default));
+parcelHelpers.export(exports, "PostageFill", ()=>(0, _postageFillDefault.default));
+parcelHelpers.export(exports, "PostageHeartFill", ()=>(0, _postageHeartFillDefault.default));
+parcelHelpers.export(exports, "PostageHeart", ()=>(0, _postageHeartDefault.default));
+parcelHelpers.export(exports, "Postage", ()=>(0, _postageDefault.default));
+parcelHelpers.export(exports, "PostcardFill", ()=>(0, _postcardFillDefault.default));
+parcelHelpers.export(exports, "PostcardHeartFill", ()=>(0, _postcardHeartFillDefault.default));
+parcelHelpers.export(exports, "PostcardHeart", ()=>(0, _postcardHeartDefault.default));
+parcelHelpers.export(exports, "Postcard", ()=>(0, _postcardDefault.default));
+parcelHelpers.export(exports, "Power", ()=>(0, _powerDefault.default));
+parcelHelpers.export(exports, "Prescription", ()=>(0, _prescriptionDefault.default));
+parcelHelpers.export(exports, "Prescription2", ()=>(0, _prescription2Default.default));
+parcelHelpers.export(exports, "PrinterFill", ()=>(0, _printerFillDefault.default));
+parcelHelpers.export(exports, "Printer", ()=>(0, _printerDefault.default));
+parcelHelpers.export(exports, "ProjectorFill", ()=>(0, _projectorFillDefault.default));
+parcelHelpers.export(exports, "Projector", ()=>(0, _projectorDefault.default));
+parcelHelpers.export(exports, "PuzzleFill", ()=>(0, _puzzleFillDefault.default));
+parcelHelpers.export(exports, "Puzzle", ()=>(0, _puzzleDefault.default));
+parcelHelpers.export(exports, "QrCodeScan", ()=>(0, _qrCodeScanDefault.default));
+parcelHelpers.export(exports, "QrCode", ()=>(0, _qrCodeDefault.default));
+parcelHelpers.export(exports, "QuestionCircleFill", ()=>(0, _questionCircleFillDefault.default));
+parcelHelpers.export(exports, "QuestionCircle", ()=>(0, _questionCircleDefault.default));
+parcelHelpers.export(exports, "QuestionDiamondFill", ()=>(0, _questionDiamondFillDefault.default));
+parcelHelpers.export(exports, "QuestionDiamond", ()=>(0, _questionDiamondDefault.default));
+parcelHelpers.export(exports, "QuestionLg", ()=>(0, _questionLgDefault.default));
+parcelHelpers.export(exports, "QuestionOctagonFill", ()=>(0, _questionOctagonFillDefault.default));
+parcelHelpers.export(exports, "QuestionOctagon", ()=>(0, _questionOctagonDefault.default));
+parcelHelpers.export(exports, "QuestionSquareFill", ()=>(0, _questionSquareFillDefault.default));
+parcelHelpers.export(exports, "QuestionSquare", ()=>(0, _questionSquareDefault.default));
+parcelHelpers.export(exports, "Question", ()=>(0, _questionDefault.default));
+parcelHelpers.export(exports, "Quora", ()=>(0, _quoraDefault.default));
+parcelHelpers.export(exports, "Quote", ()=>(0, _quoteDefault.default));
+parcelHelpers.export(exports, "RCircleFill", ()=>(0, _rCircleFillDefault.default));
+parcelHelpers.export(exports, "RCircle", ()=>(0, _rCircleDefault.default));
+parcelHelpers.export(exports, "RSquareFill", ()=>(0, _rSquareFillDefault.default));
+parcelHelpers.export(exports, "RSquare", ()=>(0, _rSquareDefault.default));
+parcelHelpers.export(exports, "Radioactive", ()=>(0, _radioactiveDefault.default));
+parcelHelpers.export(exports, "Rainbow", ()=>(0, _rainbowDefault.default));
+parcelHelpers.export(exports, "ReceiptCutoff", ()=>(0, _receiptCutoffDefault.default));
+parcelHelpers.export(exports, "Receipt", ()=>(0, _receiptDefault.default));
+parcelHelpers.export(exports, "Reception0", ()=>(0, _reception0Default.default));
+parcelHelpers.export(exports, "Reception1", ()=>(0, _reception1Default.default));
+parcelHelpers.export(exports, "Reception2", ()=>(0, _reception2Default.default));
+parcelHelpers.export(exports, "Reception3", ()=>(0, _reception3Default.default));
+parcelHelpers.export(exports, "Reception4", ()=>(0, _reception4Default.default));
+parcelHelpers.export(exports, "RecordBtnFill", ()=>(0, _recordBtnFillDefault.default));
+parcelHelpers.export(exports, "RecordBtn", ()=>(0, _recordBtnDefault.default));
+parcelHelpers.export(exports, "RecordCircleFill", ()=>(0, _recordCircleFillDefault.default));
+parcelHelpers.export(exports, "RecordCircle", ()=>(0, _recordCircleDefault.default));
+parcelHelpers.export(exports, "RecordFill", ()=>(0, _recordFillDefault.default));
+parcelHelpers.export(exports, "Record", ()=>(0, _recordDefault.default));
+parcelHelpers.export(exports, "Record2Fill", ()=>(0, _record2FillDefault.default));
+parcelHelpers.export(exports, "Record2", ()=>(0, _record2Default.default));
+parcelHelpers.export(exports, "Recycle", ()=>(0, _recycleDefault.default));
+parcelHelpers.export(exports, "Reddit", ()=>(0, _redditDefault.default));
+parcelHelpers.export(exports, "Regex", ()=>(0, _regexDefault.default));
+parcelHelpers.export(exports, "Repeat1", ()=>(0, _repeat1Default.default));
+parcelHelpers.export(exports, "Repeat", ()=>(0, _repeatDefault.default));
+parcelHelpers.export(exports, "ReplyAllFill", ()=>(0, _replyAllFillDefault.default));
+parcelHelpers.export(exports, "ReplyAll", ()=>(0, _replyAllDefault.default));
+parcelHelpers.export(exports, "ReplyFill", ()=>(0, _replyFillDefault.default));
+parcelHelpers.export(exports, "Reply", ()=>(0, _replyDefault.default));
+parcelHelpers.export(exports, "RewindBtnFill", ()=>(0, _rewindBtnFillDefault.default));
+parcelHelpers.export(exports, "RewindBtn", ()=>(0, _rewindBtnDefault.default));
+parcelHelpers.export(exports, "RewindCircleFill", ()=>(0, _rewindCircleFillDefault.default));
+parcelHelpers.export(exports, "RewindCircle", ()=>(0, _rewindCircleDefault.default));
+parcelHelpers.export(exports, "RewindFill", ()=>(0, _rewindFillDefault.default));
+parcelHelpers.export(exports, "Rewind", ()=>(0, _rewindDefault.default));
+parcelHelpers.export(exports, "Robot", ()=>(0, _robotDefault.default));
+parcelHelpers.export(exports, "RocketFill", ()=>(0, _rocketFillDefault.default));
+parcelHelpers.export(exports, "RocketTakeoffFill", ()=>(0, _rocketTakeoffFillDefault.default));
+parcelHelpers.export(exports, "RocketTakeoff", ()=>(0, _rocketTakeoffDefault.default));
+parcelHelpers.export(exports, "Rocket", ()=>(0, _rocketDefault.default));
+parcelHelpers.export(exports, "RouterFill", ()=>(0, _routerFillDefault.default));
+parcelHelpers.export(exports, "Router", ()=>(0, _routerDefault.default));
+parcelHelpers.export(exports, "RssFill", ()=>(0, _rssFillDefault.default));
+parcelHelpers.export(exports, "Rss", ()=>(0, _rssDefault.default));
+parcelHelpers.export(exports, "Rulers", ()=>(0, _rulersDefault.default));
+parcelHelpers.export(exports, "SafeFill", ()=>(0, _safeFillDefault.default));
+parcelHelpers.export(exports, "Safe", ()=>(0, _safeDefault.default));
+parcelHelpers.export(exports, "Safe2Fill", ()=>(0, _safe2FillDefault.default));
+parcelHelpers.export(exports, "Safe2", ()=>(0, _safe2Default.default));
+parcelHelpers.export(exports, "SaveFill", ()=>(0, _saveFillDefault.default));
+parcelHelpers.export(exports, "Save", ()=>(0, _saveDefault.default));
+parcelHelpers.export(exports, "Save2Fill", ()=>(0, _save2FillDefault.default));
+parcelHelpers.export(exports, "Save2", ()=>(0, _save2Default.default));
+parcelHelpers.export(exports, "Scissors", ()=>(0, _scissorsDefault.default));
+parcelHelpers.export(exports, "Scooter", ()=>(0, _scooterDefault.default));
+parcelHelpers.export(exports, "Screwdriver", ()=>(0, _screwdriverDefault.default));
+parcelHelpers.export(exports, "SdCardFill", ()=>(0, _sdCardFillDefault.default));
+parcelHelpers.export(exports, "SdCard", ()=>(0, _sdCardDefault.default));
+parcelHelpers.export(exports, "SearchHeartFill", ()=>(0, _searchHeartFillDefault.default));
+parcelHelpers.export(exports, "SearchHeart", ()=>(0, _searchHeartDefault.default));
+parcelHelpers.export(exports, "Search", ()=>(0, _searchDefault.default));
+parcelHelpers.export(exports, "SegmentedNav", ()=>(0, _segmentedNavDefault.default));
+parcelHelpers.export(exports, "SendCheckFill", ()=>(0, _sendCheckFillDefault.default));
+parcelHelpers.export(exports, "SendCheck", ()=>(0, _sendCheckDefault.default));
+parcelHelpers.export(exports, "SendDashFill", ()=>(0, _sendDashFillDefault.default));
+parcelHelpers.export(exports, "SendDash", ()=>(0, _sendDashDefault.default));
+parcelHelpers.export(exports, "SendExclamationFill", ()=>(0, _sendExclamationFillDefault.default));
+parcelHelpers.export(exports, "SendExclamation", ()=>(0, _sendExclamationDefault.default));
+parcelHelpers.export(exports, "SendFill", ()=>(0, _sendFillDefault.default));
+parcelHelpers.export(exports, "SendPlusFill", ()=>(0, _sendPlusFillDefault.default));
+parcelHelpers.export(exports, "SendPlus", ()=>(0, _sendPlusDefault.default));
+parcelHelpers.export(exports, "SendSlashFill", ()=>(0, _sendSlashFillDefault.default));
+parcelHelpers.export(exports, "SendSlash", ()=>(0, _sendSlashDefault.default));
+parcelHelpers.export(exports, "SendXFill", ()=>(0, _sendXFillDefault.default));
+parcelHelpers.export(exports, "SendX", ()=>(0, _sendXDefault.default));
+parcelHelpers.export(exports, "Send", ()=>(0, _sendDefault.default));
+parcelHelpers.export(exports, "Server", ()=>(0, _serverDefault.default));
+parcelHelpers.export(exports, "ShareFill", ()=>(0, _shareFillDefault.default));
+parcelHelpers.export(exports, "Share", ()=>(0, _shareDefault.default));
+parcelHelpers.export(exports, "ShieldCheck", ()=>(0, _shieldCheckDefault.default));
+parcelHelpers.export(exports, "ShieldExclamation", ()=>(0, _shieldExclamationDefault.default));
+parcelHelpers.export(exports, "ShieldFillCheck", ()=>(0, _shieldFillCheckDefault.default));
+parcelHelpers.export(exports, "ShieldFillExclamation", ()=>(0, _shieldFillExclamationDefault.default));
+parcelHelpers.export(exports, "ShieldFillMinus", ()=>(0, _shieldFillMinusDefault.default));
+parcelHelpers.export(exports, "ShieldFillPlus", ()=>(0, _shieldFillPlusDefault.default));
+parcelHelpers.export(exports, "ShieldFillX", ()=>(0, _shieldFillXDefault.default));
+parcelHelpers.export(exports, "ShieldFill", ()=>(0, _shieldFillDefault.default));
+parcelHelpers.export(exports, "ShieldLockFill", ()=>(0, _shieldLockFillDefault.default));
+parcelHelpers.export(exports, "ShieldLock", ()=>(0, _shieldLockDefault.default));
+parcelHelpers.export(exports, "ShieldMinus", ()=>(0, _shieldMinusDefault.default));
+parcelHelpers.export(exports, "ShieldPlus", ()=>(0, _shieldPlusDefault.default));
+parcelHelpers.export(exports, "ShieldShaded", ()=>(0, _shieldShadedDefault.default));
+parcelHelpers.export(exports, "ShieldSlashFill", ()=>(0, _shieldSlashFillDefault.default));
+parcelHelpers.export(exports, "ShieldSlash", ()=>(0, _shieldSlashDefault.default));
+parcelHelpers.export(exports, "ShieldX", ()=>(0, _shieldXDefault.default));
+parcelHelpers.export(exports, "Shield", ()=>(0, _shieldDefault.default));
+parcelHelpers.export(exports, "ShiftFill", ()=>(0, _shiftFillDefault.default));
+parcelHelpers.export(exports, "Shift", ()=>(0, _shiftDefault.default));
+parcelHelpers.export(exports, "ShopWindow", ()=>(0, _shopWindowDefault.default));
+parcelHelpers.export(exports, "Shop", ()=>(0, _shopDefault.default));
+parcelHelpers.export(exports, "Shuffle", ()=>(0, _shuffleDefault.default));
+parcelHelpers.export(exports, "SignDeadEndFill", ()=>(0, _signDeadEndFillDefault.default));
+parcelHelpers.export(exports, "SignDeadEnd", ()=>(0, _signDeadEndDefault.default));
+parcelHelpers.export(exports, "SignDoNotEnterFill", ()=>(0, _signDoNotEnterFillDefault.default));
+parcelHelpers.export(exports, "SignDoNotEnter", ()=>(0, _signDoNotEnterDefault.default));
+parcelHelpers.export(exports, "SignIntersectionFill", ()=>(0, _signIntersectionFillDefault.default));
+parcelHelpers.export(exports, "SignIntersectionSideFill", ()=>(0, _signIntersectionSideFillDefault.default));
+parcelHelpers.export(exports, "SignIntersectionSide", ()=>(0, _signIntersectionSideDefault.default));
+parcelHelpers.export(exports, "SignIntersectionTFill", ()=>(0, _signIntersectionTFillDefault.default));
+parcelHelpers.export(exports, "SignIntersectionT", ()=>(0, _signIntersectionTDefault.default));
+parcelHelpers.export(exports, "SignIntersectionYFill", ()=>(0, _signIntersectionYFillDefault.default));
+parcelHelpers.export(exports, "SignIntersectionY", ()=>(0, _signIntersectionYDefault.default));
+parcelHelpers.export(exports, "SignIntersection", ()=>(0, _signIntersectionDefault.default));
+parcelHelpers.export(exports, "SignMergeLeftFill", ()=>(0, _signMergeLeftFillDefault.default));
+parcelHelpers.export(exports, "SignMergeLeft", ()=>(0, _signMergeLeftDefault.default));
+parcelHelpers.export(exports, "SignMergeRightFill", ()=>(0, _signMergeRightFillDefault.default));
+parcelHelpers.export(exports, "SignMergeRight", ()=>(0, _signMergeRightDefault.default));
+parcelHelpers.export(exports, "SignNoLeftTurnFill", ()=>(0, _signNoLeftTurnFillDefault.default));
+parcelHelpers.export(exports, "SignNoLeftTurn", ()=>(0, _signNoLeftTurnDefault.default));
+parcelHelpers.export(exports, "SignNoParkingFill", ()=>(0, _signNoParkingFillDefault.default));
+parcelHelpers.export(exports, "SignNoParking", ()=>(0, _signNoParkingDefault.default));
+parcelHelpers.export(exports, "SignNoRightTurnFill", ()=>(0, _signNoRightTurnFillDefault.default));
+parcelHelpers.export(exports, "SignNoRightTurn", ()=>(0, _signNoRightTurnDefault.default));
+parcelHelpers.export(exports, "SignRailroadFill", ()=>(0, _signRailroadFillDefault.default));
+parcelHelpers.export(exports, "SignRailroad", ()=>(0, _signRailroadDefault.default));
+parcelHelpers.export(exports, "SignStopFill", ()=>(0, _signStopFillDefault.default));
+parcelHelpers.export(exports, "SignStopLightsFill", ()=>(0, _signStopLightsFillDefault.default));
+parcelHelpers.export(exports, "SignStopLights", ()=>(0, _signStopLightsDefault.default));
+parcelHelpers.export(exports, "SignStop", ()=>(0, _signStopDefault.default));
+parcelHelpers.export(exports, "SignTurnLeftFill", ()=>(0, _signTurnLeftFillDefault.default));
+parcelHelpers.export(exports, "SignTurnLeft", ()=>(0, _signTurnLeftDefault.default));
+parcelHelpers.export(exports, "SignTurnRightFill", ()=>(0, _signTurnRightFillDefault.default));
+parcelHelpers.export(exports, "SignTurnRight", ()=>(0, _signTurnRightDefault.default));
+parcelHelpers.export(exports, "SignTurnSlightLeftFill", ()=>(0, _signTurnSlightLeftFillDefault.default));
+parcelHelpers.export(exports, "SignTurnSlightLeft", ()=>(0, _signTurnSlightLeftDefault.default));
+parcelHelpers.export(exports, "SignTurnSlightRightFill", ()=>(0, _signTurnSlightRightFillDefault.default));
+parcelHelpers.export(exports, "SignTurnSlightRight", ()=>(0, _signTurnSlightRightDefault.default));
+parcelHelpers.export(exports, "SignYieldFill", ()=>(0, _signYieldFillDefault.default));
+parcelHelpers.export(exports, "SignYield", ()=>(0, _signYieldDefault.default));
+parcelHelpers.export(exports, "Signal", ()=>(0, _signalDefault.default));
+parcelHelpers.export(exports, "Signpost2Fill", ()=>(0, _signpost2FillDefault.default));
+parcelHelpers.export(exports, "Signpost2", ()=>(0, _signpost2Default.default));
+parcelHelpers.export(exports, "SignpostFill", ()=>(0, _signpostFillDefault.default));
+parcelHelpers.export(exports, "SignpostSplitFill", ()=>(0, _signpostSplitFillDefault.default));
+parcelHelpers.export(exports, "SignpostSplit", ()=>(0, _signpostSplitDefault.default));
+parcelHelpers.export(exports, "Signpost", ()=>(0, _signpostDefault.default));
+parcelHelpers.export(exports, "SimFill", ()=>(0, _simFillDefault.default));
+parcelHelpers.export(exports, "Sim", ()=>(0, _simDefault.default));
+parcelHelpers.export(exports, "SinaWeibo", ()=>(0, _sinaWeiboDefault.default));
+parcelHelpers.export(exports, "SkipBackwardBtnFill", ()=>(0, _skipBackwardBtnFillDefault.default));
+parcelHelpers.export(exports, "SkipBackwardBtn", ()=>(0, _skipBackwardBtnDefault.default));
+parcelHelpers.export(exports, "SkipBackwardCircleFill", ()=>(0, _skipBackwardCircleFillDefault.default));
+parcelHelpers.export(exports, "SkipBackwardCircle", ()=>(0, _skipBackwardCircleDefault.default));
+parcelHelpers.export(exports, "SkipBackwardFill", ()=>(0, _skipBackwardFillDefault.default));
+parcelHelpers.export(exports, "SkipBackward", ()=>(0, _skipBackwardDefault.default));
+parcelHelpers.export(exports, "SkipEndBtnFill", ()=>(0, _skipEndBtnFillDefault.default));
+parcelHelpers.export(exports, "SkipEndBtn", ()=>(0, _skipEndBtnDefault.default));
+parcelHelpers.export(exports, "SkipEndCircleFill", ()=>(0, _skipEndCircleFillDefault.default));
+parcelHelpers.export(exports, "SkipEndCircle", ()=>(0, _skipEndCircleDefault.default));
+parcelHelpers.export(exports, "SkipEndFill", ()=>(0, _skipEndFillDefault.default));
+parcelHelpers.export(exports, "SkipEnd", ()=>(0, _skipEndDefault.default));
+parcelHelpers.export(exports, "SkipForwardBtnFill", ()=>(0, _skipForwardBtnFillDefault.default));
+parcelHelpers.export(exports, "SkipForwardBtn", ()=>(0, _skipForwardBtnDefault.default));
+parcelHelpers.export(exports, "SkipForwardCircleFill", ()=>(0, _skipForwardCircleFillDefault.default));
+parcelHelpers.export(exports, "SkipForwardCircle", ()=>(0, _skipForwardCircleDefault.default));
+parcelHelpers.export(exports, "SkipForwardFill", ()=>(0, _skipForwardFillDefault.default));
+parcelHelpers.export(exports, "SkipForward", ()=>(0, _skipForwardDefault.default));
+parcelHelpers.export(exports, "SkipStartBtnFill", ()=>(0, _skipStartBtnFillDefault.default));
+parcelHelpers.export(exports, "SkipStartBtn", ()=>(0, _skipStartBtnDefault.default));
+parcelHelpers.export(exports, "SkipStartCircleFill", ()=>(0, _skipStartCircleFillDefault.default));
+parcelHelpers.export(exports, "SkipStartCircle", ()=>(0, _skipStartCircleDefault.default));
+parcelHelpers.export(exports, "SkipStartFill", ()=>(0, _skipStartFillDefault.default));
+parcelHelpers.export(exports, "SkipStart", ()=>(0, _skipStartDefault.default));
+parcelHelpers.export(exports, "Skype", ()=>(0, _skypeDefault.default));
+parcelHelpers.export(exports, "Slack", ()=>(0, _slackDefault.default));
+parcelHelpers.export(exports, "SlashCircleFill", ()=>(0, _slashCircleFillDefault.default));
+parcelHelpers.export(exports, "SlashCircle", ()=>(0, _slashCircleDefault.default));
+parcelHelpers.export(exports, "SlashLg", ()=>(0, _slashLgDefault.default));
+parcelHelpers.export(exports, "SlashSquareFill", ()=>(0, _slashSquareFillDefault.default));
+parcelHelpers.export(exports, "SlashSquare", ()=>(0, _slashSquareDefault.default));
+parcelHelpers.export(exports, "Slash", ()=>(0, _slashDefault.default));
+parcelHelpers.export(exports, "Sliders", ()=>(0, _slidersDefault.default));
+parcelHelpers.export(exports, "Sliders2Vertical", ()=>(0, _sliders2VerticalDefault.default));
+parcelHelpers.export(exports, "Sliders2", ()=>(0, _sliders2Default.default));
+parcelHelpers.export(exports, "Smartwatch", ()=>(0, _smartwatchDefault.default));
+parcelHelpers.export(exports, "Snapchat", ()=>(0, _snapchatDefault.default));
+parcelHelpers.export(exports, "Snow", ()=>(0, _snowDefault.default));
+parcelHelpers.export(exports, "Snow2", ()=>(0, _snow2Default.default));
+parcelHelpers.export(exports, "Snow3", ()=>(0, _snow3Default.default));
+parcelHelpers.export(exports, "SortAlphaDownAlt", ()=>(0, _sortAlphaDownAltDefault.default));
+parcelHelpers.export(exports, "SortAlphaDown", ()=>(0, _sortAlphaDownDefault.default));
+parcelHelpers.export(exports, "SortAlphaUpAlt", ()=>(0, _sortAlphaUpAltDefault.default));
+parcelHelpers.export(exports, "SortAlphaUp", ()=>(0, _sortAlphaUpDefault.default));
+parcelHelpers.export(exports, "SortDownAlt", ()=>(0, _sortDownAltDefault.default));
+parcelHelpers.export(exports, "SortDown", ()=>(0, _sortDownDefault.default));
+parcelHelpers.export(exports, "SortNumericDownAlt", ()=>(0, _sortNumericDownAltDefault.default));
+parcelHelpers.export(exports, "SortNumericDown", ()=>(0, _sortNumericDownDefault.default));
+parcelHelpers.export(exports, "SortNumericUpAlt", ()=>(0, _sortNumericUpAltDefault.default));
+parcelHelpers.export(exports, "SortNumericUp", ()=>(0, _sortNumericUpDefault.default));
+parcelHelpers.export(exports, "SortUpAlt", ()=>(0, _sortUpAltDefault.default));
+parcelHelpers.export(exports, "SortUp", ()=>(0, _sortUpDefault.default));
+parcelHelpers.export(exports, "Soundwave", ()=>(0, _soundwaveDefault.default));
+parcelHelpers.export(exports, "SpeakerFill", ()=>(0, _speakerFillDefault.default));
+parcelHelpers.export(exports, "Speaker", ()=>(0, _speakerDefault.default));
+parcelHelpers.export(exports, "Speedometer", ()=>(0, _speedometerDefault.default));
+parcelHelpers.export(exports, "Speedometer2", ()=>(0, _speedometer2Default.default));
+parcelHelpers.export(exports, "Spellcheck", ()=>(0, _spellcheckDefault.default));
+parcelHelpers.export(exports, "Spotify", ()=>(0, _spotifyDefault.default));
+parcelHelpers.export(exports, "SquareFill", ()=>(0, _squareFillDefault.default));
+parcelHelpers.export(exports, "SquareHalf", ()=>(0, _squareHalfDefault.default));
+parcelHelpers.export(exports, "Square", ()=>(0, _squareDefault.default));
+parcelHelpers.export(exports, "StackOverflow", ()=>(0, _stackOverflowDefault.default));
+parcelHelpers.export(exports, "Stack", ()=>(0, _stackDefault.default));
+parcelHelpers.export(exports, "StarFill", ()=>(0, _starFillDefault.default));
+parcelHelpers.export(exports, "StarHalf", ()=>(0, _starHalfDefault.default));
+parcelHelpers.export(exports, "Star", ()=>(0, _starDefault.default));
+parcelHelpers.export(exports, "Stars", ()=>(0, _starsDefault.default));
+parcelHelpers.export(exports, "Steam", ()=>(0, _steamDefault.default));
+parcelHelpers.export(exports, "StickiesFill", ()=>(0, _stickiesFillDefault.default));
+parcelHelpers.export(exports, "Stickies", ()=>(0, _stickiesDefault.default));
+parcelHelpers.export(exports, "StickyFill", ()=>(0, _stickyFillDefault.default));
+parcelHelpers.export(exports, "Sticky", ()=>(0, _stickyDefault.default));
+parcelHelpers.export(exports, "StopBtnFill", ()=>(0, _stopBtnFillDefault.default));
+parcelHelpers.export(exports, "StopBtn", ()=>(0, _stopBtnDefault.default));
+parcelHelpers.export(exports, "StopCircleFill", ()=>(0, _stopCircleFillDefault.default));
+parcelHelpers.export(exports, "StopCircle", ()=>(0, _stopCircleDefault.default));
+parcelHelpers.export(exports, "StopFill", ()=>(0, _stopFillDefault.default));
+parcelHelpers.export(exports, "Stop", ()=>(0, _stopDefault.default));
+parcelHelpers.export(exports, "StoplightsFill", ()=>(0, _stoplightsFillDefault.default));
+parcelHelpers.export(exports, "Stoplights", ()=>(0, _stoplightsDefault.default));
+parcelHelpers.export(exports, "StopwatchFill", ()=>(0, _stopwatchFillDefault.default));
+parcelHelpers.export(exports, "Stopwatch", ()=>(0, _stopwatchDefault.default));
+parcelHelpers.export(exports, "Strava", ()=>(0, _stravaDefault.default));
+parcelHelpers.export(exports, "Stripe", ()=>(0, _stripeDefault.default));
+parcelHelpers.export(exports, "Subscript", ()=>(0, _subscriptDefault.default));
+parcelHelpers.export(exports, "Subtract", ()=>(0, _subtractDefault.default));
+parcelHelpers.export(exports, "SuitClubFill", ()=>(0, _suitClubFillDefault.default));
+parcelHelpers.export(exports, "SuitClub", ()=>(0, _suitClubDefault.default));
+parcelHelpers.export(exports, "SuitDiamondFill", ()=>(0, _suitDiamondFillDefault.default));
+parcelHelpers.export(exports, "SuitDiamond", ()=>(0, _suitDiamondDefault.default));
+parcelHelpers.export(exports, "SuitHeartFill", ()=>(0, _suitHeartFillDefault.default));
+parcelHelpers.export(exports, "SuitHeart", ()=>(0, _suitHeartDefault.default));
+parcelHelpers.export(exports, "SuitSpadeFill", ()=>(0, _suitSpadeFillDefault.default));
+parcelHelpers.export(exports, "SuitSpade", ()=>(0, _suitSpadeDefault.default));
+parcelHelpers.export(exports, "SunFill", ()=>(0, _sunFillDefault.default));
+parcelHelpers.export(exports, "Sun", ()=>(0, _sunDefault.default));
+parcelHelpers.export(exports, "Sunglasses", ()=>(0, _sunglassesDefault.default));
+parcelHelpers.export(exports, "SunriseFill", ()=>(0, _sunriseFillDefault.default));
+parcelHelpers.export(exports, "Sunrise", ()=>(0, _sunriseDefault.default));
+parcelHelpers.export(exports, "SunsetFill", ()=>(0, _sunsetFillDefault.default));
+parcelHelpers.export(exports, "Sunset", ()=>(0, _sunsetDefault.default));
+parcelHelpers.export(exports, "Superscript", ()=>(0, _superscriptDefault.default));
+parcelHelpers.export(exports, "SymmetryHorizontal", ()=>(0, _symmetryHorizontalDefault.default));
+parcelHelpers.export(exports, "SymmetryVertical", ()=>(0, _symmetryVerticalDefault.default));
+parcelHelpers.export(exports, "Table", ()=>(0, _tableDefault.default));
+parcelHelpers.export(exports, "TabletFill", ()=>(0, _tabletFillDefault.default));
+parcelHelpers.export(exports, "TabletLandscapeFill", ()=>(0, _tabletLandscapeFillDefault.default));
+parcelHelpers.export(exports, "TabletLandscape", ()=>(0, _tabletLandscapeDefault.default));
+parcelHelpers.export(exports, "Tablet", ()=>(0, _tabletDefault.default));
+parcelHelpers.export(exports, "TagFill", ()=>(0, _tagFillDefault.default));
+parcelHelpers.export(exports, "Tag", ()=>(0, _tagDefault.default));
+parcelHelpers.export(exports, "TagsFill", ()=>(0, _tagsFillDefault.default));
+parcelHelpers.export(exports, "Tags", ()=>(0, _tagsDefault.default));
+parcelHelpers.export(exports, "TaxiFrontFill", ()=>(0, _taxiFrontFillDefault.default));
+parcelHelpers.export(exports, "TaxiFront", ()=>(0, _taxiFrontDefault.default));
+parcelHelpers.export(exports, "Telegram", ()=>(0, _telegramDefault.default));
+parcelHelpers.export(exports, "TelephoneFill", ()=>(0, _telephoneFillDefault.default));
+parcelHelpers.export(exports, "TelephoneForwardFill", ()=>(0, _telephoneForwardFillDefault.default));
+parcelHelpers.export(exports, "TelephoneForward", ()=>(0, _telephoneForwardDefault.default));
+parcelHelpers.export(exports, "TelephoneInboundFill", ()=>(0, _telephoneInboundFillDefault.default));
+parcelHelpers.export(exports, "TelephoneInbound", ()=>(0, _telephoneInboundDefault.default));
+parcelHelpers.export(exports, "TelephoneMinusFill", ()=>(0, _telephoneMinusFillDefault.default));
+parcelHelpers.export(exports, "TelephoneMinus", ()=>(0, _telephoneMinusDefault.default));
+parcelHelpers.export(exports, "TelephoneOutboundFill", ()=>(0, _telephoneOutboundFillDefault.default));
+parcelHelpers.export(exports, "TelephoneOutbound", ()=>(0, _telephoneOutboundDefault.default));
+parcelHelpers.export(exports, "TelephonePlusFill", ()=>(0, _telephonePlusFillDefault.default));
+parcelHelpers.export(exports, "TelephonePlus", ()=>(0, _telephonePlusDefault.default));
+parcelHelpers.export(exports, "TelephoneXFill", ()=>(0, _telephoneXFillDefault.default));
+parcelHelpers.export(exports, "TelephoneX", ()=>(0, _telephoneXDefault.default));
+parcelHelpers.export(exports, "Telephone", ()=>(0, _telephoneDefault.default));
+parcelHelpers.export(exports, "TencentQq", ()=>(0, _tencentQqDefault.default));
+parcelHelpers.export(exports, "TerminalDash", ()=>(0, _terminalDashDefault.default));
+parcelHelpers.export(exports, "TerminalFill", ()=>(0, _terminalFillDefault.default));
+parcelHelpers.export(exports, "TerminalPlus", ()=>(0, _terminalPlusDefault.default));
+parcelHelpers.export(exports, "TerminalSplit", ()=>(0, _terminalSplitDefault.default));
+parcelHelpers.export(exports, "TerminalX", ()=>(0, _terminalXDefault.default));
+parcelHelpers.export(exports, "Terminal", ()=>(0, _terminalDefault.default));
+parcelHelpers.export(exports, "TextCenter", ()=>(0, _textCenterDefault.default));
+parcelHelpers.export(exports, "TextIndentLeft", ()=>(0, _textIndentLeftDefault.default));
+parcelHelpers.export(exports, "TextIndentRight", ()=>(0, _textIndentRightDefault.default));
+parcelHelpers.export(exports, "TextLeft", ()=>(0, _textLeftDefault.default));
+parcelHelpers.export(exports, "TextParagraph", ()=>(0, _textParagraphDefault.default));
+parcelHelpers.export(exports, "TextRight", ()=>(0, _textRightDefault.default));
+parcelHelpers.export(exports, "TextWrap", ()=>(0, _textWrapDefault.default));
+parcelHelpers.export(exports, "TextareaResize", ()=>(0, _textareaResizeDefault.default));
+parcelHelpers.export(exports, "TextareaT", ()=>(0, _textareaTDefault.default));
+parcelHelpers.export(exports, "Textarea", ()=>(0, _textareaDefault.default));
+parcelHelpers.export(exports, "ThermometerHalf", ()=>(0, _thermometerHalfDefault.default));
+parcelHelpers.export(exports, "ThermometerHigh", ()=>(0, _thermometerHighDefault.default));
+parcelHelpers.export(exports, "ThermometerLow", ()=>(0, _thermometerLowDefault.default));
+parcelHelpers.export(exports, "ThermometerSnow", ()=>(0, _thermometerSnowDefault.default));
+parcelHelpers.export(exports, "ThermometerSun", ()=>(0, _thermometerSunDefault.default));
+parcelHelpers.export(exports, "Thermometer", ()=>(0, _thermometerDefault.default));
+parcelHelpers.export(exports, "ThreeDotsVertical", ()=>(0, _threeDotsVerticalDefault.default));
+parcelHelpers.export(exports, "ThreeDots", ()=>(0, _threeDotsDefault.default));
+parcelHelpers.export(exports, "ThunderboltFill", ()=>(0, _thunderboltFillDefault.default));
+parcelHelpers.export(exports, "Thunderbolt", ()=>(0, _thunderboltDefault.default));
+parcelHelpers.export(exports, "TicketDetailedFill", ()=>(0, _ticketDetailedFillDefault.default));
+parcelHelpers.export(exports, "TicketDetailed", ()=>(0, _ticketDetailedDefault.default));
+parcelHelpers.export(exports, "TicketFill", ()=>(0, _ticketFillDefault.default));
+parcelHelpers.export(exports, "TicketPerforatedFill", ()=>(0, _ticketPerforatedFillDefault.default));
+parcelHelpers.export(exports, "TicketPerforated", ()=>(0, _ticketPerforatedDefault.default));
+parcelHelpers.export(exports, "Ticket", ()=>(0, _ticketDefault.default));
+parcelHelpers.export(exports, "Tiktok", ()=>(0, _tiktokDefault.default));
+parcelHelpers.export(exports, "ToggleOff", ()=>(0, _toggleOffDefault.default));
+parcelHelpers.export(exports, "ToggleOn", ()=>(0, _toggleOnDefault.default));
+parcelHelpers.export(exports, "Toggle2Off", ()=>(0, _toggle2OffDefault.default));
+parcelHelpers.export(exports, "Toggle2On", ()=>(0, _toggle2OnDefault.default));
+parcelHelpers.export(exports, "Toggles", ()=>(0, _togglesDefault.default));
+parcelHelpers.export(exports, "Toggles2", ()=>(0, _toggles2Default.default));
+parcelHelpers.export(exports, "Tools", ()=>(0, _toolsDefault.default));
+parcelHelpers.export(exports, "Tornado", ()=>(0, _tornadoDefault.default));
+parcelHelpers.export(exports, "TrainFreightFrontFill", ()=>(0, _trainFreightFrontFillDefault.default));
+parcelHelpers.export(exports, "TrainFreightFront", ()=>(0, _trainFreightFrontDefault.default));
+parcelHelpers.export(exports, "TrainFrontFill", ()=>(0, _trainFrontFillDefault.default));
+parcelHelpers.export(exports, "TrainFront", ()=>(0, _trainFrontDefault.default));
+parcelHelpers.export(exports, "TrainLightrailFrontFill", ()=>(0, _trainLightrailFrontFillDefault.default));
+parcelHelpers.export(exports, "TrainLightrailFront", ()=>(0, _trainLightrailFrontDefault.default));
+parcelHelpers.export(exports, "Translate", ()=>(0, _translateDefault.default));
+parcelHelpers.export(exports, "TrashFill", ()=>(0, _trashFillDefault.default));
+parcelHelpers.export(exports, "Trash", ()=>(0, _trashDefault.default));
+parcelHelpers.export(exports, "Trash2Fill", ()=>(0, _trash2FillDefault.default));
+parcelHelpers.export(exports, "Trash2", ()=>(0, _trash2Default.default));
+parcelHelpers.export(exports, "Trash3Fill", ()=>(0, _trash3FillDefault.default));
+parcelHelpers.export(exports, "Trash3", ()=>(0, _trash3Default.default));
+parcelHelpers.export(exports, "TreeFill", ()=>(0, _treeFillDefault.default));
+parcelHelpers.export(exports, "Tree", ()=>(0, _treeDefault.default));
+parcelHelpers.export(exports, "Trello", ()=>(0, _trelloDefault.default));
+parcelHelpers.export(exports, "TriangleFill", ()=>(0, _triangleFillDefault.default));
+parcelHelpers.export(exports, "TriangleHalf", ()=>(0, _triangleHalfDefault.default));
+parcelHelpers.export(exports, "Triangle", ()=>(0, _triangleDefault.default));
+parcelHelpers.export(exports, "TrophyFill", ()=>(0, _trophyFillDefault.default));
+parcelHelpers.export(exports, "Trophy", ()=>(0, _trophyDefault.default));
+parcelHelpers.export(exports, "TropicalStorm", ()=>(0, _tropicalStormDefault.default));
+parcelHelpers.export(exports, "TruckFlatbed", ()=>(0, _truckFlatbedDefault.default));
+parcelHelpers.export(exports, "TruckFrontFill", ()=>(0, _truckFrontFillDefault.default));
+parcelHelpers.export(exports, "TruckFront", ()=>(0, _truckFrontDefault.default));
+parcelHelpers.export(exports, "Truck", ()=>(0, _truckDefault.default));
+parcelHelpers.export(exports, "Tsunami", ()=>(0, _tsunamiDefault.default));
+parcelHelpers.export(exports, "TvFill", ()=>(0, _tvFillDefault.default));
+parcelHelpers.export(exports, "Tv", ()=>(0, _tvDefault.default));
+parcelHelpers.export(exports, "Twitch", ()=>(0, _twitchDefault.default));
+parcelHelpers.export(exports, "Twitter", ()=>(0, _twitterDefault.default));
+parcelHelpers.export(exports, "TypeBold", ()=>(0, _typeBoldDefault.default));
+parcelHelpers.export(exports, "TypeH1", ()=>(0, _typeH1Default.default));
+parcelHelpers.export(exports, "TypeH2", ()=>(0, _typeH2Default.default));
+parcelHelpers.export(exports, "TypeH3", ()=>(0, _typeH3Default.default));
+parcelHelpers.export(exports, "TypeItalic", ()=>(0, _typeItalicDefault.default));
+parcelHelpers.export(exports, "TypeStrikethrough", ()=>(0, _typeStrikethroughDefault.default));
+parcelHelpers.export(exports, "TypeUnderline", ()=>(0, _typeUnderlineDefault.default));
+parcelHelpers.export(exports, "Type", ()=>(0, _typeDefault.default));
+parcelHelpers.export(exports, "Ubuntu", ()=>(0, _ubuntuDefault.default));
+parcelHelpers.export(exports, "UiChecksGrid", ()=>(0, _uiChecksGridDefault.default));
+parcelHelpers.export(exports, "UiChecks", ()=>(0, _uiChecksDefault.default));
+parcelHelpers.export(exports, "UiRadiosGrid", ()=>(0, _uiRadiosGridDefault.default));
+parcelHelpers.export(exports, "UiRadios", ()=>(0, _uiRadiosDefault.default));
+parcelHelpers.export(exports, "UmbrellaFill", ()=>(0, _umbrellaFillDefault.default));
+parcelHelpers.export(exports, "Umbrella", ()=>(0, _umbrellaDefault.default));
+parcelHelpers.export(exports, "Unindent", ()=>(0, _unindentDefault.default));
+parcelHelpers.export(exports, "Union", ()=>(0, _unionDefault.default));
+parcelHelpers.export(exports, "Unity", ()=>(0, _unityDefault.default));
+parcelHelpers.export(exports, "UniversalAccessCircle", ()=>(0, _universalAccessCircleDefault.default));
+parcelHelpers.export(exports, "UniversalAccess", ()=>(0, _universalAccessDefault.default));
+parcelHelpers.export(exports, "UnlockFill", ()=>(0, _unlockFillDefault.default));
+parcelHelpers.export(exports, "Unlock", ()=>(0, _unlockDefault.default));
+parcelHelpers.export(exports, "UpcScan", ()=>(0, _upcScanDefault.default));
+parcelHelpers.export(exports, "Upc", ()=>(0, _upcDefault.default));
+parcelHelpers.export(exports, "Upload", ()=>(0, _uploadDefault.default));
+parcelHelpers.export(exports, "UsbCFill", ()=>(0, _usbCFillDefault.default));
+parcelHelpers.export(exports, "UsbC", ()=>(0, _usbCDefault.default));
+parcelHelpers.export(exports, "UsbDriveFill", ()=>(0, _usbDriveFillDefault.default));
+parcelHelpers.export(exports, "UsbDrive", ()=>(0, _usbDriveDefault.default));
+parcelHelpers.export(exports, "UsbFill", ()=>(0, _usbFillDefault.default));
+parcelHelpers.export(exports, "UsbMicroFill", ()=>(0, _usbMicroFillDefault.default));
+parcelHelpers.export(exports, "UsbMicro", ()=>(0, _usbMicroDefault.default));
+parcelHelpers.export(exports, "UsbMiniFill", ()=>(0, _usbMiniFillDefault.default));
+parcelHelpers.export(exports, "UsbMini", ()=>(0, _usbMiniDefault.default));
+parcelHelpers.export(exports, "UsbPlugFill", ()=>(0, _usbPlugFillDefault.default));
+parcelHelpers.export(exports, "UsbPlug", ()=>(0, _usbPlugDefault.default));
+parcelHelpers.export(exports, "UsbSymbol", ()=>(0, _usbSymbolDefault.default));
+parcelHelpers.export(exports, "Usb", ()=>(0, _usbDefault.default));
+parcelHelpers.export(exports, "Valentine", ()=>(0, _valentineDefault.default));
+parcelHelpers.export(exports, "Valentine2", ()=>(0, _valentine2Default.default));
+parcelHelpers.export(exports, "VectorPen", ()=>(0, _vectorPenDefault.default));
+parcelHelpers.export(exports, "ViewList", ()=>(0, _viewListDefault.default));
+parcelHelpers.export(exports, "ViewStacked", ()=>(0, _viewStackedDefault.default));
+parcelHelpers.export(exports, "Vimeo", ()=>(0, _vimeoDefault.default));
+parcelHelpers.export(exports, "VinylFill", ()=>(0, _vinylFillDefault.default));
+parcelHelpers.export(exports, "Vinyl", ()=>(0, _vinylDefault.default));
+parcelHelpers.export(exports, "Virus", ()=>(0, _virusDefault.default));
+parcelHelpers.export(exports, "Virus2", ()=>(0, _virus2Default.default));
+parcelHelpers.export(exports, "Voicemail", ()=>(0, _voicemailDefault.default));
+parcelHelpers.export(exports, "VolumeDownFill", ()=>(0, _volumeDownFillDefault.default));
+parcelHelpers.export(exports, "VolumeDown", ()=>(0, _volumeDownDefault.default));
+parcelHelpers.export(exports, "VolumeMuteFill", ()=>(0, _volumeMuteFillDefault.default));
+parcelHelpers.export(exports, "VolumeMute", ()=>(0, _volumeMuteDefault.default));
+parcelHelpers.export(exports, "VolumeOffFill", ()=>(0, _volumeOffFillDefault.default));
+parcelHelpers.export(exports, "VolumeOff", ()=>(0, _volumeOffDefault.default));
+parcelHelpers.export(exports, "VolumeUpFill", ()=>(0, _volumeUpFillDefault.default));
+parcelHelpers.export(exports, "VolumeUp", ()=>(0, _volumeUpDefault.default));
+parcelHelpers.export(exports, "Vr", ()=>(0, _vrDefault.default));
+parcelHelpers.export(exports, "WalletFill", ()=>(0, _walletFillDefault.default));
+parcelHelpers.export(exports, "Wallet", ()=>(0, _walletDefault.default));
+parcelHelpers.export(exports, "Wallet2", ()=>(0, _wallet2Default.default));
+parcelHelpers.export(exports, "Watch", ()=>(0, _watchDefault.default));
+parcelHelpers.export(exports, "Water", ()=>(0, _waterDefault.default));
+parcelHelpers.export(exports, "WebcamFill", ()=>(0, _webcamFillDefault.default));
+parcelHelpers.export(exports, "Webcam", ()=>(0, _webcamDefault.default));
+parcelHelpers.export(exports, "Wechat", ()=>(0, _wechatDefault.default));
+parcelHelpers.export(exports, "Whatsapp", ()=>(0, _whatsappDefault.default));
+parcelHelpers.export(exports, "Wifi1", ()=>(0, _wifi1Default.default));
+parcelHelpers.export(exports, "Wifi2", ()=>(0, _wifi2Default.default));
+parcelHelpers.export(exports, "WifiOff", ()=>(0, _wifiOffDefault.default));
+parcelHelpers.export(exports, "Wifi", ()=>(0, _wifiDefault.default));
+parcelHelpers.export(exports, "Wikipedia", ()=>(0, _wikipediaDefault.default));
+parcelHelpers.export(exports, "Wind", ()=>(0, _windDefault.default));
+parcelHelpers.export(exports, "WindowDash", ()=>(0, _windowDashDefault.default));
+parcelHelpers.export(exports, "WindowDesktop", ()=>(0, _windowDesktopDefault.default));
+parcelHelpers.export(exports, "WindowDock", ()=>(0, _windowDockDefault.default));
+parcelHelpers.export(exports, "WindowFullscreen", ()=>(0, _windowFullscreenDefault.default));
+parcelHelpers.export(exports, "WindowPlus", ()=>(0, _windowPlusDefault.default));
+parcelHelpers.export(exports, "WindowSidebar", ()=>(0, _windowSidebarDefault.default));
+parcelHelpers.export(exports, "WindowSplit", ()=>(0, _windowSplitDefault.default));
+parcelHelpers.export(exports, "WindowStack", ()=>(0, _windowStackDefault.default));
+parcelHelpers.export(exports, "WindowX", ()=>(0, _windowXDefault.default));
+parcelHelpers.export(exports, "Window", ()=>(0, _windowDefault.default));
+parcelHelpers.export(exports, "Windows", ()=>(0, _windowsDefault.default));
+parcelHelpers.export(exports, "Wordpress", ()=>(0, _wordpressDefault.default));
+parcelHelpers.export(exports, "WrenchAdjustableCircleFill", ()=>(0, _wrenchAdjustableCircleFillDefault.default));
+parcelHelpers.export(exports, "WrenchAdjustableCircle", ()=>(0, _wrenchAdjustableCircleDefault.default));
+parcelHelpers.export(exports, "WrenchAdjustable", ()=>(0, _wrenchAdjustableDefault.default));
+parcelHelpers.export(exports, "Wrench", ()=>(0, _wrenchDefault.default));
+parcelHelpers.export(exports, "XCircleFill", ()=>(0, _xCircleFillDefault.default));
+parcelHelpers.export(exports, "XCircle", ()=>(0, _xCircleDefault.default));
+parcelHelpers.export(exports, "XDiamondFill", ()=>(0, _xDiamondFillDefault.default));
+parcelHelpers.export(exports, "XDiamond", ()=>(0, _xDiamondDefault.default));
+parcelHelpers.export(exports, "XLg", ()=>(0, _xLgDefault.default));
+parcelHelpers.export(exports, "XOctagonFill", ()=>(0, _xOctagonFillDefault.default));
+parcelHelpers.export(exports, "XOctagon", ()=>(0, _xOctagonDefault.default));
+parcelHelpers.export(exports, "XSquareFill", ()=>(0, _xSquareFillDefault.default));
+parcelHelpers.export(exports, "XSquare", ()=>(0, _xSquareDefault.default));
+parcelHelpers.export(exports, "X", ()=>(0, _xDefault.default));
+parcelHelpers.export(exports, "Xbox", ()=>(0, _xboxDefault.default));
+parcelHelpers.export(exports, "Yelp", ()=>(0, _yelpDefault.default));
+parcelHelpers.export(exports, "YinYang", ()=>(0, _yinYangDefault.default));
+parcelHelpers.export(exports, "Youtube", ()=>(0, _youtubeDefault.default));
+parcelHelpers.export(exports, "ZoomIn", ()=>(0, _zoomInDefault.default));
+parcelHelpers.export(exports, "ZoomOut", ()=>(0, _zoomOutDefault.default));
+var _0CircleFill = require("./icons/0-circle-fill");
+var _0CircleFillDefault = parcelHelpers.interopDefault(_0CircleFill);
+var _0Circle = require("./icons/0-circle");
+var _0CircleDefault = parcelHelpers.interopDefault(_0Circle);
+var _0SquareFill = require("./icons/0-square-fill");
+var _0SquareFillDefault = parcelHelpers.interopDefault(_0SquareFill);
+var _0Square = require("./icons/0-square");
+var _0SquareDefault = parcelHelpers.interopDefault(_0Square);
+var _1CircleFill = require("./icons/1-circle-fill");
+var _1CircleFillDefault = parcelHelpers.interopDefault(_1CircleFill);
+var _1Circle = require("./icons/1-circle");
+var _1CircleDefault = parcelHelpers.interopDefault(_1Circle);
+var _1SquareFill = require("./icons/1-square-fill");
+var _1SquareFillDefault = parcelHelpers.interopDefault(_1SquareFill);
+var _1Square = require("./icons/1-square");
+var _1SquareDefault = parcelHelpers.interopDefault(_1Square);
+var _123 = require("./icons/123");
+var _123Default = parcelHelpers.interopDefault(_123);
+var _2CircleFill = require("./icons/2-circle-fill");
+var _2CircleFillDefault = parcelHelpers.interopDefault(_2CircleFill);
+var _2Circle = require("./icons/2-circle");
+var _2CircleDefault = parcelHelpers.interopDefault(_2Circle);
+var _2SquareFill = require("./icons/2-square-fill");
+var _2SquareFillDefault = parcelHelpers.interopDefault(_2SquareFill);
+var _2Square = require("./icons/2-square");
+var _2SquareDefault = parcelHelpers.interopDefault(_2Square);
+var _3CircleFill = require("./icons/3-circle-fill");
+var _3CircleFillDefault = parcelHelpers.interopDefault(_3CircleFill);
+var _3Circle = require("./icons/3-circle");
+var _3CircleDefault = parcelHelpers.interopDefault(_3Circle);
+var _3SquareFill = require("./icons/3-square-fill");
+var _3SquareFillDefault = parcelHelpers.interopDefault(_3SquareFill);
+var _3Square = require("./icons/3-square");
+var _3SquareDefault = parcelHelpers.interopDefault(_3Square);
+var _4CircleFill = require("./icons/4-circle-fill");
+var _4CircleFillDefault = parcelHelpers.interopDefault(_4CircleFill);
+var _4Circle = require("./icons/4-circle");
+var _4CircleDefault = parcelHelpers.interopDefault(_4Circle);
+var _4SquareFill = require("./icons/4-square-fill");
+var _4SquareFillDefault = parcelHelpers.interopDefault(_4SquareFill);
+var _4Square = require("./icons/4-square");
+var _4SquareDefault = parcelHelpers.interopDefault(_4Square);
+var _5CircleFill = require("./icons/5-circle-fill");
+var _5CircleFillDefault = parcelHelpers.interopDefault(_5CircleFill);
+var _5Circle = require("./icons/5-circle");
+var _5CircleDefault = parcelHelpers.interopDefault(_5Circle);
+var _5SquareFill = require("./icons/5-square-fill");
+var _5SquareFillDefault = parcelHelpers.interopDefault(_5SquareFill);
+var _5Square = require("./icons/5-square");
+var _5SquareDefault = parcelHelpers.interopDefault(_5Square);
+var _6CircleFill = require("./icons/6-circle-fill");
+var _6CircleFillDefault = parcelHelpers.interopDefault(_6CircleFill);
+var _6Circle = require("./icons/6-circle");
+var _6CircleDefault = parcelHelpers.interopDefault(_6Circle);
+var _6SquareFill = require("./icons/6-square-fill");
+var _6SquareFillDefault = parcelHelpers.interopDefault(_6SquareFill);
+var _6Square = require("./icons/6-square");
+var _6SquareDefault = parcelHelpers.interopDefault(_6Square);
+var _7CircleFill = require("./icons/7-circle-fill");
+var _7CircleFillDefault = parcelHelpers.interopDefault(_7CircleFill);
+var _7Circle = require("./icons/7-circle");
+var _7CircleDefault = parcelHelpers.interopDefault(_7Circle);
+var _7SquareFill = require("./icons/7-square-fill");
+var _7SquareFillDefault = parcelHelpers.interopDefault(_7SquareFill);
+var _7Square = require("./icons/7-square");
+var _7SquareDefault = parcelHelpers.interopDefault(_7Square);
+var _8CircleFill = require("./icons/8-circle-fill");
+var _8CircleFillDefault = parcelHelpers.interopDefault(_8CircleFill);
+var _8Circle = require("./icons/8-circle");
+var _8CircleDefault = parcelHelpers.interopDefault(_8Circle);
+var _8SquareFill = require("./icons/8-square-fill");
+var _8SquareFillDefault = parcelHelpers.interopDefault(_8SquareFill);
+var _8Square = require("./icons/8-square");
+var _8SquareDefault = parcelHelpers.interopDefault(_8Square);
+var _9CircleFill = require("./icons/9-circle-fill");
+var _9CircleFillDefault = parcelHelpers.interopDefault(_9CircleFill);
+var _9Circle = require("./icons/9-circle");
+var _9CircleDefault = parcelHelpers.interopDefault(_9Circle);
+var _9SquareFill = require("./icons/9-square-fill");
+var _9SquareFillDefault = parcelHelpers.interopDefault(_9SquareFill);
+var _9Square = require("./icons/9-square");
+var _9SquareDefault = parcelHelpers.interopDefault(_9Square);
+var _activity = require("./icons/activity");
+var _activityDefault = parcelHelpers.interopDefault(_activity);
+var _airplaneEnginesFill = require("./icons/airplane-engines-fill");
+var _airplaneEnginesFillDefault = parcelHelpers.interopDefault(_airplaneEnginesFill);
+var _airplaneEngines = require("./icons/airplane-engines");
+var _airplaneEnginesDefault = parcelHelpers.interopDefault(_airplaneEngines);
+var _airplaneFill = require("./icons/airplane-fill");
+var _airplaneFillDefault = parcelHelpers.interopDefault(_airplaneFill);
+var _airplane = require("./icons/airplane");
+var _airplaneDefault = parcelHelpers.interopDefault(_airplane);
+var _alarmFill = require("./icons/alarm-fill");
+var _alarmFillDefault = parcelHelpers.interopDefault(_alarmFill);
+var _alarm = require("./icons/alarm");
+var _alarmDefault = parcelHelpers.interopDefault(_alarm);
+var _alexa = require("./icons/alexa");
+var _alexaDefault = parcelHelpers.interopDefault(_alexa);
+var _alignBottom = require("./icons/align-bottom");
+var _alignBottomDefault = parcelHelpers.interopDefault(_alignBottom);
+var _alignCenter = require("./icons/align-center");
+var _alignCenterDefault = parcelHelpers.interopDefault(_alignCenter);
+var _alignEnd = require("./icons/align-end");
+var _alignEndDefault = parcelHelpers.interopDefault(_alignEnd);
+var _alignMiddle = require("./icons/align-middle");
+var _alignMiddleDefault = parcelHelpers.interopDefault(_alignMiddle);
+var _alignStart = require("./icons/align-start");
+var _alignStartDefault = parcelHelpers.interopDefault(_alignStart);
+var _alignTop = require("./icons/align-top");
+var _alignTopDefault = parcelHelpers.interopDefault(_alignTop);
+var _alipay = require("./icons/alipay");
+var _alipayDefault = parcelHelpers.interopDefault(_alipay);
+var _alt = require("./icons/alt");
+var _altDefault = parcelHelpers.interopDefault(_alt);
+var _amd = require("./icons/amd");
+var _amdDefault = parcelHelpers.interopDefault(_amd);
+var _android = require("./icons/android");
+var _androidDefault = parcelHelpers.interopDefault(_android);
+var _android2 = require("./icons/android2");
+var _android2Default = parcelHelpers.interopDefault(_android2);
+var _appIndicator = require("./icons/app-indicator");
+var _appIndicatorDefault = parcelHelpers.interopDefault(_appIndicator);
+var _app = require("./icons/app");
+var _appDefault = parcelHelpers.interopDefault(_app);
+var _apple = require("./icons/apple");
+var _appleDefault = parcelHelpers.interopDefault(_apple);
+var _archiveFill = require("./icons/archive-fill");
+var _archiveFillDefault = parcelHelpers.interopDefault(_archiveFill);
+var _archive = require("./icons/archive");
+var _archiveDefault = parcelHelpers.interopDefault(_archive);
+var _arrow90DegDown = require("./icons/arrow-90deg-down");
+var _arrow90DegDownDefault = parcelHelpers.interopDefault(_arrow90DegDown);
+var _arrow90DegLeft = require("./icons/arrow-90deg-left");
+var _arrow90DegLeftDefault = parcelHelpers.interopDefault(_arrow90DegLeft);
+var _arrow90DegRight = require("./icons/arrow-90deg-right");
+var _arrow90DegRightDefault = parcelHelpers.interopDefault(_arrow90DegRight);
+var _arrow90DegUp = require("./icons/arrow-90deg-up");
+var _arrow90DegUpDefault = parcelHelpers.interopDefault(_arrow90DegUp);
+var _arrowBarDown = require("./icons/arrow-bar-down");
+var _arrowBarDownDefault = parcelHelpers.interopDefault(_arrowBarDown);
+var _arrowBarLeft = require("./icons/arrow-bar-left");
+var _arrowBarLeftDefault = parcelHelpers.interopDefault(_arrowBarLeft);
+var _arrowBarRight = require("./icons/arrow-bar-right");
+var _arrowBarRightDefault = parcelHelpers.interopDefault(_arrowBarRight);
+var _arrowBarUp = require("./icons/arrow-bar-up");
+var _arrowBarUpDefault = parcelHelpers.interopDefault(_arrowBarUp);
+var _arrowClockwise = require("./icons/arrow-clockwise");
+var _arrowClockwiseDefault = parcelHelpers.interopDefault(_arrowClockwise);
+var _arrowCounterclockwise = require("./icons/arrow-counterclockwise");
+var _arrowCounterclockwiseDefault = parcelHelpers.interopDefault(_arrowCounterclockwise);
+var _arrowDownCircleFill = require("./icons/arrow-down-circle-fill");
+var _arrowDownCircleFillDefault = parcelHelpers.interopDefault(_arrowDownCircleFill);
+var _arrowDownCircle = require("./icons/arrow-down-circle");
+var _arrowDownCircleDefault = parcelHelpers.interopDefault(_arrowDownCircle);
+var _arrowDownLeftCircleFill = require("./icons/arrow-down-left-circle-fill");
+var _arrowDownLeftCircleFillDefault = parcelHelpers.interopDefault(_arrowDownLeftCircleFill);
+var _arrowDownLeftCircle = require("./icons/arrow-down-left-circle");
+var _arrowDownLeftCircleDefault = parcelHelpers.interopDefault(_arrowDownLeftCircle);
+var _arrowDownLeftSquareFill = require("./icons/arrow-down-left-square-fill");
+var _arrowDownLeftSquareFillDefault = parcelHelpers.interopDefault(_arrowDownLeftSquareFill);
+var _arrowDownLeftSquare = require("./icons/arrow-down-left-square");
+var _arrowDownLeftSquareDefault = parcelHelpers.interopDefault(_arrowDownLeftSquare);
+var _arrowDownLeft = require("./icons/arrow-down-left");
+var _arrowDownLeftDefault = parcelHelpers.interopDefault(_arrowDownLeft);
+var _arrowDownRightCircleFill = require("./icons/arrow-down-right-circle-fill");
+var _arrowDownRightCircleFillDefault = parcelHelpers.interopDefault(_arrowDownRightCircleFill);
+var _arrowDownRightCircle = require("./icons/arrow-down-right-circle");
+var _arrowDownRightCircleDefault = parcelHelpers.interopDefault(_arrowDownRightCircle);
+var _arrowDownRightSquareFill = require("./icons/arrow-down-right-square-fill");
+var _arrowDownRightSquareFillDefault = parcelHelpers.interopDefault(_arrowDownRightSquareFill);
+var _arrowDownRightSquare = require("./icons/arrow-down-right-square");
+var _arrowDownRightSquareDefault = parcelHelpers.interopDefault(_arrowDownRightSquare);
+var _arrowDownRight = require("./icons/arrow-down-right");
+var _arrowDownRightDefault = parcelHelpers.interopDefault(_arrowDownRight);
+var _arrowDownShort = require("./icons/arrow-down-short");
+var _arrowDownShortDefault = parcelHelpers.interopDefault(_arrowDownShort);
+var _arrowDownSquareFill = require("./icons/arrow-down-square-fill");
+var _arrowDownSquareFillDefault = parcelHelpers.interopDefault(_arrowDownSquareFill);
+var _arrowDownSquare = require("./icons/arrow-down-square");
+var _arrowDownSquareDefault = parcelHelpers.interopDefault(_arrowDownSquare);
+var _arrowDownUp = require("./icons/arrow-down-up");
+var _arrowDownUpDefault = parcelHelpers.interopDefault(_arrowDownUp);
+var _arrowDown = require("./icons/arrow-down");
+var _arrowDownDefault = parcelHelpers.interopDefault(_arrowDown);
+var _arrowLeftCircleFill = require("./icons/arrow-left-circle-fill");
+var _arrowLeftCircleFillDefault = parcelHelpers.interopDefault(_arrowLeftCircleFill);
+var _arrowLeftCircle = require("./icons/arrow-left-circle");
+var _arrowLeftCircleDefault = parcelHelpers.interopDefault(_arrowLeftCircle);
+var _arrowLeftRight = require("./icons/arrow-left-right");
+var _arrowLeftRightDefault = parcelHelpers.interopDefault(_arrowLeftRight);
+var _arrowLeftShort = require("./icons/arrow-left-short");
+var _arrowLeftShortDefault = parcelHelpers.interopDefault(_arrowLeftShort);
+var _arrowLeftSquareFill = require("./icons/arrow-left-square-fill");
+var _arrowLeftSquareFillDefault = parcelHelpers.interopDefault(_arrowLeftSquareFill);
+var _arrowLeftSquare = require("./icons/arrow-left-square");
+var _arrowLeftSquareDefault = parcelHelpers.interopDefault(_arrowLeftSquare);
+var _arrowLeft = require("./icons/arrow-left");
+var _arrowLeftDefault = parcelHelpers.interopDefault(_arrowLeft);
+var _arrowRepeat = require("./icons/arrow-repeat");
+var _arrowRepeatDefault = parcelHelpers.interopDefault(_arrowRepeat);
+var _arrowReturnLeft = require("./icons/arrow-return-left");
+var _arrowReturnLeftDefault = parcelHelpers.interopDefault(_arrowReturnLeft);
+var _arrowReturnRight = require("./icons/arrow-return-right");
+var _arrowReturnRightDefault = parcelHelpers.interopDefault(_arrowReturnRight);
+var _arrowRightCircleFill = require("./icons/arrow-right-circle-fill");
+var _arrowRightCircleFillDefault = parcelHelpers.interopDefault(_arrowRightCircleFill);
+var _arrowRightCircle = require("./icons/arrow-right-circle");
+var _arrowRightCircleDefault = parcelHelpers.interopDefault(_arrowRightCircle);
+var _arrowRightShort = require("./icons/arrow-right-short");
+var _arrowRightShortDefault = parcelHelpers.interopDefault(_arrowRightShort);
+var _arrowRightSquareFill = require("./icons/arrow-right-square-fill");
+var _arrowRightSquareFillDefault = parcelHelpers.interopDefault(_arrowRightSquareFill);
+var _arrowRightSquare = require("./icons/arrow-right-square");
+var _arrowRightSquareDefault = parcelHelpers.interopDefault(_arrowRightSquare);
+var _arrowRight = require("./icons/arrow-right");
+var _arrowRightDefault = parcelHelpers.interopDefault(_arrowRight);
+var _arrowThroughHeartFill = require("./icons/arrow-through-heart-fill");
+var _arrowThroughHeartFillDefault = parcelHelpers.interopDefault(_arrowThroughHeartFill);
+var _arrowThroughHeart = require("./icons/arrow-through-heart");
+var _arrowThroughHeartDefault = parcelHelpers.interopDefault(_arrowThroughHeart);
+var _arrowUpCircleFill = require("./icons/arrow-up-circle-fill");
+var _arrowUpCircleFillDefault = parcelHelpers.interopDefault(_arrowUpCircleFill);
+var _arrowUpCircle = require("./icons/arrow-up-circle");
+var _arrowUpCircleDefault = parcelHelpers.interopDefault(_arrowUpCircle);
+var _arrowUpLeftCircleFill = require("./icons/arrow-up-left-circle-fill");
+var _arrowUpLeftCircleFillDefault = parcelHelpers.interopDefault(_arrowUpLeftCircleFill);
+var _arrowUpLeftCircle = require("./icons/arrow-up-left-circle");
+var _arrowUpLeftCircleDefault = parcelHelpers.interopDefault(_arrowUpLeftCircle);
+var _arrowUpLeftSquareFill = require("./icons/arrow-up-left-square-fill");
+var _arrowUpLeftSquareFillDefault = parcelHelpers.interopDefault(_arrowUpLeftSquareFill);
+var _arrowUpLeftSquare = require("./icons/arrow-up-left-square");
+var _arrowUpLeftSquareDefault = parcelHelpers.interopDefault(_arrowUpLeftSquare);
+var _arrowUpLeft = require("./icons/arrow-up-left");
+var _arrowUpLeftDefault = parcelHelpers.interopDefault(_arrowUpLeft);
+var _arrowUpRightCircleFill = require("./icons/arrow-up-right-circle-fill");
+var _arrowUpRightCircleFillDefault = parcelHelpers.interopDefault(_arrowUpRightCircleFill);
+var _arrowUpRightCircle = require("./icons/arrow-up-right-circle");
+var _arrowUpRightCircleDefault = parcelHelpers.interopDefault(_arrowUpRightCircle);
+var _arrowUpRightSquareFill = require("./icons/arrow-up-right-square-fill");
+var _arrowUpRightSquareFillDefault = parcelHelpers.interopDefault(_arrowUpRightSquareFill);
+var _arrowUpRightSquare = require("./icons/arrow-up-right-square");
+var _arrowUpRightSquareDefault = parcelHelpers.interopDefault(_arrowUpRightSquare);
+var _arrowUpRight = require("./icons/arrow-up-right");
+var _arrowUpRightDefault = parcelHelpers.interopDefault(_arrowUpRight);
+var _arrowUpShort = require("./icons/arrow-up-short");
+var _arrowUpShortDefault = parcelHelpers.interopDefault(_arrowUpShort);
+var _arrowUpSquareFill = require("./icons/arrow-up-square-fill");
+var _arrowUpSquareFillDefault = parcelHelpers.interopDefault(_arrowUpSquareFill);
+var _arrowUpSquare = require("./icons/arrow-up-square");
+var _arrowUpSquareDefault = parcelHelpers.interopDefault(_arrowUpSquare);
+var _arrowUp = require("./icons/arrow-up");
+var _arrowUpDefault = parcelHelpers.interopDefault(_arrowUp);
+var _arrowsAngleContract = require("./icons/arrows-angle-contract");
+var _arrowsAngleContractDefault = parcelHelpers.interopDefault(_arrowsAngleContract);
+var _arrowsAngleExpand = require("./icons/arrows-angle-expand");
+var _arrowsAngleExpandDefault = parcelHelpers.interopDefault(_arrowsAngleExpand);
+var _arrowsCollapse = require("./icons/arrows-collapse");
+var _arrowsCollapseDefault = parcelHelpers.interopDefault(_arrowsCollapse);
+var _arrowsExpand = require("./icons/arrows-expand");
+var _arrowsExpandDefault = parcelHelpers.interopDefault(_arrowsExpand);
+var _arrowsFullscreen = require("./icons/arrows-fullscreen");
+var _arrowsFullscreenDefault = parcelHelpers.interopDefault(_arrowsFullscreen);
+var _arrowsMove = require("./icons/arrows-move");
+var _arrowsMoveDefault = parcelHelpers.interopDefault(_arrowsMove);
+var _aspectRatioFill = require("./icons/aspect-ratio-fill");
+var _aspectRatioFillDefault = parcelHelpers.interopDefault(_aspectRatioFill);
+var _aspectRatio = require("./icons/aspect-ratio");
+var _aspectRatioDefault = parcelHelpers.interopDefault(_aspectRatio);
+var _asterisk = require("./icons/asterisk");
+var _asteriskDefault = parcelHelpers.interopDefault(_asterisk);
+var _at = require("./icons/at");
+var _atDefault = parcelHelpers.interopDefault(_at);
+var _awardFill = require("./icons/award-fill");
+var _awardFillDefault = parcelHelpers.interopDefault(_awardFill);
+var _award = require("./icons/award");
+var _awardDefault = parcelHelpers.interopDefault(_award);
+var _back = require("./icons/back");
+var _backDefault = parcelHelpers.interopDefault(_back);
+var _backspaceFill = require("./icons/backspace-fill");
+var _backspaceFillDefault = parcelHelpers.interopDefault(_backspaceFill);
+var _backspaceReverseFill = require("./icons/backspace-reverse-fill");
+var _backspaceReverseFillDefault = parcelHelpers.interopDefault(_backspaceReverseFill);
+var _backspaceReverse = require("./icons/backspace-reverse");
+var _backspaceReverseDefault = parcelHelpers.interopDefault(_backspaceReverse);
+var _backspace = require("./icons/backspace");
+var _backspaceDefault = parcelHelpers.interopDefault(_backspace);
+var _badge3DFill = require("./icons/badge-3d-fill");
+var _badge3DFillDefault = parcelHelpers.interopDefault(_badge3DFill);
+var _badge3D = require("./icons/badge-3d");
+var _badge3DDefault = parcelHelpers.interopDefault(_badge3D);
+var _badge4KFill = require("./icons/badge-4k-fill");
+var _badge4KFillDefault = parcelHelpers.interopDefault(_badge4KFill);
+var _badge4K = require("./icons/badge-4k");
+var _badge4KDefault = parcelHelpers.interopDefault(_badge4K);
+var _badge8KFill = require("./icons/badge-8k-fill");
+var _badge8KFillDefault = parcelHelpers.interopDefault(_badge8KFill);
+var _badge8K = require("./icons/badge-8k");
+var _badge8KDefault = parcelHelpers.interopDefault(_badge8K);
+var _badgeAdFill = require("./icons/badge-ad-fill");
+var _badgeAdFillDefault = parcelHelpers.interopDefault(_badgeAdFill);
+var _badgeAd = require("./icons/badge-ad");
+var _badgeAdDefault = parcelHelpers.interopDefault(_badgeAd);
+var _badgeArFill = require("./icons/badge-ar-fill");
+var _badgeArFillDefault = parcelHelpers.interopDefault(_badgeArFill);
+var _badgeAr = require("./icons/badge-ar");
+var _badgeArDefault = parcelHelpers.interopDefault(_badgeAr);
+var _badgeCcFill = require("./icons/badge-cc-fill");
+var _badgeCcFillDefault = parcelHelpers.interopDefault(_badgeCcFill);
+var _badgeCc = require("./icons/badge-cc");
+var _badgeCcDefault = parcelHelpers.interopDefault(_badgeCc);
+var _badgeHdFill = require("./icons/badge-hd-fill");
+var _badgeHdFillDefault = parcelHelpers.interopDefault(_badgeHdFill);
+var _badgeHd = require("./icons/badge-hd");
+var _badgeHdDefault = parcelHelpers.interopDefault(_badgeHd);
+var _badgeSdFill = require("./icons/badge-sd-fill");
+var _badgeSdFillDefault = parcelHelpers.interopDefault(_badgeSdFill);
+var _badgeSd = require("./icons/badge-sd");
+var _badgeSdDefault = parcelHelpers.interopDefault(_badgeSd);
+var _badgeTmFill = require("./icons/badge-tm-fill");
+var _badgeTmFillDefault = parcelHelpers.interopDefault(_badgeTmFill);
+var _badgeTm = require("./icons/badge-tm");
+var _badgeTmDefault = parcelHelpers.interopDefault(_badgeTm);
+var _badgeVoFill = require("./icons/badge-vo-fill");
+var _badgeVoFillDefault = parcelHelpers.interopDefault(_badgeVoFill);
+var _badgeVo = require("./icons/badge-vo");
+var _badgeVoDefault = parcelHelpers.interopDefault(_badgeVo);
+var _badgeVrFill = require("./icons/badge-vr-fill");
+var _badgeVrFillDefault = parcelHelpers.interopDefault(_badgeVrFill);
+var _badgeVr = require("./icons/badge-vr");
+var _badgeVrDefault = parcelHelpers.interopDefault(_badgeVr);
+var _badgeWcFill = require("./icons/badge-wc-fill");
+var _badgeWcFillDefault = parcelHelpers.interopDefault(_badgeWcFill);
+var _badgeWc = require("./icons/badge-wc");
+var _badgeWcDefault = parcelHelpers.interopDefault(_badgeWc);
+var _bagCheckFill = require("./icons/bag-check-fill");
+var _bagCheckFillDefault = parcelHelpers.interopDefault(_bagCheckFill);
+var _bagCheck = require("./icons/bag-check");
+var _bagCheckDefault = parcelHelpers.interopDefault(_bagCheck);
+var _bagDashFill = require("./icons/bag-dash-fill");
+var _bagDashFillDefault = parcelHelpers.interopDefault(_bagDashFill);
+var _bagDash = require("./icons/bag-dash");
+var _bagDashDefault = parcelHelpers.interopDefault(_bagDash);
+var _bagFill = require("./icons/bag-fill");
+var _bagFillDefault = parcelHelpers.interopDefault(_bagFill);
+var _bagHeartFill = require("./icons/bag-heart-fill");
+var _bagHeartFillDefault = parcelHelpers.interopDefault(_bagHeartFill);
+var _bagHeart = require("./icons/bag-heart");
+var _bagHeartDefault = parcelHelpers.interopDefault(_bagHeart);
+var _bagPlusFill = require("./icons/bag-plus-fill");
+var _bagPlusFillDefault = parcelHelpers.interopDefault(_bagPlusFill);
+var _bagPlus = require("./icons/bag-plus");
+var _bagPlusDefault = parcelHelpers.interopDefault(_bagPlus);
+var _bagXFill = require("./icons/bag-x-fill");
+var _bagXFillDefault = parcelHelpers.interopDefault(_bagXFill);
+var _bagX = require("./icons/bag-x");
+var _bagXDefault = parcelHelpers.interopDefault(_bagX);
+var _bag = require("./icons/bag");
+var _bagDefault = parcelHelpers.interopDefault(_bag);
+var _balloonFill = require("./icons/balloon-fill");
+var _balloonFillDefault = parcelHelpers.interopDefault(_balloonFill);
+var _balloonHeartFill = require("./icons/balloon-heart-fill");
+var _balloonHeartFillDefault = parcelHelpers.interopDefault(_balloonHeartFill);
+var _balloonHeart = require("./icons/balloon-heart");
+var _balloonHeartDefault = parcelHelpers.interopDefault(_balloonHeart);
+var _balloon = require("./icons/balloon");
+var _balloonDefault = parcelHelpers.interopDefault(_balloon);
+var _bandaidFill = require("./icons/bandaid-fill");
+var _bandaidFillDefault = parcelHelpers.interopDefault(_bandaidFill);
+var _bandaid = require("./icons/bandaid");
+var _bandaidDefault = parcelHelpers.interopDefault(_bandaid);
+var _bank = require("./icons/bank");
+var _bankDefault = parcelHelpers.interopDefault(_bank);
+var _bank2 = require("./icons/bank2");
+var _bank2Default = parcelHelpers.interopDefault(_bank2);
+var _barChartFill = require("./icons/bar-chart-fill");
+var _barChartFillDefault = parcelHelpers.interopDefault(_barChartFill);
+var _barChartLineFill = require("./icons/bar-chart-line-fill");
+var _barChartLineFillDefault = parcelHelpers.interopDefault(_barChartLineFill);
+var _barChartLine = require("./icons/bar-chart-line");
+var _barChartLineDefault = parcelHelpers.interopDefault(_barChartLine);
+var _barChartSteps = require("./icons/bar-chart-steps");
+var _barChartStepsDefault = parcelHelpers.interopDefault(_barChartSteps);
+var _barChart = require("./icons/bar-chart");
+var _barChartDefault = parcelHelpers.interopDefault(_barChart);
+var _basketFill = require("./icons/basket-fill");
+var _basketFillDefault = parcelHelpers.interopDefault(_basketFill);
+var _basket = require("./icons/basket");
+var _basketDefault = parcelHelpers.interopDefault(_basket);
+var _basket2Fill = require("./icons/basket2-fill");
+var _basket2FillDefault = parcelHelpers.interopDefault(_basket2Fill);
+var _basket2 = require("./icons/basket2");
+var _basket2Default = parcelHelpers.interopDefault(_basket2);
+var _basket3Fill = require("./icons/basket3-fill");
+var _basket3FillDefault = parcelHelpers.interopDefault(_basket3Fill);
+var _basket3 = require("./icons/basket3");
+var _basket3Default = parcelHelpers.interopDefault(_basket3);
+var _batteryCharging = require("./icons/battery-charging");
+var _batteryChargingDefault = parcelHelpers.interopDefault(_batteryCharging);
+var _batteryFull = require("./icons/battery-full");
+var _batteryFullDefault = parcelHelpers.interopDefault(_batteryFull);
+var _batteryHalf = require("./icons/battery-half");
+var _batteryHalfDefault = parcelHelpers.interopDefault(_batteryHalf);
+var _battery = require("./icons/battery");
+var _batteryDefault = parcelHelpers.interopDefault(_battery);
+var _behance = require("./icons/behance");
+var _behanceDefault = parcelHelpers.interopDefault(_behance);
+var _bellFill = require("./icons/bell-fill");
+var _bellFillDefault = parcelHelpers.interopDefault(_bellFill);
+var _bellSlashFill = require("./icons/bell-slash-fill");
+var _bellSlashFillDefault = parcelHelpers.interopDefault(_bellSlashFill);
+var _bellSlash = require("./icons/bell-slash");
+var _bellSlashDefault = parcelHelpers.interopDefault(_bellSlash);
+var _bell = require("./icons/bell");
+var _bellDefault = parcelHelpers.interopDefault(_bell);
+var _bezier = require("./icons/bezier");
+var _bezierDefault = parcelHelpers.interopDefault(_bezier);
+var _bezier2 = require("./icons/bezier2");
+var _bezier2Default = parcelHelpers.interopDefault(_bezier2);
+var _bicycle = require("./icons/bicycle");
+var _bicycleDefault = parcelHelpers.interopDefault(_bicycle);
+var _binocularsFill = require("./icons/binoculars-fill");
+var _binocularsFillDefault = parcelHelpers.interopDefault(_binocularsFill);
+var _binoculars = require("./icons/binoculars");
+var _binocularsDefault = parcelHelpers.interopDefault(_binoculars);
+var _blockquoteLeft = require("./icons/blockquote-left");
+var _blockquoteLeftDefault = parcelHelpers.interopDefault(_blockquoteLeft);
+var _blockquoteRight = require("./icons/blockquote-right");
+var _blockquoteRightDefault = parcelHelpers.interopDefault(_blockquoteRight);
+var _bluetooth = require("./icons/bluetooth");
+var _bluetoothDefault = parcelHelpers.interopDefault(_bluetooth);
+var _bodyText = require("./icons/body-text");
+var _bodyTextDefault = parcelHelpers.interopDefault(_bodyText);
+var _bookFill = require("./icons/book-fill");
+var _bookFillDefault = parcelHelpers.interopDefault(_bookFill);
+var _bookHalf = require("./icons/book-half");
+var _bookHalfDefault = parcelHelpers.interopDefault(_bookHalf);
+var _book = require("./icons/book");
+var _bookDefault = parcelHelpers.interopDefault(_book);
+var _bookmarkCheckFill = require("./icons/bookmark-check-fill");
+var _bookmarkCheckFillDefault = parcelHelpers.interopDefault(_bookmarkCheckFill);
+var _bookmarkCheck = require("./icons/bookmark-check");
+var _bookmarkCheckDefault = parcelHelpers.interopDefault(_bookmarkCheck);
+var _bookmarkDashFill = require("./icons/bookmark-dash-fill");
+var _bookmarkDashFillDefault = parcelHelpers.interopDefault(_bookmarkDashFill);
+var _bookmarkDash = require("./icons/bookmark-dash");
+var _bookmarkDashDefault = parcelHelpers.interopDefault(_bookmarkDash);
+var _bookmarkFill = require("./icons/bookmark-fill");
+var _bookmarkFillDefault = parcelHelpers.interopDefault(_bookmarkFill);
+var _bookmarkHeartFill = require("./icons/bookmark-heart-fill");
+var _bookmarkHeartFillDefault = parcelHelpers.interopDefault(_bookmarkHeartFill);
+var _bookmarkHeart = require("./icons/bookmark-heart");
+var _bookmarkHeartDefault = parcelHelpers.interopDefault(_bookmarkHeart);
+var _bookmarkPlusFill = require("./icons/bookmark-plus-fill");
+var _bookmarkPlusFillDefault = parcelHelpers.interopDefault(_bookmarkPlusFill);
+var _bookmarkPlus = require("./icons/bookmark-plus");
+var _bookmarkPlusDefault = parcelHelpers.interopDefault(_bookmarkPlus);
+var _bookmarkStarFill = require("./icons/bookmark-star-fill");
+var _bookmarkStarFillDefault = parcelHelpers.interopDefault(_bookmarkStarFill);
+var _bookmarkStar = require("./icons/bookmark-star");
+var _bookmarkStarDefault = parcelHelpers.interopDefault(_bookmarkStar);
+var _bookmarkXFill = require("./icons/bookmark-x-fill");
+var _bookmarkXFillDefault = parcelHelpers.interopDefault(_bookmarkXFill);
+var _bookmarkX = require("./icons/bookmark-x");
+var _bookmarkXDefault = parcelHelpers.interopDefault(_bookmarkX);
+var _bookmark = require("./icons/bookmark");
+var _bookmarkDefault = parcelHelpers.interopDefault(_bookmark);
+var _bookmarksFill = require("./icons/bookmarks-fill");
+var _bookmarksFillDefault = parcelHelpers.interopDefault(_bookmarksFill);
+var _bookmarks = require("./icons/bookmarks");
+var _bookmarksDefault = parcelHelpers.interopDefault(_bookmarks);
+var _bookshelf = require("./icons/bookshelf");
+var _bookshelfDefault = parcelHelpers.interopDefault(_bookshelf);
+var _boomboxFill = require("./icons/boombox-fill");
+var _boomboxFillDefault = parcelHelpers.interopDefault(_boomboxFill);
+var _boombox = require("./icons/boombox");
+var _boomboxDefault = parcelHelpers.interopDefault(_boombox);
+var _bootstrapFill = require("./icons/bootstrap-fill");
+var _bootstrapFillDefault = parcelHelpers.interopDefault(_bootstrapFill);
+var _bootstrapReboot = require("./icons/bootstrap-reboot");
+var _bootstrapRebootDefault = parcelHelpers.interopDefault(_bootstrapReboot);
+var _bootstrap = require("./icons/bootstrap");
+var _bootstrapDefault = parcelHelpers.interopDefault(_bootstrap);
+var _borderAll = require("./icons/border-all");
+var _borderAllDefault = parcelHelpers.interopDefault(_borderAll);
+var _borderBottom = require("./icons/border-bottom");
+var _borderBottomDefault = parcelHelpers.interopDefault(_borderBottom);
+var _borderCenter = require("./icons/border-center");
+var _borderCenterDefault = parcelHelpers.interopDefault(_borderCenter);
+var _borderInner = require("./icons/border-inner");
+var _borderInnerDefault = parcelHelpers.interopDefault(_borderInner);
+var _borderLeft = require("./icons/border-left");
+var _borderLeftDefault = parcelHelpers.interopDefault(_borderLeft);
+var _borderMiddle = require("./icons/border-middle");
+var _borderMiddleDefault = parcelHelpers.interopDefault(_borderMiddle);
+var _borderOuter = require("./icons/border-outer");
+var _borderOuterDefault = parcelHelpers.interopDefault(_borderOuter);
+var _borderRight = require("./icons/border-right");
+var _borderRightDefault = parcelHelpers.interopDefault(_borderRight);
+var _borderStyle = require("./icons/border-style");
+var _borderStyleDefault = parcelHelpers.interopDefault(_borderStyle);
+var _borderTop = require("./icons/border-top");
+var _borderTopDefault = parcelHelpers.interopDefault(_borderTop);
+var _borderWidth = require("./icons/border-width");
+var _borderWidthDefault = parcelHelpers.interopDefault(_borderWidth);
+var _border = require("./icons/border");
+var _borderDefault = parcelHelpers.interopDefault(_border);
+var _boundingBoxCircles = require("./icons/bounding-box-circles");
+var _boundingBoxCirclesDefault = parcelHelpers.interopDefault(_boundingBoxCircles);
+var _boundingBox = require("./icons/bounding-box");
+var _boundingBoxDefault = parcelHelpers.interopDefault(_boundingBox);
+var _boxArrowDownLeft = require("./icons/box-arrow-down-left");
+var _boxArrowDownLeftDefault = parcelHelpers.interopDefault(_boxArrowDownLeft);
+var _boxArrowDownRight = require("./icons/box-arrow-down-right");
+var _boxArrowDownRightDefault = parcelHelpers.interopDefault(_boxArrowDownRight);
+var _boxArrowDown = require("./icons/box-arrow-down");
+var _boxArrowDownDefault = parcelHelpers.interopDefault(_boxArrowDown);
+var _boxArrowInDownLeft = require("./icons/box-arrow-in-down-left");
+var _boxArrowInDownLeftDefault = parcelHelpers.interopDefault(_boxArrowInDownLeft);
+var _boxArrowInDownRight = require("./icons/box-arrow-in-down-right");
+var _boxArrowInDownRightDefault = parcelHelpers.interopDefault(_boxArrowInDownRight);
+var _boxArrowInDown = require("./icons/box-arrow-in-down");
+var _boxArrowInDownDefault = parcelHelpers.interopDefault(_boxArrowInDown);
+var _boxArrowInLeft = require("./icons/box-arrow-in-left");
+var _boxArrowInLeftDefault = parcelHelpers.interopDefault(_boxArrowInLeft);
+var _boxArrowInRight = require("./icons/box-arrow-in-right");
+var _boxArrowInRightDefault = parcelHelpers.interopDefault(_boxArrowInRight);
+var _boxArrowInUpLeft = require("./icons/box-arrow-in-up-left");
+var _boxArrowInUpLeftDefault = parcelHelpers.interopDefault(_boxArrowInUpLeft);
+var _boxArrowInUpRight = require("./icons/box-arrow-in-up-right");
+var _boxArrowInUpRightDefault = parcelHelpers.interopDefault(_boxArrowInUpRight);
+var _boxArrowInUp = require("./icons/box-arrow-in-up");
+var _boxArrowInUpDefault = parcelHelpers.interopDefault(_boxArrowInUp);
+var _boxArrowLeft = require("./icons/box-arrow-left");
+var _boxArrowLeftDefault = parcelHelpers.interopDefault(_boxArrowLeft);
+var _boxArrowRight = require("./icons/box-arrow-right");
+var _boxArrowRightDefault = parcelHelpers.interopDefault(_boxArrowRight);
+var _boxArrowUpLeft = require("./icons/box-arrow-up-left");
+var _boxArrowUpLeftDefault = parcelHelpers.interopDefault(_boxArrowUpLeft);
+var _boxArrowUpRight = require("./icons/box-arrow-up-right");
+var _boxArrowUpRightDefault = parcelHelpers.interopDefault(_boxArrowUpRight);
+var _boxArrowUp = require("./icons/box-arrow-up");
+var _boxArrowUpDefault = parcelHelpers.interopDefault(_boxArrowUp);
+var _boxFill = require("./icons/box-fill");
+var _boxFillDefault = parcelHelpers.interopDefault(_boxFill);
+var _boxSeamFill = require("./icons/box-seam-fill");
+var _boxSeamFillDefault = parcelHelpers.interopDefault(_boxSeamFill);
+var _boxSeam = require("./icons/box-seam");
+var _boxSeamDefault = parcelHelpers.interopDefault(_boxSeam);
+var _box = require("./icons/box");
+var _boxDefault = parcelHelpers.interopDefault(_box);
+var _box2Fill = require("./icons/box2-fill");
+var _box2FillDefault = parcelHelpers.interopDefault(_box2Fill);
+var _box2HeartFill = require("./icons/box2-heart-fill");
+var _box2HeartFillDefault = parcelHelpers.interopDefault(_box2HeartFill);
+var _box2Heart = require("./icons/box2-heart");
+var _box2HeartDefault = parcelHelpers.interopDefault(_box2Heart);
+var _box2 = require("./icons/box2");
+var _box2Default = parcelHelpers.interopDefault(_box2);
+var _boxes = require("./icons/boxes");
+var _boxesDefault = parcelHelpers.interopDefault(_boxes);
+var _bracesAsterisk = require("./icons/braces-asterisk");
+var _bracesAsteriskDefault = parcelHelpers.interopDefault(_bracesAsterisk);
+var _braces = require("./icons/braces");
+var _bracesDefault = parcelHelpers.interopDefault(_braces);
+var _bricks = require("./icons/bricks");
+var _bricksDefault = parcelHelpers.interopDefault(_bricks);
+var _briefcaseFill = require("./icons/briefcase-fill");
+var _briefcaseFillDefault = parcelHelpers.interopDefault(_briefcaseFill);
+var _briefcase = require("./icons/briefcase");
+var _briefcaseDefault = parcelHelpers.interopDefault(_briefcase);
+var _brightnessAltHighFill = require("./icons/brightness-alt-high-fill");
+var _brightnessAltHighFillDefault = parcelHelpers.interopDefault(_brightnessAltHighFill);
+var _brightnessAltHigh = require("./icons/brightness-alt-high");
+var _brightnessAltHighDefault = parcelHelpers.interopDefault(_brightnessAltHigh);
+var _brightnessAltLowFill = require("./icons/brightness-alt-low-fill");
+var _brightnessAltLowFillDefault = parcelHelpers.interopDefault(_brightnessAltLowFill);
+var _brightnessAltLow = require("./icons/brightness-alt-low");
+var _brightnessAltLowDefault = parcelHelpers.interopDefault(_brightnessAltLow);
+var _brightnessHighFill = require("./icons/brightness-high-fill");
+var _brightnessHighFillDefault = parcelHelpers.interopDefault(_brightnessHighFill);
+var _brightnessHigh = require("./icons/brightness-high");
+var _brightnessHighDefault = parcelHelpers.interopDefault(_brightnessHigh);
+var _brightnessLowFill = require("./icons/brightness-low-fill");
+var _brightnessLowFillDefault = parcelHelpers.interopDefault(_brightnessLowFill);
+var _brightnessLow = require("./icons/brightness-low");
+var _brightnessLowDefault = parcelHelpers.interopDefault(_brightnessLow);
+var _broadcastPin = require("./icons/broadcast-pin");
+var _broadcastPinDefault = parcelHelpers.interopDefault(_broadcastPin);
+var _broadcast = require("./icons/broadcast");
+var _broadcastDefault = parcelHelpers.interopDefault(_broadcast);
+var _browserChrome = require("./icons/browser-chrome");
+var _browserChromeDefault = parcelHelpers.interopDefault(_browserChrome);
+var _browserEdge = require("./icons/browser-edge");
+var _browserEdgeDefault = parcelHelpers.interopDefault(_browserEdge);
+var _browserFirefox = require("./icons/browser-firefox");
+var _browserFirefoxDefault = parcelHelpers.interopDefault(_browserFirefox);
+var _browserSafari = require("./icons/browser-safari");
+var _browserSafariDefault = parcelHelpers.interopDefault(_browserSafari);
+var _brushFill = require("./icons/brush-fill");
+var _brushFillDefault = parcelHelpers.interopDefault(_brushFill);
+var _brush = require("./icons/brush");
+var _brushDefault = parcelHelpers.interopDefault(_brush);
+var _bucketFill = require("./icons/bucket-fill");
+var _bucketFillDefault = parcelHelpers.interopDefault(_bucketFill);
+var _bucket = require("./icons/bucket");
+var _bucketDefault = parcelHelpers.interopDefault(_bucket);
+var _bugFill = require("./icons/bug-fill");
+var _bugFillDefault = parcelHelpers.interopDefault(_bugFill);
+var _bug = require("./icons/bug");
+var _bugDefault = parcelHelpers.interopDefault(_bug);
+var _buildingAdd = require("./icons/building-add");
+var _buildingAddDefault = parcelHelpers.interopDefault(_buildingAdd);
+var _buildingCheck = require("./icons/building-check");
+var _buildingCheckDefault = parcelHelpers.interopDefault(_buildingCheck);
+var _buildingDash = require("./icons/building-dash");
+var _buildingDashDefault = parcelHelpers.interopDefault(_buildingDash);
+var _buildingDown = require("./icons/building-down");
+var _buildingDownDefault = parcelHelpers.interopDefault(_buildingDown);
+var _buildingExclamation = require("./icons/building-exclamation");
+var _buildingExclamationDefault = parcelHelpers.interopDefault(_buildingExclamation);
+var _buildingFillAdd = require("./icons/building-fill-add");
+var _buildingFillAddDefault = parcelHelpers.interopDefault(_buildingFillAdd);
+var _buildingFillCheck = require("./icons/building-fill-check");
+var _buildingFillCheckDefault = parcelHelpers.interopDefault(_buildingFillCheck);
+var _buildingFillDash = require("./icons/building-fill-dash");
+var _buildingFillDashDefault = parcelHelpers.interopDefault(_buildingFillDash);
+var _buildingFillDown = require("./icons/building-fill-down");
+var _buildingFillDownDefault = parcelHelpers.interopDefault(_buildingFillDown);
+var _buildingFillExclamation = require("./icons/building-fill-exclamation");
+var _buildingFillExclamationDefault = parcelHelpers.interopDefault(_buildingFillExclamation);
+var _buildingFillGear = require("./icons/building-fill-gear");
+var _buildingFillGearDefault = parcelHelpers.interopDefault(_buildingFillGear);
+var _buildingFillLock = require("./icons/building-fill-lock");
+var _buildingFillLockDefault = parcelHelpers.interopDefault(_buildingFillLock);
+var _buildingFillSlash = require("./icons/building-fill-slash");
+var _buildingFillSlashDefault = parcelHelpers.interopDefault(_buildingFillSlash);
+var _buildingFillUp = require("./icons/building-fill-up");
+var _buildingFillUpDefault = parcelHelpers.interopDefault(_buildingFillUp);
+var _buildingFillX = require("./icons/building-fill-x");
+var _buildingFillXDefault = parcelHelpers.interopDefault(_buildingFillX);
+var _buildingFill = require("./icons/building-fill");
+var _buildingFillDefault = parcelHelpers.interopDefault(_buildingFill);
+var _buildingGear = require("./icons/building-gear");
+var _buildingGearDefault = parcelHelpers.interopDefault(_buildingGear);
+var _buildingLock = require("./icons/building-lock");
+var _buildingLockDefault = parcelHelpers.interopDefault(_buildingLock);
+var _buildingSlash = require("./icons/building-slash");
+var _buildingSlashDefault = parcelHelpers.interopDefault(_buildingSlash);
+var _buildingUp = require("./icons/building-up");
+var _buildingUpDefault = parcelHelpers.interopDefault(_buildingUp);
+var _buildingX = require("./icons/building-x");
+var _buildingXDefault = parcelHelpers.interopDefault(_buildingX);
+var _building = require("./icons/building");
+var _buildingDefault = parcelHelpers.interopDefault(_building);
+var _buildingsFill = require("./icons/buildings-fill");
+var _buildingsFillDefault = parcelHelpers.interopDefault(_buildingsFill);
+var _buildings = require("./icons/buildings");
+var _buildingsDefault = parcelHelpers.interopDefault(_buildings);
+var _bullseye = require("./icons/bullseye");
+var _bullseyeDefault = parcelHelpers.interopDefault(_bullseye);
+var _busFrontFill = require("./icons/bus-front-fill");
+var _busFrontFillDefault = parcelHelpers.interopDefault(_busFrontFill);
+var _busFront = require("./icons/bus-front");
+var _busFrontDefault = parcelHelpers.interopDefault(_busFront);
+var _cCircleFill = require("./icons/c-circle-fill");
+var _cCircleFillDefault = parcelHelpers.interopDefault(_cCircleFill);
+var _cCircle = require("./icons/c-circle");
+var _cCircleDefault = parcelHelpers.interopDefault(_cCircle);
+var _cSquareFill = require("./icons/c-square-fill");
+var _cSquareFillDefault = parcelHelpers.interopDefault(_cSquareFill);
+var _cSquare = require("./icons/c-square");
+var _cSquareDefault = parcelHelpers.interopDefault(_cSquare);
+var _calculatorFill = require("./icons/calculator-fill");
+var _calculatorFillDefault = parcelHelpers.interopDefault(_calculatorFill);
+var _calculator = require("./icons/calculator");
+var _calculatorDefault = parcelHelpers.interopDefault(_calculator);
+var _calendarCheckFill = require("./icons/calendar-check-fill");
+var _calendarCheckFillDefault = parcelHelpers.interopDefault(_calendarCheckFill);
+var _calendarCheck = require("./icons/calendar-check");
+var _calendarCheckDefault = parcelHelpers.interopDefault(_calendarCheck);
+var _calendarDateFill = require("./icons/calendar-date-fill");
+var _calendarDateFillDefault = parcelHelpers.interopDefault(_calendarDateFill);
+var _calendarDate = require("./icons/calendar-date");
+var _calendarDateDefault = parcelHelpers.interopDefault(_calendarDate);
+var _calendarDayFill = require("./icons/calendar-day-fill");
+var _calendarDayFillDefault = parcelHelpers.interopDefault(_calendarDayFill);
+var _calendarDay = require("./icons/calendar-day");
+var _calendarDayDefault = parcelHelpers.interopDefault(_calendarDay);
+var _calendarEventFill = require("./icons/calendar-event-fill");
+var _calendarEventFillDefault = parcelHelpers.interopDefault(_calendarEventFill);
+var _calendarEvent = require("./icons/calendar-event");
+var _calendarEventDefault = parcelHelpers.interopDefault(_calendarEvent);
+var _calendarFill = require("./icons/calendar-fill");
+var _calendarFillDefault = parcelHelpers.interopDefault(_calendarFill);
+var _calendarHeartFill = require("./icons/calendar-heart-fill");
+var _calendarHeartFillDefault = parcelHelpers.interopDefault(_calendarHeartFill);
+var _calendarHeart = require("./icons/calendar-heart");
+var _calendarHeartDefault = parcelHelpers.interopDefault(_calendarHeart);
+var _calendarMinusFill = require("./icons/calendar-minus-fill");
+var _calendarMinusFillDefault = parcelHelpers.interopDefault(_calendarMinusFill);
+var _calendarMinus = require("./icons/calendar-minus");
+var _calendarMinusDefault = parcelHelpers.interopDefault(_calendarMinus);
+var _calendarMonthFill = require("./icons/calendar-month-fill");
+var _calendarMonthFillDefault = parcelHelpers.interopDefault(_calendarMonthFill);
+var _calendarMonth = require("./icons/calendar-month");
+var _calendarMonthDefault = parcelHelpers.interopDefault(_calendarMonth);
+var _calendarPlusFill = require("./icons/calendar-plus-fill");
+var _calendarPlusFillDefault = parcelHelpers.interopDefault(_calendarPlusFill);
+var _calendarPlus = require("./icons/calendar-plus");
+var _calendarPlusDefault = parcelHelpers.interopDefault(_calendarPlus);
+var _calendarRangeFill = require("./icons/calendar-range-fill");
+var _calendarRangeFillDefault = parcelHelpers.interopDefault(_calendarRangeFill);
+var _calendarRange = require("./icons/calendar-range");
+var _calendarRangeDefault = parcelHelpers.interopDefault(_calendarRange);
+var _calendarWeekFill = require("./icons/calendar-week-fill");
+var _calendarWeekFillDefault = parcelHelpers.interopDefault(_calendarWeekFill);
+var _calendarWeek = require("./icons/calendar-week");
+var _calendarWeekDefault = parcelHelpers.interopDefault(_calendarWeek);
+var _calendarXFill = require("./icons/calendar-x-fill");
+var _calendarXFillDefault = parcelHelpers.interopDefault(_calendarXFill);
+var _calendarX = require("./icons/calendar-x");
+var _calendarXDefault = parcelHelpers.interopDefault(_calendarX);
+var _calendar = require("./icons/calendar");
+var _calendarDefault = parcelHelpers.interopDefault(_calendar);
+var _calendar2CheckFill = require("./icons/calendar2-check-fill");
+var _calendar2CheckFillDefault = parcelHelpers.interopDefault(_calendar2CheckFill);
+var _calendar2Check = require("./icons/calendar2-check");
+var _calendar2CheckDefault = parcelHelpers.interopDefault(_calendar2Check);
+var _calendar2DateFill = require("./icons/calendar2-date-fill");
+var _calendar2DateFillDefault = parcelHelpers.interopDefault(_calendar2DateFill);
+var _calendar2Date = require("./icons/calendar2-date");
+var _calendar2DateDefault = parcelHelpers.interopDefault(_calendar2Date);
+var _calendar2DayFill = require("./icons/calendar2-day-fill");
+var _calendar2DayFillDefault = parcelHelpers.interopDefault(_calendar2DayFill);
+var _calendar2Day = require("./icons/calendar2-day");
+var _calendar2DayDefault = parcelHelpers.interopDefault(_calendar2Day);
+var _calendar2EventFill = require("./icons/calendar2-event-fill");
+var _calendar2EventFillDefault = parcelHelpers.interopDefault(_calendar2EventFill);
+var _calendar2Event = require("./icons/calendar2-event");
+var _calendar2EventDefault = parcelHelpers.interopDefault(_calendar2Event);
+var _calendar2Fill = require("./icons/calendar2-fill");
+var _calendar2FillDefault = parcelHelpers.interopDefault(_calendar2Fill);
+var _calendar2HeartFill = require("./icons/calendar2-heart-fill");
+var _calendar2HeartFillDefault = parcelHelpers.interopDefault(_calendar2HeartFill);
+var _calendar2Heart = require("./icons/calendar2-heart");
+var _calendar2HeartDefault = parcelHelpers.interopDefault(_calendar2Heart);
+var _calendar2MinusFill = require("./icons/calendar2-minus-fill");
+var _calendar2MinusFillDefault = parcelHelpers.interopDefault(_calendar2MinusFill);
+var _calendar2Minus = require("./icons/calendar2-minus");
+var _calendar2MinusDefault = parcelHelpers.interopDefault(_calendar2Minus);
+var _calendar2MonthFill = require("./icons/calendar2-month-fill");
+var _calendar2MonthFillDefault = parcelHelpers.interopDefault(_calendar2MonthFill);
+var _calendar2Month = require("./icons/calendar2-month");
+var _calendar2MonthDefault = parcelHelpers.interopDefault(_calendar2Month);
+var _calendar2PlusFill = require("./icons/calendar2-plus-fill");
+var _calendar2PlusFillDefault = parcelHelpers.interopDefault(_calendar2PlusFill);
+var _calendar2Plus = require("./icons/calendar2-plus");
+var _calendar2PlusDefault = parcelHelpers.interopDefault(_calendar2Plus);
+var _calendar2RangeFill = require("./icons/calendar2-range-fill");
+var _calendar2RangeFillDefault = parcelHelpers.interopDefault(_calendar2RangeFill);
+var _calendar2Range = require("./icons/calendar2-range");
+var _calendar2RangeDefault = parcelHelpers.interopDefault(_calendar2Range);
+var _calendar2WeekFill = require("./icons/calendar2-week-fill");
+var _calendar2WeekFillDefault = parcelHelpers.interopDefault(_calendar2WeekFill);
+var _calendar2Week = require("./icons/calendar2-week");
+var _calendar2WeekDefault = parcelHelpers.interopDefault(_calendar2Week);
+var _calendar2XFill = require("./icons/calendar2-x-fill");
+var _calendar2XFillDefault = parcelHelpers.interopDefault(_calendar2XFill);
+var _calendar2X = require("./icons/calendar2-x");
+var _calendar2XDefault = parcelHelpers.interopDefault(_calendar2X);
+var _calendar2 = require("./icons/calendar2");
+var _calendar2Default = parcelHelpers.interopDefault(_calendar2);
+var _calendar3EventFill = require("./icons/calendar3-event-fill");
+var _calendar3EventFillDefault = parcelHelpers.interopDefault(_calendar3EventFill);
+var _calendar3Event = require("./icons/calendar3-event");
+var _calendar3EventDefault = parcelHelpers.interopDefault(_calendar3Event);
+var _calendar3Fill = require("./icons/calendar3-fill");
+var _calendar3FillDefault = parcelHelpers.interopDefault(_calendar3Fill);
+var _calendar3RangeFill = require("./icons/calendar3-range-fill");
+var _calendar3RangeFillDefault = parcelHelpers.interopDefault(_calendar3RangeFill);
+var _calendar3Range = require("./icons/calendar3-range");
+var _calendar3RangeDefault = parcelHelpers.interopDefault(_calendar3Range);
+var _calendar3WeekFill = require("./icons/calendar3-week-fill");
+var _calendar3WeekFillDefault = parcelHelpers.interopDefault(_calendar3WeekFill);
+var _calendar3Week = require("./icons/calendar3-week");
+var _calendar3WeekDefault = parcelHelpers.interopDefault(_calendar3Week);
+var _calendar3 = require("./icons/calendar3");
+var _calendar3Default = parcelHelpers.interopDefault(_calendar3);
+var _calendar4Event = require("./icons/calendar4-event");
+var _calendar4EventDefault = parcelHelpers.interopDefault(_calendar4Event);
+var _calendar4Range = require("./icons/calendar4-range");
+var _calendar4RangeDefault = parcelHelpers.interopDefault(_calendar4Range);
+var _calendar4Week = require("./icons/calendar4-week");
+var _calendar4WeekDefault = parcelHelpers.interopDefault(_calendar4Week);
+var _calendar4 = require("./icons/calendar4");
+var _calendar4Default = parcelHelpers.interopDefault(_calendar4);
+var _cameraFill = require("./icons/camera-fill");
+var _cameraFillDefault = parcelHelpers.interopDefault(_cameraFill);
+var _cameraReelsFill = require("./icons/camera-reels-fill");
+var _cameraReelsFillDefault = parcelHelpers.interopDefault(_cameraReelsFill);
+var _cameraReels = require("./icons/camera-reels");
+var _cameraReelsDefault = parcelHelpers.interopDefault(_cameraReels);
+var _cameraVideoFill = require("./icons/camera-video-fill");
+var _cameraVideoFillDefault = parcelHelpers.interopDefault(_cameraVideoFill);
+var _cameraVideoOffFill = require("./icons/camera-video-off-fill");
+var _cameraVideoOffFillDefault = parcelHelpers.interopDefault(_cameraVideoOffFill);
+var _cameraVideoOff = require("./icons/camera-video-off");
+var _cameraVideoOffDefault = parcelHelpers.interopDefault(_cameraVideoOff);
+var _cameraVideo = require("./icons/camera-video");
+var _cameraVideoDefault = parcelHelpers.interopDefault(_cameraVideo);
+var _camera = require("./icons/camera");
+var _cameraDefault = parcelHelpers.interopDefault(_camera);
+var _camera2 = require("./icons/camera2");
+var _camera2Default = parcelHelpers.interopDefault(_camera2);
+var _capslockFill = require("./icons/capslock-fill");
+var _capslockFillDefault = parcelHelpers.interopDefault(_capslockFill);
+var _capslock = require("./icons/capslock");
+var _capslockDefault = parcelHelpers.interopDefault(_capslock);
+var _capsulePill = require("./icons/capsule-pill");
+var _capsulePillDefault = parcelHelpers.interopDefault(_capsulePill);
+var _capsule = require("./icons/capsule");
+var _capsuleDefault = parcelHelpers.interopDefault(_capsule);
+var _carFrontFill = require("./icons/car-front-fill");
+var _carFrontFillDefault = parcelHelpers.interopDefault(_carFrontFill);
+var _carFront = require("./icons/car-front");
+var _carFrontDefault = parcelHelpers.interopDefault(_carFront);
+var _cardChecklist = require("./icons/card-checklist");
+var _cardChecklistDefault = parcelHelpers.interopDefault(_cardChecklist);
+var _cardHeading = require("./icons/card-heading");
+var _cardHeadingDefault = parcelHelpers.interopDefault(_cardHeading);
+var _cardImage = require("./icons/card-image");
+var _cardImageDefault = parcelHelpers.interopDefault(_cardImage);
+var _cardList = require("./icons/card-list");
+var _cardListDefault = parcelHelpers.interopDefault(_cardList);
+var _cardText = require("./icons/card-text");
+var _cardTextDefault = parcelHelpers.interopDefault(_cardText);
+var _caretDownFill = require("./icons/caret-down-fill");
+var _caretDownFillDefault = parcelHelpers.interopDefault(_caretDownFill);
+var _caretDownSquareFill = require("./icons/caret-down-square-fill");
+var _caretDownSquareFillDefault = parcelHelpers.interopDefault(_caretDownSquareFill);
+var _caretDownSquare = require("./icons/caret-down-square");
+var _caretDownSquareDefault = parcelHelpers.interopDefault(_caretDownSquare);
+var _caretDown = require("./icons/caret-down");
+var _caretDownDefault = parcelHelpers.interopDefault(_caretDown);
+var _caretLeftFill = require("./icons/caret-left-fill");
+var _caretLeftFillDefault = parcelHelpers.interopDefault(_caretLeftFill);
+var _caretLeftSquareFill = require("./icons/caret-left-square-fill");
+var _caretLeftSquareFillDefault = parcelHelpers.interopDefault(_caretLeftSquareFill);
+var _caretLeftSquare = require("./icons/caret-left-square");
+var _caretLeftSquareDefault = parcelHelpers.interopDefault(_caretLeftSquare);
+var _caretLeft = require("./icons/caret-left");
+var _caretLeftDefault = parcelHelpers.interopDefault(_caretLeft);
+var _caretRightFill = require("./icons/caret-right-fill");
+var _caretRightFillDefault = parcelHelpers.interopDefault(_caretRightFill);
+var _caretRightSquareFill = require("./icons/caret-right-square-fill");
+var _caretRightSquareFillDefault = parcelHelpers.interopDefault(_caretRightSquareFill);
+var _caretRightSquare = require("./icons/caret-right-square");
+var _caretRightSquareDefault = parcelHelpers.interopDefault(_caretRightSquare);
+var _caretRight = require("./icons/caret-right");
+var _caretRightDefault = parcelHelpers.interopDefault(_caretRight);
+var _caretUpFill = require("./icons/caret-up-fill");
+var _caretUpFillDefault = parcelHelpers.interopDefault(_caretUpFill);
+var _caretUpSquareFill = require("./icons/caret-up-square-fill");
+var _caretUpSquareFillDefault = parcelHelpers.interopDefault(_caretUpSquareFill);
+var _caretUpSquare = require("./icons/caret-up-square");
+var _caretUpSquareDefault = parcelHelpers.interopDefault(_caretUpSquare);
+var _caretUp = require("./icons/caret-up");
+var _caretUpDefault = parcelHelpers.interopDefault(_caretUp);
+var _cartCheckFill = require("./icons/cart-check-fill");
+var _cartCheckFillDefault = parcelHelpers.interopDefault(_cartCheckFill);
+var _cartCheck = require("./icons/cart-check");
+var _cartCheckDefault = parcelHelpers.interopDefault(_cartCheck);
+var _cartDashFill = require("./icons/cart-dash-fill");
+var _cartDashFillDefault = parcelHelpers.interopDefault(_cartDashFill);
+var _cartDash = require("./icons/cart-dash");
+var _cartDashDefault = parcelHelpers.interopDefault(_cartDash);
+var _cartFill = require("./icons/cart-fill");
+var _cartFillDefault = parcelHelpers.interopDefault(_cartFill);
+var _cartPlusFill = require("./icons/cart-plus-fill");
+var _cartPlusFillDefault = parcelHelpers.interopDefault(_cartPlusFill);
+var _cartPlus = require("./icons/cart-plus");
+var _cartPlusDefault = parcelHelpers.interopDefault(_cartPlus);
+var _cartXFill = require("./icons/cart-x-fill");
+var _cartXFillDefault = parcelHelpers.interopDefault(_cartXFill);
+var _cartX = require("./icons/cart-x");
+var _cartXDefault = parcelHelpers.interopDefault(_cartX);
+var _cart = require("./icons/cart");
+var _cartDefault = parcelHelpers.interopDefault(_cart);
+var _cart2 = require("./icons/cart2");
+var _cart2Default = parcelHelpers.interopDefault(_cart2);
+var _cart3 = require("./icons/cart3");
+var _cart3Default = parcelHelpers.interopDefault(_cart3);
+var _cart4 = require("./icons/cart4");
+var _cart4Default = parcelHelpers.interopDefault(_cart4);
+var _cashCoin = require("./icons/cash-coin");
+var _cashCoinDefault = parcelHelpers.interopDefault(_cashCoin);
+var _cashStack = require("./icons/cash-stack");
+var _cashStackDefault = parcelHelpers.interopDefault(_cashStack);
+var _cash = require("./icons/cash");
+var _cashDefault = parcelHelpers.interopDefault(_cash);
+var _cassetteFill = require("./icons/cassette-fill");
+var _cassetteFillDefault = parcelHelpers.interopDefault(_cassetteFill);
+var _cassette = require("./icons/cassette");
+var _cassetteDefault = parcelHelpers.interopDefault(_cassette);
+var _cast = require("./icons/cast");
+var _castDefault = parcelHelpers.interopDefault(_cast);
+var _ccCircleFill = require("./icons/cc-circle-fill");
+var _ccCircleFillDefault = parcelHelpers.interopDefault(_ccCircleFill);
+var _ccCircle = require("./icons/cc-circle");
+var _ccCircleDefault = parcelHelpers.interopDefault(_ccCircle);
+var _ccSquareFill = require("./icons/cc-square-fill");
+var _ccSquareFillDefault = parcelHelpers.interopDefault(_ccSquareFill);
+var _ccSquare = require("./icons/cc-square");
+var _ccSquareDefault = parcelHelpers.interopDefault(_ccSquare);
+var _chatDotsFill = require("./icons/chat-dots-fill");
+var _chatDotsFillDefault = parcelHelpers.interopDefault(_chatDotsFill);
+var _chatDots = require("./icons/chat-dots");
+var _chatDotsDefault = parcelHelpers.interopDefault(_chatDots);
+var _chatFill = require("./icons/chat-fill");
+var _chatFillDefault = parcelHelpers.interopDefault(_chatFill);
+var _chatHeartFill = require("./icons/chat-heart-fill");
+var _chatHeartFillDefault = parcelHelpers.interopDefault(_chatHeartFill);
+var _chatHeart = require("./icons/chat-heart");
+var _chatHeartDefault = parcelHelpers.interopDefault(_chatHeart);
+var _chatLeftDotsFill = require("./icons/chat-left-dots-fill");
+var _chatLeftDotsFillDefault = parcelHelpers.interopDefault(_chatLeftDotsFill);
+var _chatLeftDots = require("./icons/chat-left-dots");
+var _chatLeftDotsDefault = parcelHelpers.interopDefault(_chatLeftDots);
+var _chatLeftFill = require("./icons/chat-left-fill");
+var _chatLeftFillDefault = parcelHelpers.interopDefault(_chatLeftFill);
+var _chatLeftHeartFill = require("./icons/chat-left-heart-fill");
+var _chatLeftHeartFillDefault = parcelHelpers.interopDefault(_chatLeftHeartFill);
+var _chatLeftHeart = require("./icons/chat-left-heart");
+var _chatLeftHeartDefault = parcelHelpers.interopDefault(_chatLeftHeart);
+var _chatLeftQuoteFill = require("./icons/chat-left-quote-fill");
+var _chatLeftQuoteFillDefault = parcelHelpers.interopDefault(_chatLeftQuoteFill);
+var _chatLeftQuote = require("./icons/chat-left-quote");
+var _chatLeftQuoteDefault = parcelHelpers.interopDefault(_chatLeftQuote);
+var _chatLeftTextFill = require("./icons/chat-left-text-fill");
+var _chatLeftTextFillDefault = parcelHelpers.interopDefault(_chatLeftTextFill);
+var _chatLeftText = require("./icons/chat-left-text");
+var _chatLeftTextDefault = parcelHelpers.interopDefault(_chatLeftText);
+var _chatLeft = require("./icons/chat-left");
+var _chatLeftDefault = parcelHelpers.interopDefault(_chatLeft);
+var _chatQuoteFill = require("./icons/chat-quote-fill");
+var _chatQuoteFillDefault = parcelHelpers.interopDefault(_chatQuoteFill);
+var _chatQuote = require("./icons/chat-quote");
+var _chatQuoteDefault = parcelHelpers.interopDefault(_chatQuote);
+var _chatRightDotsFill = require("./icons/chat-right-dots-fill");
+var _chatRightDotsFillDefault = parcelHelpers.interopDefault(_chatRightDotsFill);
+var _chatRightDots = require("./icons/chat-right-dots");
+var _chatRightDotsDefault = parcelHelpers.interopDefault(_chatRightDots);
+var _chatRightFill = require("./icons/chat-right-fill");
+var _chatRightFillDefault = parcelHelpers.interopDefault(_chatRightFill);
+var _chatRightHeartFill = require("./icons/chat-right-heart-fill");
+var _chatRightHeartFillDefault = parcelHelpers.interopDefault(_chatRightHeartFill);
+var _chatRightHeart = require("./icons/chat-right-heart");
+var _chatRightHeartDefault = parcelHelpers.interopDefault(_chatRightHeart);
+var _chatRightQuoteFill = require("./icons/chat-right-quote-fill");
+var _chatRightQuoteFillDefault = parcelHelpers.interopDefault(_chatRightQuoteFill);
+var _chatRightQuote = require("./icons/chat-right-quote");
+var _chatRightQuoteDefault = parcelHelpers.interopDefault(_chatRightQuote);
+var _chatRightTextFill = require("./icons/chat-right-text-fill");
+var _chatRightTextFillDefault = parcelHelpers.interopDefault(_chatRightTextFill);
+var _chatRightText = require("./icons/chat-right-text");
+var _chatRightTextDefault = parcelHelpers.interopDefault(_chatRightText);
+var _chatRight = require("./icons/chat-right");
+var _chatRightDefault = parcelHelpers.interopDefault(_chatRight);
+var _chatSquareDotsFill = require("./icons/chat-square-dots-fill");
+var _chatSquareDotsFillDefault = parcelHelpers.interopDefault(_chatSquareDotsFill);
+var _chatSquareDots = require("./icons/chat-square-dots");
+var _chatSquareDotsDefault = parcelHelpers.interopDefault(_chatSquareDots);
+var _chatSquareFill = require("./icons/chat-square-fill");
+var _chatSquareFillDefault = parcelHelpers.interopDefault(_chatSquareFill);
+var _chatSquareHeartFill = require("./icons/chat-square-heart-fill");
+var _chatSquareHeartFillDefault = parcelHelpers.interopDefault(_chatSquareHeartFill);
+var _chatSquareHeart = require("./icons/chat-square-heart");
+var _chatSquareHeartDefault = parcelHelpers.interopDefault(_chatSquareHeart);
+var _chatSquareQuoteFill = require("./icons/chat-square-quote-fill");
+var _chatSquareQuoteFillDefault = parcelHelpers.interopDefault(_chatSquareQuoteFill);
+var _chatSquareQuote = require("./icons/chat-square-quote");
+var _chatSquareQuoteDefault = parcelHelpers.interopDefault(_chatSquareQuote);
+var _chatSquareTextFill = require("./icons/chat-square-text-fill");
+var _chatSquareTextFillDefault = parcelHelpers.interopDefault(_chatSquareTextFill);
+var _chatSquareText = require("./icons/chat-square-text");
+var _chatSquareTextDefault = parcelHelpers.interopDefault(_chatSquareText);
+var _chatSquare = require("./icons/chat-square");
+var _chatSquareDefault = parcelHelpers.interopDefault(_chatSquare);
+var _chatTextFill = require("./icons/chat-text-fill");
+var _chatTextFillDefault = parcelHelpers.interopDefault(_chatTextFill);
+var _chatText = require("./icons/chat-text");
+var _chatTextDefault = parcelHelpers.interopDefault(_chatText);
+var _chat = require("./icons/chat");
+var _chatDefault = parcelHelpers.interopDefault(_chat);
+var _checkAll = require("./icons/check-all");
+var _checkAllDefault = parcelHelpers.interopDefault(_checkAll);
+var _checkCircleFill = require("./icons/check-circle-fill");
+var _checkCircleFillDefault = parcelHelpers.interopDefault(_checkCircleFill);
+var _checkCircle = require("./icons/check-circle");
+var _checkCircleDefault = parcelHelpers.interopDefault(_checkCircle);
+var _checkLg = require("./icons/check-lg");
+var _checkLgDefault = parcelHelpers.interopDefault(_checkLg);
+var _checkSquareFill = require("./icons/check-square-fill");
+var _checkSquareFillDefault = parcelHelpers.interopDefault(_checkSquareFill);
+var _checkSquare = require("./icons/check-square");
+var _checkSquareDefault = parcelHelpers.interopDefault(_checkSquare);
+var _check = require("./icons/check");
+var _checkDefault = parcelHelpers.interopDefault(_check);
+var _check2All = require("./icons/check2-all");
+var _check2AllDefault = parcelHelpers.interopDefault(_check2All);
+var _check2Circle = require("./icons/check2-circle");
+var _check2CircleDefault = parcelHelpers.interopDefault(_check2Circle);
+var _check2Square = require("./icons/check2-square");
+var _check2SquareDefault = parcelHelpers.interopDefault(_check2Square);
+var _check2 = require("./icons/check2");
+var _check2Default = parcelHelpers.interopDefault(_check2);
+var _chevronBarContract = require("./icons/chevron-bar-contract");
+var _chevronBarContractDefault = parcelHelpers.interopDefault(_chevronBarContract);
+var _chevronBarDown = require("./icons/chevron-bar-down");
+var _chevronBarDownDefault = parcelHelpers.interopDefault(_chevronBarDown);
+var _chevronBarExpand = require("./icons/chevron-bar-expand");
+var _chevronBarExpandDefault = parcelHelpers.interopDefault(_chevronBarExpand);
+var _chevronBarLeft = require("./icons/chevron-bar-left");
+var _chevronBarLeftDefault = parcelHelpers.interopDefault(_chevronBarLeft);
+var _chevronBarRight = require("./icons/chevron-bar-right");
+var _chevronBarRightDefault = parcelHelpers.interopDefault(_chevronBarRight);
+var _chevronBarUp = require("./icons/chevron-bar-up");
+var _chevronBarUpDefault = parcelHelpers.interopDefault(_chevronBarUp);
+var _chevronCompactDown = require("./icons/chevron-compact-down");
+var _chevronCompactDownDefault = parcelHelpers.interopDefault(_chevronCompactDown);
+var _chevronCompactLeft = require("./icons/chevron-compact-left");
+var _chevronCompactLeftDefault = parcelHelpers.interopDefault(_chevronCompactLeft);
+var _chevronCompactRight = require("./icons/chevron-compact-right");
+var _chevronCompactRightDefault = parcelHelpers.interopDefault(_chevronCompactRight);
+var _chevronCompactUp = require("./icons/chevron-compact-up");
+var _chevronCompactUpDefault = parcelHelpers.interopDefault(_chevronCompactUp);
+var _chevronContract = require("./icons/chevron-contract");
+var _chevronContractDefault = parcelHelpers.interopDefault(_chevronContract);
+var _chevronDoubleDown = require("./icons/chevron-double-down");
+var _chevronDoubleDownDefault = parcelHelpers.interopDefault(_chevronDoubleDown);
+var _chevronDoubleLeft = require("./icons/chevron-double-left");
+var _chevronDoubleLeftDefault = parcelHelpers.interopDefault(_chevronDoubleLeft);
+var _chevronDoubleRight = require("./icons/chevron-double-right");
+var _chevronDoubleRightDefault = parcelHelpers.interopDefault(_chevronDoubleRight);
+var _chevronDoubleUp = require("./icons/chevron-double-up");
+var _chevronDoubleUpDefault = parcelHelpers.interopDefault(_chevronDoubleUp);
+var _chevronDown = require("./icons/chevron-down");
+var _chevronDownDefault = parcelHelpers.interopDefault(_chevronDown);
+var _chevronExpand = require("./icons/chevron-expand");
+var _chevronExpandDefault = parcelHelpers.interopDefault(_chevronExpand);
+var _chevronLeft = require("./icons/chevron-left");
+var _chevronLeftDefault = parcelHelpers.interopDefault(_chevronLeft);
+var _chevronRight = require("./icons/chevron-right");
+var _chevronRightDefault = parcelHelpers.interopDefault(_chevronRight);
+var _chevronUp = require("./icons/chevron-up");
+var _chevronUpDefault = parcelHelpers.interopDefault(_chevronUp);
+var _circleFill = require("./icons/circle-fill");
+var _circleFillDefault = parcelHelpers.interopDefault(_circleFill);
+var _circleHalf = require("./icons/circle-half");
+var _circleHalfDefault = parcelHelpers.interopDefault(_circleHalf);
+var _circleSquare = require("./icons/circle-square");
+var _circleSquareDefault = parcelHelpers.interopDefault(_circleSquare);
+var _circle = require("./icons/circle");
+var _circleDefault = parcelHelpers.interopDefault(_circle);
+var _clipboardCheckFill = require("./icons/clipboard-check-fill");
+var _clipboardCheckFillDefault = parcelHelpers.interopDefault(_clipboardCheckFill);
+var _clipboardCheck = require("./icons/clipboard-check");
+var _clipboardCheckDefault = parcelHelpers.interopDefault(_clipboardCheck);
+var _clipboardDataFill = require("./icons/clipboard-data-fill");
+var _clipboardDataFillDefault = parcelHelpers.interopDefault(_clipboardDataFill);
+var _clipboardData = require("./icons/clipboard-data");
+var _clipboardDataDefault = parcelHelpers.interopDefault(_clipboardData);
+var _clipboardFill = require("./icons/clipboard-fill");
+var _clipboardFillDefault = parcelHelpers.interopDefault(_clipboardFill);
+var _clipboardHeartFill = require("./icons/clipboard-heart-fill");
+var _clipboardHeartFillDefault = parcelHelpers.interopDefault(_clipboardHeartFill);
+var _clipboardHeart = require("./icons/clipboard-heart");
+var _clipboardHeartDefault = parcelHelpers.interopDefault(_clipboardHeart);
+var _clipboardMinusFill = require("./icons/clipboard-minus-fill");
+var _clipboardMinusFillDefault = parcelHelpers.interopDefault(_clipboardMinusFill);
+var _clipboardMinus = require("./icons/clipboard-minus");
+var _clipboardMinusDefault = parcelHelpers.interopDefault(_clipboardMinus);
+var _clipboardPlusFill = require("./icons/clipboard-plus-fill");
+var _clipboardPlusFillDefault = parcelHelpers.interopDefault(_clipboardPlusFill);
+var _clipboardPlus = require("./icons/clipboard-plus");
+var _clipboardPlusDefault = parcelHelpers.interopDefault(_clipboardPlus);
+var _clipboardPulse = require("./icons/clipboard-pulse");
+var _clipboardPulseDefault = parcelHelpers.interopDefault(_clipboardPulse);
+var _clipboardXFill = require("./icons/clipboard-x-fill");
+var _clipboardXFillDefault = parcelHelpers.interopDefault(_clipboardXFill);
+var _clipboardX = require("./icons/clipboard-x");
+var _clipboardXDefault = parcelHelpers.interopDefault(_clipboardX);
+var _clipboard = require("./icons/clipboard");
+var _clipboardDefault = parcelHelpers.interopDefault(_clipboard);
+var _clipboard2CheckFill = require("./icons/clipboard2-check-fill");
+var _clipboard2CheckFillDefault = parcelHelpers.interopDefault(_clipboard2CheckFill);
+var _clipboard2Check = require("./icons/clipboard2-check");
+var _clipboard2CheckDefault = parcelHelpers.interopDefault(_clipboard2Check);
+var _clipboard2DataFill = require("./icons/clipboard2-data-fill");
+var _clipboard2DataFillDefault = parcelHelpers.interopDefault(_clipboard2DataFill);
+var _clipboard2Data = require("./icons/clipboard2-data");
+var _clipboard2DataDefault = parcelHelpers.interopDefault(_clipboard2Data);
+var _clipboard2Fill = require("./icons/clipboard2-fill");
+var _clipboard2FillDefault = parcelHelpers.interopDefault(_clipboard2Fill);
+var _clipboard2HeartFill = require("./icons/clipboard2-heart-fill");
+var _clipboard2HeartFillDefault = parcelHelpers.interopDefault(_clipboard2HeartFill);
+var _clipboard2Heart = require("./icons/clipboard2-heart");
+var _clipboard2HeartDefault = parcelHelpers.interopDefault(_clipboard2Heart);
+var _clipboard2MinusFill = require("./icons/clipboard2-minus-fill");
+var _clipboard2MinusFillDefault = parcelHelpers.interopDefault(_clipboard2MinusFill);
+var _clipboard2Minus = require("./icons/clipboard2-minus");
+var _clipboard2MinusDefault = parcelHelpers.interopDefault(_clipboard2Minus);
+var _clipboard2PlusFill = require("./icons/clipboard2-plus-fill");
+var _clipboard2PlusFillDefault = parcelHelpers.interopDefault(_clipboard2PlusFill);
+var _clipboard2Plus = require("./icons/clipboard2-plus");
+var _clipboard2PlusDefault = parcelHelpers.interopDefault(_clipboard2Plus);
+var _clipboard2PulseFill = require("./icons/clipboard2-pulse-fill");
+var _clipboard2PulseFillDefault = parcelHelpers.interopDefault(_clipboard2PulseFill);
+var _clipboard2Pulse = require("./icons/clipboard2-pulse");
+var _clipboard2PulseDefault = parcelHelpers.interopDefault(_clipboard2Pulse);
+var _clipboard2XFill = require("./icons/clipboard2-x-fill");
+var _clipboard2XFillDefault = parcelHelpers.interopDefault(_clipboard2XFill);
+var _clipboard2X = require("./icons/clipboard2-x");
+var _clipboard2XDefault = parcelHelpers.interopDefault(_clipboard2X);
+var _clipboard2 = require("./icons/clipboard2");
+var _clipboard2Default = parcelHelpers.interopDefault(_clipboard2);
+var _clockFill = require("./icons/clock-fill");
+var _clockFillDefault = parcelHelpers.interopDefault(_clockFill);
+var _clockHistory = require("./icons/clock-history");
+var _clockHistoryDefault = parcelHelpers.interopDefault(_clockHistory);
+var _clock = require("./icons/clock");
+var _clockDefault = parcelHelpers.interopDefault(_clock);
+var _cloudArrowDownFill = require("./icons/cloud-arrow-down-fill");
+var _cloudArrowDownFillDefault = parcelHelpers.interopDefault(_cloudArrowDownFill);
+var _cloudArrowDown = require("./icons/cloud-arrow-down");
+var _cloudArrowDownDefault = parcelHelpers.interopDefault(_cloudArrowDown);
+var _cloudArrowUpFill = require("./icons/cloud-arrow-up-fill");
+var _cloudArrowUpFillDefault = parcelHelpers.interopDefault(_cloudArrowUpFill);
+var _cloudArrowUp = require("./icons/cloud-arrow-up");
+var _cloudArrowUpDefault = parcelHelpers.interopDefault(_cloudArrowUp);
+var _cloudCheckFill = require("./icons/cloud-check-fill");
+var _cloudCheckFillDefault = parcelHelpers.interopDefault(_cloudCheckFill);
+var _cloudCheck = require("./icons/cloud-check");
+var _cloudCheckDefault = parcelHelpers.interopDefault(_cloudCheck);
+var _cloudDownloadFill = require("./icons/cloud-download-fill");
+var _cloudDownloadFillDefault = parcelHelpers.interopDefault(_cloudDownloadFill);
+var _cloudDownload = require("./icons/cloud-download");
+var _cloudDownloadDefault = parcelHelpers.interopDefault(_cloudDownload);
+var _cloudDrizzleFill = require("./icons/cloud-drizzle-fill");
+var _cloudDrizzleFillDefault = parcelHelpers.interopDefault(_cloudDrizzleFill);
+var _cloudDrizzle = require("./icons/cloud-drizzle");
+var _cloudDrizzleDefault = parcelHelpers.interopDefault(_cloudDrizzle);
+var _cloudFill = require("./icons/cloud-fill");
+var _cloudFillDefault = parcelHelpers.interopDefault(_cloudFill);
+var _cloudFogFill = require("./icons/cloud-fog-fill");
+var _cloudFogFillDefault = parcelHelpers.interopDefault(_cloudFogFill);
+var _cloudFog = require("./icons/cloud-fog");
+var _cloudFogDefault = parcelHelpers.interopDefault(_cloudFog);
+var _cloudFog2Fill = require("./icons/cloud-fog2-fill");
+var _cloudFog2FillDefault = parcelHelpers.interopDefault(_cloudFog2Fill);
+var _cloudFog2 = require("./icons/cloud-fog2");
+var _cloudFog2Default = parcelHelpers.interopDefault(_cloudFog2);
+var _cloudHailFill = require("./icons/cloud-hail-fill");
+var _cloudHailFillDefault = parcelHelpers.interopDefault(_cloudHailFill);
+var _cloudHail = require("./icons/cloud-hail");
+var _cloudHailDefault = parcelHelpers.interopDefault(_cloudHail);
+var _cloudHazeFill = require("./icons/cloud-haze-fill");
+var _cloudHazeFillDefault = parcelHelpers.interopDefault(_cloudHazeFill);
+var _cloudHaze = require("./icons/cloud-haze");
+var _cloudHazeDefault = parcelHelpers.interopDefault(_cloudHaze);
+var _cloudHaze2Fill = require("./icons/cloud-haze2-fill");
+var _cloudHaze2FillDefault = parcelHelpers.interopDefault(_cloudHaze2Fill);
+var _cloudHaze2 = require("./icons/cloud-haze2");
+var _cloudHaze2Default = parcelHelpers.interopDefault(_cloudHaze2);
+var _cloudLightningFill = require("./icons/cloud-lightning-fill");
+var _cloudLightningFillDefault = parcelHelpers.interopDefault(_cloudLightningFill);
+var _cloudLightningRainFill = require("./icons/cloud-lightning-rain-fill");
+var _cloudLightningRainFillDefault = parcelHelpers.interopDefault(_cloudLightningRainFill);
+var _cloudLightningRain = require("./icons/cloud-lightning-rain");
+var _cloudLightningRainDefault = parcelHelpers.interopDefault(_cloudLightningRain);
+var _cloudLightning = require("./icons/cloud-lightning");
+var _cloudLightningDefault = parcelHelpers.interopDefault(_cloudLightning);
+var _cloudMinusFill = require("./icons/cloud-minus-fill");
+var _cloudMinusFillDefault = parcelHelpers.interopDefault(_cloudMinusFill);
+var _cloudMinus = require("./icons/cloud-minus");
+var _cloudMinusDefault = parcelHelpers.interopDefault(_cloudMinus);
+var _cloudMoonFill = require("./icons/cloud-moon-fill");
+var _cloudMoonFillDefault = parcelHelpers.interopDefault(_cloudMoonFill);
+var _cloudMoon = require("./icons/cloud-moon");
+var _cloudMoonDefault = parcelHelpers.interopDefault(_cloudMoon);
+var _cloudPlusFill = require("./icons/cloud-plus-fill");
+var _cloudPlusFillDefault = parcelHelpers.interopDefault(_cloudPlusFill);
+var _cloudPlus = require("./icons/cloud-plus");
+var _cloudPlusDefault = parcelHelpers.interopDefault(_cloudPlus);
+var _cloudRainFill = require("./icons/cloud-rain-fill");
+var _cloudRainFillDefault = parcelHelpers.interopDefault(_cloudRainFill);
+var _cloudRainHeavyFill = require("./icons/cloud-rain-heavy-fill");
+var _cloudRainHeavyFillDefault = parcelHelpers.interopDefault(_cloudRainHeavyFill);
+var _cloudRainHeavy = require("./icons/cloud-rain-heavy");
+var _cloudRainHeavyDefault = parcelHelpers.interopDefault(_cloudRainHeavy);
+var _cloudRain = require("./icons/cloud-rain");
+var _cloudRainDefault = parcelHelpers.interopDefault(_cloudRain);
+var _cloudSlashFill = require("./icons/cloud-slash-fill");
+var _cloudSlashFillDefault = parcelHelpers.interopDefault(_cloudSlashFill);
+var _cloudSlash = require("./icons/cloud-slash");
+var _cloudSlashDefault = parcelHelpers.interopDefault(_cloudSlash);
+var _cloudSleetFill = require("./icons/cloud-sleet-fill");
+var _cloudSleetFillDefault = parcelHelpers.interopDefault(_cloudSleetFill);
+var _cloudSleet = require("./icons/cloud-sleet");
+var _cloudSleetDefault = parcelHelpers.interopDefault(_cloudSleet);
+var _cloudSnowFill = require("./icons/cloud-snow-fill");
+var _cloudSnowFillDefault = parcelHelpers.interopDefault(_cloudSnowFill);
+var _cloudSnow = require("./icons/cloud-snow");
+var _cloudSnowDefault = parcelHelpers.interopDefault(_cloudSnow);
+var _cloudSunFill = require("./icons/cloud-sun-fill");
+var _cloudSunFillDefault = parcelHelpers.interopDefault(_cloudSunFill);
+var _cloudSun = require("./icons/cloud-sun");
+var _cloudSunDefault = parcelHelpers.interopDefault(_cloudSun);
+var _cloudUploadFill = require("./icons/cloud-upload-fill");
+var _cloudUploadFillDefault = parcelHelpers.interopDefault(_cloudUploadFill);
+var _cloudUpload = require("./icons/cloud-upload");
+var _cloudUploadDefault = parcelHelpers.interopDefault(_cloudUpload);
+var _cloud = require("./icons/cloud");
+var _cloudDefault = parcelHelpers.interopDefault(_cloud);
+var _cloudsFill = require("./icons/clouds-fill");
+var _cloudsFillDefault = parcelHelpers.interopDefault(_cloudsFill);
+var _clouds = require("./icons/clouds");
+var _cloudsDefault = parcelHelpers.interopDefault(_clouds);
+var _cloudyFill = require("./icons/cloudy-fill");
+var _cloudyFillDefault = parcelHelpers.interopDefault(_cloudyFill);
+var _cloudy = require("./icons/cloudy");
+var _cloudyDefault = parcelHelpers.interopDefault(_cloudy);
+var _codeSlash = require("./icons/code-slash");
+var _codeSlashDefault = parcelHelpers.interopDefault(_codeSlash);
+var _codeSquare = require("./icons/code-square");
+var _codeSquareDefault = parcelHelpers.interopDefault(_codeSquare);
+var _code = require("./icons/code");
+var _codeDefault = parcelHelpers.interopDefault(_code);
+var _coin = require("./icons/coin");
+var _coinDefault = parcelHelpers.interopDefault(_coin);
+var _collectionFill = require("./icons/collection-fill");
+var _collectionFillDefault = parcelHelpers.interopDefault(_collectionFill);
+var _collectionPlayFill = require("./icons/collection-play-fill");
+var _collectionPlayFillDefault = parcelHelpers.interopDefault(_collectionPlayFill);
+var _collectionPlay = require("./icons/collection-play");
+var _collectionPlayDefault = parcelHelpers.interopDefault(_collectionPlay);
+var _collection = require("./icons/collection");
+var _collectionDefault = parcelHelpers.interopDefault(_collection);
+var _columnsGap = require("./icons/columns-gap");
+var _columnsGapDefault = parcelHelpers.interopDefault(_columnsGap);
+var _columns = require("./icons/columns");
+var _columnsDefault = parcelHelpers.interopDefault(_columns);
+var _command = require("./icons/command");
+var _commandDefault = parcelHelpers.interopDefault(_command);
+var _compassFill = require("./icons/compass-fill");
+var _compassFillDefault = parcelHelpers.interopDefault(_compassFill);
+var _compass = require("./icons/compass");
+var _compassDefault = parcelHelpers.interopDefault(_compass);
+var _coneStriped = require("./icons/cone-striped");
+var _coneStripedDefault = parcelHelpers.interopDefault(_coneStriped);
+var _cone = require("./icons/cone");
+var _coneDefault = parcelHelpers.interopDefault(_cone);
+var _controller = require("./icons/controller");
+var _controllerDefault = parcelHelpers.interopDefault(_controller);
+var _cpuFill = require("./icons/cpu-fill");
+var _cpuFillDefault = parcelHelpers.interopDefault(_cpuFill);
+var _cpu = require("./icons/cpu");
+var _cpuDefault = parcelHelpers.interopDefault(_cpu);
+var _creditCard2BackFill = require("./icons/credit-card-2-back-fill");
+var _creditCard2BackFillDefault = parcelHelpers.interopDefault(_creditCard2BackFill);
+var _creditCard2Back = require("./icons/credit-card-2-back");
+var _creditCard2BackDefault = parcelHelpers.interopDefault(_creditCard2Back);
+var _creditCard2FrontFill = require("./icons/credit-card-2-front-fill");
+var _creditCard2FrontFillDefault = parcelHelpers.interopDefault(_creditCard2FrontFill);
+var _creditCard2Front = require("./icons/credit-card-2-front");
+var _creditCard2FrontDefault = parcelHelpers.interopDefault(_creditCard2Front);
+var _creditCardFill = require("./icons/credit-card-fill");
+var _creditCardFillDefault = parcelHelpers.interopDefault(_creditCardFill);
+var _creditCard = require("./icons/credit-card");
+var _creditCardDefault = parcelHelpers.interopDefault(_creditCard);
+var _crop = require("./icons/crop");
+var _cropDefault = parcelHelpers.interopDefault(_crop);
+var _cupFill = require("./icons/cup-fill");
+var _cupFillDefault = parcelHelpers.interopDefault(_cupFill);
+var _cupHotFill = require("./icons/cup-hot-fill");
+var _cupHotFillDefault = parcelHelpers.interopDefault(_cupHotFill);
+var _cupHot = require("./icons/cup-hot");
+var _cupHotDefault = parcelHelpers.interopDefault(_cupHot);
+var _cupStraw = require("./icons/cup-straw");
+var _cupStrawDefault = parcelHelpers.interopDefault(_cupStraw);
+var _cup = require("./icons/cup");
+var _cupDefault = parcelHelpers.interopDefault(_cup);
+var _currencyBitcoin = require("./icons/currency-bitcoin");
+var _currencyBitcoinDefault = parcelHelpers.interopDefault(_currencyBitcoin);
+var _currencyDollar = require("./icons/currency-dollar");
+var _currencyDollarDefault = parcelHelpers.interopDefault(_currencyDollar);
+var _currencyEuro = require("./icons/currency-euro");
+var _currencyEuroDefault = parcelHelpers.interopDefault(_currencyEuro);
+var _currencyExchange = require("./icons/currency-exchange");
+var _currencyExchangeDefault = parcelHelpers.interopDefault(_currencyExchange);
+var _currencyPound = require("./icons/currency-pound");
+var _currencyPoundDefault = parcelHelpers.interopDefault(_currencyPound);
+var _currencyRupee = require("./icons/currency-rupee");
+var _currencyRupeeDefault = parcelHelpers.interopDefault(_currencyRupee);
+var _currencyYen = require("./icons/currency-yen");
+var _currencyYenDefault = parcelHelpers.interopDefault(_currencyYen);
+var _cursorFill = require("./icons/cursor-fill");
+var _cursorFillDefault = parcelHelpers.interopDefault(_cursorFill);
+var _cursorText = require("./icons/cursor-text");
+var _cursorTextDefault = parcelHelpers.interopDefault(_cursorText);
+var _cursor = require("./icons/cursor");
+var _cursorDefault = parcelHelpers.interopDefault(_cursor);
+var _dashCircleDotted = require("./icons/dash-circle-dotted");
+var _dashCircleDottedDefault = parcelHelpers.interopDefault(_dashCircleDotted);
+var _dashCircleFill = require("./icons/dash-circle-fill");
+var _dashCircleFillDefault = parcelHelpers.interopDefault(_dashCircleFill);
+var _dashCircle = require("./icons/dash-circle");
+var _dashCircleDefault = parcelHelpers.interopDefault(_dashCircle);
+var _dashLg = require("./icons/dash-lg");
+var _dashLgDefault = parcelHelpers.interopDefault(_dashLg);
+var _dashSquareDotted = require("./icons/dash-square-dotted");
+var _dashSquareDottedDefault = parcelHelpers.interopDefault(_dashSquareDotted);
+var _dashSquareFill = require("./icons/dash-square-fill");
+var _dashSquareFillDefault = parcelHelpers.interopDefault(_dashSquareFill);
+var _dashSquare = require("./icons/dash-square");
+var _dashSquareDefault = parcelHelpers.interopDefault(_dashSquare);
+var _dash = require("./icons/dash");
+var _dashDefault = parcelHelpers.interopDefault(_dash);
+var _databaseAdd = require("./icons/database-add");
+var _databaseAddDefault = parcelHelpers.interopDefault(_databaseAdd);
+var _databaseCheck = require("./icons/database-check");
+var _databaseCheckDefault = parcelHelpers.interopDefault(_databaseCheck);
+var _databaseDash = require("./icons/database-dash");
+var _databaseDashDefault = parcelHelpers.interopDefault(_databaseDash);
+var _databaseDown = require("./icons/database-down");
+var _databaseDownDefault = parcelHelpers.interopDefault(_databaseDown);
+var _databaseExclamation = require("./icons/database-exclamation");
+var _databaseExclamationDefault = parcelHelpers.interopDefault(_databaseExclamation);
+var _databaseFillAdd = require("./icons/database-fill-add");
+var _databaseFillAddDefault = parcelHelpers.interopDefault(_databaseFillAdd);
+var _databaseFillCheck = require("./icons/database-fill-check");
+var _databaseFillCheckDefault = parcelHelpers.interopDefault(_databaseFillCheck);
+var _databaseFillDash = require("./icons/database-fill-dash");
+var _databaseFillDashDefault = parcelHelpers.interopDefault(_databaseFillDash);
+var _databaseFillDown = require("./icons/database-fill-down");
+var _databaseFillDownDefault = parcelHelpers.interopDefault(_databaseFillDown);
+var _databaseFillExclamation = require("./icons/database-fill-exclamation");
+var _databaseFillExclamationDefault = parcelHelpers.interopDefault(_databaseFillExclamation);
+var _databaseFillGear = require("./icons/database-fill-gear");
+var _databaseFillGearDefault = parcelHelpers.interopDefault(_databaseFillGear);
+var _databaseFillLock = require("./icons/database-fill-lock");
+var _databaseFillLockDefault = parcelHelpers.interopDefault(_databaseFillLock);
+var _databaseFillSlash = require("./icons/database-fill-slash");
+var _databaseFillSlashDefault = parcelHelpers.interopDefault(_databaseFillSlash);
+var _databaseFillUp = require("./icons/database-fill-up");
+var _databaseFillUpDefault = parcelHelpers.interopDefault(_databaseFillUp);
+var _databaseFillX = require("./icons/database-fill-x");
+var _databaseFillXDefault = parcelHelpers.interopDefault(_databaseFillX);
+var _databaseFill = require("./icons/database-fill");
+var _databaseFillDefault = parcelHelpers.interopDefault(_databaseFill);
+var _databaseGear = require("./icons/database-gear");
+var _databaseGearDefault = parcelHelpers.interopDefault(_databaseGear);
+var _databaseLock = require("./icons/database-lock");
+var _databaseLockDefault = parcelHelpers.interopDefault(_databaseLock);
+var _databaseSlash = require("./icons/database-slash");
+var _databaseSlashDefault = parcelHelpers.interopDefault(_databaseSlash);
+var _databaseUp = require("./icons/database-up");
+var _databaseUpDefault = parcelHelpers.interopDefault(_databaseUp);
+var _databaseX = require("./icons/database-x");
+var _databaseXDefault = parcelHelpers.interopDefault(_databaseX);
+var _database = require("./icons/database");
+var _databaseDefault = parcelHelpers.interopDefault(_database);
+var _deviceHddFill = require("./icons/device-hdd-fill");
+var _deviceHddFillDefault = parcelHelpers.interopDefault(_deviceHddFill);
+var _deviceHdd = require("./icons/device-hdd");
+var _deviceHddDefault = parcelHelpers.interopDefault(_deviceHdd);
+var _deviceSsdFill = require("./icons/device-ssd-fill");
+var _deviceSsdFillDefault = parcelHelpers.interopDefault(_deviceSsdFill);
+var _deviceSsd = require("./icons/device-ssd");
+var _deviceSsdDefault = parcelHelpers.interopDefault(_deviceSsd);
+var _diagram2Fill = require("./icons/diagram-2-fill");
+var _diagram2FillDefault = parcelHelpers.interopDefault(_diagram2Fill);
+var _diagram2 = require("./icons/diagram-2");
+var _diagram2Default = parcelHelpers.interopDefault(_diagram2);
+var _diagram3Fill = require("./icons/diagram-3-fill");
+var _diagram3FillDefault = parcelHelpers.interopDefault(_diagram3Fill);
+var _diagram3 = require("./icons/diagram-3");
+var _diagram3Default = parcelHelpers.interopDefault(_diagram3);
+var _diamondFill = require("./icons/diamond-fill");
+var _diamondFillDefault = parcelHelpers.interopDefault(_diamondFill);
+var _diamondHalf = require("./icons/diamond-half");
+var _diamondHalfDefault = parcelHelpers.interopDefault(_diamondHalf);
+var _diamond = require("./icons/diamond");
+var _diamondDefault = parcelHelpers.interopDefault(_diamond);
+var _dice1Fill = require("./icons/dice-1-fill");
+var _dice1FillDefault = parcelHelpers.interopDefault(_dice1Fill);
+var _dice1 = require("./icons/dice-1");
+var _dice1Default = parcelHelpers.interopDefault(_dice1);
+var _dice2Fill = require("./icons/dice-2-fill");
+var _dice2FillDefault = parcelHelpers.interopDefault(_dice2Fill);
+var _dice2 = require("./icons/dice-2");
+var _dice2Default = parcelHelpers.interopDefault(_dice2);
+var _dice3Fill = require("./icons/dice-3-fill");
+var _dice3FillDefault = parcelHelpers.interopDefault(_dice3Fill);
+var _dice3 = require("./icons/dice-3");
+var _dice3Default = parcelHelpers.interopDefault(_dice3);
+var _dice4Fill = require("./icons/dice-4-fill");
+var _dice4FillDefault = parcelHelpers.interopDefault(_dice4Fill);
+var _dice4 = require("./icons/dice-4");
+var _dice4Default = parcelHelpers.interopDefault(_dice4);
+var _dice5Fill = require("./icons/dice-5-fill");
+var _dice5FillDefault = parcelHelpers.interopDefault(_dice5Fill);
+var _dice5 = require("./icons/dice-5");
+var _dice5Default = parcelHelpers.interopDefault(_dice5);
+var _dice6Fill = require("./icons/dice-6-fill");
+var _dice6FillDefault = parcelHelpers.interopDefault(_dice6Fill);
+var _dice6 = require("./icons/dice-6");
+var _dice6Default = parcelHelpers.interopDefault(_dice6);
+var _discFill = require("./icons/disc-fill");
+var _discFillDefault = parcelHelpers.interopDefault(_discFill);
+var _disc = require("./icons/disc");
+var _discDefault = parcelHelpers.interopDefault(_disc);
+var _discord = require("./icons/discord");
+var _discordDefault = parcelHelpers.interopDefault(_discord);
+var _displayFill = require("./icons/display-fill");
+var _displayFillDefault = parcelHelpers.interopDefault(_displayFill);
+var _display = require("./icons/display");
+var _displayDefault = parcelHelpers.interopDefault(_display);
+var _displayportFill = require("./icons/displayport-fill");
+var _displayportFillDefault = parcelHelpers.interopDefault(_displayportFill);
+var _displayport = require("./icons/displayport");
+var _displayportDefault = parcelHelpers.interopDefault(_displayport);
+var _distributeHorizontal = require("./icons/distribute-horizontal");
+var _distributeHorizontalDefault = parcelHelpers.interopDefault(_distributeHorizontal);
+var _distributeVertical = require("./icons/distribute-vertical");
+var _distributeVerticalDefault = parcelHelpers.interopDefault(_distributeVertical);
+var _doorClosedFill = require("./icons/door-closed-fill");
+var _doorClosedFillDefault = parcelHelpers.interopDefault(_doorClosedFill);
+var _doorClosed = require("./icons/door-closed");
+var _doorClosedDefault = parcelHelpers.interopDefault(_doorClosed);
+var _doorOpenFill = require("./icons/door-open-fill");
+var _doorOpenFillDefault = parcelHelpers.interopDefault(_doorOpenFill);
+var _doorOpen = require("./icons/door-open");
+var _doorOpenDefault = parcelHelpers.interopDefault(_doorOpen);
+var _dot = require("./icons/dot");
+var _dotDefault = parcelHelpers.interopDefault(_dot);
+var _download = require("./icons/download");
+var _downloadDefault = parcelHelpers.interopDefault(_download);
+var _dpadFill = require("./icons/dpad-fill");
+var _dpadFillDefault = parcelHelpers.interopDefault(_dpadFill);
+var _dpad = require("./icons/dpad");
+var _dpadDefault = parcelHelpers.interopDefault(_dpad);
+var _dribbble = require("./icons/dribbble");
+var _dribbbleDefault = parcelHelpers.interopDefault(_dribbble);
+var _dropbox = require("./icons/dropbox");
+var _dropboxDefault = parcelHelpers.interopDefault(_dropbox);
+var _dropletFill = require("./icons/droplet-fill");
+var _dropletFillDefault = parcelHelpers.interopDefault(_dropletFill);
+var _dropletHalf = require("./icons/droplet-half");
+var _dropletHalfDefault = parcelHelpers.interopDefault(_dropletHalf);
+var _droplet = require("./icons/droplet");
+var _dropletDefault = parcelHelpers.interopDefault(_droplet);
+var _earFill = require("./icons/ear-fill");
+var _earFillDefault = parcelHelpers.interopDefault(_earFill);
+var _ear = require("./icons/ear");
+var _earDefault = parcelHelpers.interopDefault(_ear);
+var _earbuds = require("./icons/earbuds");
+var _earbudsDefault = parcelHelpers.interopDefault(_earbuds);
+var _easelFill = require("./icons/easel-fill");
+var _easelFillDefault = parcelHelpers.interopDefault(_easelFill);
+var _easel = require("./icons/easel");
+var _easelDefault = parcelHelpers.interopDefault(_easel);
+var _easel2Fill = require("./icons/easel2-fill");
+var _easel2FillDefault = parcelHelpers.interopDefault(_easel2Fill);
+var _easel2 = require("./icons/easel2");
+var _easel2Default = parcelHelpers.interopDefault(_easel2);
+var _easel3Fill = require("./icons/easel3-fill");
+var _easel3FillDefault = parcelHelpers.interopDefault(_easel3Fill);
+var _easel3 = require("./icons/easel3");
+var _easel3Default = parcelHelpers.interopDefault(_easel3);
+var _eggFill = require("./icons/egg-fill");
+var _eggFillDefault = parcelHelpers.interopDefault(_eggFill);
+var _eggFried = require("./icons/egg-fried");
+var _eggFriedDefault = parcelHelpers.interopDefault(_eggFried);
+var _egg = require("./icons/egg");
+var _eggDefault = parcelHelpers.interopDefault(_egg);
+var _ejectFill = require("./icons/eject-fill");
+var _ejectFillDefault = parcelHelpers.interopDefault(_ejectFill);
+var _eject = require("./icons/eject");
+var _ejectDefault = parcelHelpers.interopDefault(_eject);
+var _emojiAngryFill = require("./icons/emoji-angry-fill");
+var _emojiAngryFillDefault = parcelHelpers.interopDefault(_emojiAngryFill);
+var _emojiAngry = require("./icons/emoji-angry");
+var _emojiAngryDefault = parcelHelpers.interopDefault(_emojiAngry);
+var _emojiDizzyFill = require("./icons/emoji-dizzy-fill");
+var _emojiDizzyFillDefault = parcelHelpers.interopDefault(_emojiDizzyFill);
+var _emojiDizzy = require("./icons/emoji-dizzy");
+var _emojiDizzyDefault = parcelHelpers.interopDefault(_emojiDizzy);
+var _emojiExpressionlessFill = require("./icons/emoji-expressionless-fill");
+var _emojiExpressionlessFillDefault = parcelHelpers.interopDefault(_emojiExpressionlessFill);
+var _emojiExpressionless = require("./icons/emoji-expressionless");
+var _emojiExpressionlessDefault = parcelHelpers.interopDefault(_emojiExpressionless);
+var _emojiFrownFill = require("./icons/emoji-frown-fill");
+var _emojiFrownFillDefault = parcelHelpers.interopDefault(_emojiFrownFill);
+var _emojiFrown = require("./icons/emoji-frown");
+var _emojiFrownDefault = parcelHelpers.interopDefault(_emojiFrown);
+var _emojiHeartEyesFill = require("./icons/emoji-heart-eyes-fill");
+var _emojiHeartEyesFillDefault = parcelHelpers.interopDefault(_emojiHeartEyesFill);
+var _emojiHeartEyes = require("./icons/emoji-heart-eyes");
+var _emojiHeartEyesDefault = parcelHelpers.interopDefault(_emojiHeartEyes);
+var _emojiKissFill = require("./icons/emoji-kiss-fill");
+var _emojiKissFillDefault = parcelHelpers.interopDefault(_emojiKissFill);
+var _emojiKiss = require("./icons/emoji-kiss");
+var _emojiKissDefault = parcelHelpers.interopDefault(_emojiKiss);
+var _emojiLaughingFill = require("./icons/emoji-laughing-fill");
+var _emojiLaughingFillDefault = parcelHelpers.interopDefault(_emojiLaughingFill);
+var _emojiLaughing = require("./icons/emoji-laughing");
+var _emojiLaughingDefault = parcelHelpers.interopDefault(_emojiLaughing);
+var _emojiNeutralFill = require("./icons/emoji-neutral-fill");
+var _emojiNeutralFillDefault = parcelHelpers.interopDefault(_emojiNeutralFill);
+var _emojiNeutral = require("./icons/emoji-neutral");
+var _emojiNeutralDefault = parcelHelpers.interopDefault(_emojiNeutral);
+var _emojiSmileFill = require("./icons/emoji-smile-fill");
+var _emojiSmileFillDefault = parcelHelpers.interopDefault(_emojiSmileFill);
+var _emojiSmileUpsideDownFill = require("./icons/emoji-smile-upside-down-fill");
+var _emojiSmileUpsideDownFillDefault = parcelHelpers.interopDefault(_emojiSmileUpsideDownFill);
+var _emojiSmileUpsideDown = require("./icons/emoji-smile-upside-down");
+var _emojiSmileUpsideDownDefault = parcelHelpers.interopDefault(_emojiSmileUpsideDown);
+var _emojiSmile = require("./icons/emoji-smile");
+var _emojiSmileDefault = parcelHelpers.interopDefault(_emojiSmile);
+var _emojiSunglassesFill = require("./icons/emoji-sunglasses-fill");
+var _emojiSunglassesFillDefault = parcelHelpers.interopDefault(_emojiSunglassesFill);
+var _emojiSunglasses = require("./icons/emoji-sunglasses");
+var _emojiSunglassesDefault = parcelHelpers.interopDefault(_emojiSunglasses);
+var _emojiWinkFill = require("./icons/emoji-wink-fill");
+var _emojiWinkFillDefault = parcelHelpers.interopDefault(_emojiWinkFill);
+var _emojiWink = require("./icons/emoji-wink");
+var _emojiWinkDefault = parcelHelpers.interopDefault(_emojiWink);
+var _envelopeAtFill = require("./icons/envelope-at-fill");
+var _envelopeAtFillDefault = parcelHelpers.interopDefault(_envelopeAtFill);
+var _envelopeAt = require("./icons/envelope-at");
+var _envelopeAtDefault = parcelHelpers.interopDefault(_envelopeAt);
+var _envelopeCheckFill = require("./icons/envelope-check-fill");
+var _envelopeCheckFillDefault = parcelHelpers.interopDefault(_envelopeCheckFill);
+var _envelopeCheck = require("./icons/envelope-check");
+var _envelopeCheckDefault = parcelHelpers.interopDefault(_envelopeCheck);
+var _envelopeDashFill = require("./icons/envelope-dash-fill");
+var _envelopeDashFillDefault = parcelHelpers.interopDefault(_envelopeDashFill);
+var _envelopeDash = require("./icons/envelope-dash");
+var _envelopeDashDefault = parcelHelpers.interopDefault(_envelopeDash);
+var _envelopeExclamationFill = require("./icons/envelope-exclamation-fill");
+var _envelopeExclamationFillDefault = parcelHelpers.interopDefault(_envelopeExclamationFill);
+var _envelopeExclamation = require("./icons/envelope-exclamation");
+var _envelopeExclamationDefault = parcelHelpers.interopDefault(_envelopeExclamation);
+var _envelopeFill = require("./icons/envelope-fill");
+var _envelopeFillDefault = parcelHelpers.interopDefault(_envelopeFill);
+var _envelopeHeartFill = require("./icons/envelope-heart-fill");
+var _envelopeHeartFillDefault = parcelHelpers.interopDefault(_envelopeHeartFill);
+var _envelopeHeart = require("./icons/envelope-heart");
+var _envelopeHeartDefault = parcelHelpers.interopDefault(_envelopeHeart);
+var _envelopeOpenFill = require("./icons/envelope-open-fill");
+var _envelopeOpenFillDefault = parcelHelpers.interopDefault(_envelopeOpenFill);
+var _envelopeOpenHeartFill = require("./icons/envelope-open-heart-fill");
+var _envelopeOpenHeartFillDefault = parcelHelpers.interopDefault(_envelopeOpenHeartFill);
+var _envelopeOpenHeart = require("./icons/envelope-open-heart");
+var _envelopeOpenHeartDefault = parcelHelpers.interopDefault(_envelopeOpenHeart);
+var _envelopeOpen = require("./icons/envelope-open");
+var _envelopeOpenDefault = parcelHelpers.interopDefault(_envelopeOpen);
+var _envelopePaperFill = require("./icons/envelope-paper-fill");
+var _envelopePaperFillDefault = parcelHelpers.interopDefault(_envelopePaperFill);
+var _envelopePaperHeartFill = require("./icons/envelope-paper-heart-fill");
+var _envelopePaperHeartFillDefault = parcelHelpers.interopDefault(_envelopePaperHeartFill);
+var _envelopePaperHeart = require("./icons/envelope-paper-heart");
+var _envelopePaperHeartDefault = parcelHelpers.interopDefault(_envelopePaperHeart);
+var _envelopePaper = require("./icons/envelope-paper");
+var _envelopePaperDefault = parcelHelpers.interopDefault(_envelopePaper);
+var _envelopePlusFill = require("./icons/envelope-plus-fill");
+var _envelopePlusFillDefault = parcelHelpers.interopDefault(_envelopePlusFill);
+var _envelopePlus = require("./icons/envelope-plus");
+var _envelopePlusDefault = parcelHelpers.interopDefault(_envelopePlus);
+var _envelopeSlashFill = require("./icons/envelope-slash-fill");
+var _envelopeSlashFillDefault = parcelHelpers.interopDefault(_envelopeSlashFill);
+var _envelopeSlash = require("./icons/envelope-slash");
+var _envelopeSlashDefault = parcelHelpers.interopDefault(_envelopeSlash);
+var _envelopeXFill = require("./icons/envelope-x-fill");
+var _envelopeXFillDefault = parcelHelpers.interopDefault(_envelopeXFill);
+var _envelopeX = require("./icons/envelope-x");
+var _envelopeXDefault = parcelHelpers.interopDefault(_envelopeX);
+var _envelope = require("./icons/envelope");
+var _envelopeDefault = parcelHelpers.interopDefault(_envelope);
+var _eraserFill = require("./icons/eraser-fill");
+var _eraserFillDefault = parcelHelpers.interopDefault(_eraserFill);
+var _eraser = require("./icons/eraser");
+var _eraserDefault = parcelHelpers.interopDefault(_eraser);
+var _escape = require("./icons/escape");
+var _escapeDefault = parcelHelpers.interopDefault(_escape);
+var _ethernet = require("./icons/ethernet");
+var _ethernetDefault = parcelHelpers.interopDefault(_ethernet);
+var _evFrontFill = require("./icons/ev-front-fill");
+var _evFrontFillDefault = parcelHelpers.interopDefault(_evFrontFill);
+var _evFront = require("./icons/ev-front");
+var _evFrontDefault = parcelHelpers.interopDefault(_evFront);
+var _evStationFill = require("./icons/ev-station-fill");
+var _evStationFillDefault = parcelHelpers.interopDefault(_evStationFill);
+var _evStation = require("./icons/ev-station");
+var _evStationDefault = parcelHelpers.interopDefault(_evStation);
+var _exclamationCircleFill = require("./icons/exclamation-circle-fill");
+var _exclamationCircleFillDefault = parcelHelpers.interopDefault(_exclamationCircleFill);
+var _exclamationCircle = require("./icons/exclamation-circle");
+var _exclamationCircleDefault = parcelHelpers.interopDefault(_exclamationCircle);
+var _exclamationDiamondFill = require("./icons/exclamation-diamond-fill");
+var _exclamationDiamondFillDefault = parcelHelpers.interopDefault(_exclamationDiamondFill);
+var _exclamationDiamond = require("./icons/exclamation-diamond");
+var _exclamationDiamondDefault = parcelHelpers.interopDefault(_exclamationDiamond);
+var _exclamationLg = require("./icons/exclamation-lg");
+var _exclamationLgDefault = parcelHelpers.interopDefault(_exclamationLg);
+var _exclamationOctagonFill = require("./icons/exclamation-octagon-fill");
+var _exclamationOctagonFillDefault = parcelHelpers.interopDefault(_exclamationOctagonFill);
+var _exclamationOctagon = require("./icons/exclamation-octagon");
+var _exclamationOctagonDefault = parcelHelpers.interopDefault(_exclamationOctagon);
+var _exclamationSquareFill = require("./icons/exclamation-square-fill");
+var _exclamationSquareFillDefault = parcelHelpers.interopDefault(_exclamationSquareFill);
+var _exclamationSquare = require("./icons/exclamation-square");
+var _exclamationSquareDefault = parcelHelpers.interopDefault(_exclamationSquare);
+var _exclamationTriangleFill = require("./icons/exclamation-triangle-fill");
+var _exclamationTriangleFillDefault = parcelHelpers.interopDefault(_exclamationTriangleFill);
+var _exclamationTriangle = require("./icons/exclamation-triangle");
+var _exclamationTriangleDefault = parcelHelpers.interopDefault(_exclamationTriangle);
+var _exclamation = require("./icons/exclamation");
+var _exclamationDefault = parcelHelpers.interopDefault(_exclamation);
+var _exclude = require("./icons/exclude");
+var _excludeDefault = parcelHelpers.interopDefault(_exclude);
+var _explicitFill = require("./icons/explicit-fill");
+var _explicitFillDefault = parcelHelpers.interopDefault(_explicitFill);
+var _explicit = require("./icons/explicit");
+var _explicitDefault = parcelHelpers.interopDefault(_explicit);
+var _eyeFill = require("./icons/eye-fill");
+var _eyeFillDefault = parcelHelpers.interopDefault(_eyeFill);
+var _eyeSlashFill = require("./icons/eye-slash-fill");
+var _eyeSlashFillDefault = parcelHelpers.interopDefault(_eyeSlashFill);
+var _eyeSlash = require("./icons/eye-slash");
+var _eyeSlashDefault = parcelHelpers.interopDefault(_eyeSlash);
+var _eye = require("./icons/eye");
+var _eyeDefault = parcelHelpers.interopDefault(_eye);
+var _eyedropper = require("./icons/eyedropper");
+var _eyedropperDefault = parcelHelpers.interopDefault(_eyedropper);
+var _eyeglasses = require("./icons/eyeglasses");
+var _eyeglassesDefault = parcelHelpers.interopDefault(_eyeglasses);
+var _facebook = require("./icons/facebook");
+var _facebookDefault = parcelHelpers.interopDefault(_facebook);
+var _fan = require("./icons/fan");
+var _fanDefault = parcelHelpers.interopDefault(_fan);
+var _fastForwardBtnFill = require("./icons/fast-forward-btn-fill");
+var _fastForwardBtnFillDefault = parcelHelpers.interopDefault(_fastForwardBtnFill);
+var _fastForwardBtn = require("./icons/fast-forward-btn");
+var _fastForwardBtnDefault = parcelHelpers.interopDefault(_fastForwardBtn);
+var _fastForwardCircleFill = require("./icons/fast-forward-circle-fill");
+var _fastForwardCircleFillDefault = parcelHelpers.interopDefault(_fastForwardCircleFill);
+var _fastForwardCircle = require("./icons/fast-forward-circle");
+var _fastForwardCircleDefault = parcelHelpers.interopDefault(_fastForwardCircle);
+var _fastForwardFill = require("./icons/fast-forward-fill");
+var _fastForwardFillDefault = parcelHelpers.interopDefault(_fastForwardFill);
+var _fastForward = require("./icons/fast-forward");
+var _fastForwardDefault = parcelHelpers.interopDefault(_fastForward);
+var _fileArrowDownFill = require("./icons/file-arrow-down-fill");
+var _fileArrowDownFillDefault = parcelHelpers.interopDefault(_fileArrowDownFill);
+var _fileArrowDown = require("./icons/file-arrow-down");
+var _fileArrowDownDefault = parcelHelpers.interopDefault(_fileArrowDown);
+var _fileArrowUpFill = require("./icons/file-arrow-up-fill");
+var _fileArrowUpFillDefault = parcelHelpers.interopDefault(_fileArrowUpFill);
+var _fileArrowUp = require("./icons/file-arrow-up");
+var _fileArrowUpDefault = parcelHelpers.interopDefault(_fileArrowUp);
+var _fileBarGraphFill = require("./icons/file-bar-graph-fill");
+var _fileBarGraphFillDefault = parcelHelpers.interopDefault(_fileBarGraphFill);
+var _fileBarGraph = require("./icons/file-bar-graph");
+var _fileBarGraphDefault = parcelHelpers.interopDefault(_fileBarGraph);
+var _fileBinaryFill = require("./icons/file-binary-fill");
+var _fileBinaryFillDefault = parcelHelpers.interopDefault(_fileBinaryFill);
+var _fileBinary = require("./icons/file-binary");
+var _fileBinaryDefault = parcelHelpers.interopDefault(_fileBinary);
+var _fileBreakFill = require("./icons/file-break-fill");
+var _fileBreakFillDefault = parcelHelpers.interopDefault(_fileBreakFill);
+var _fileBreak = require("./icons/file-break");
+var _fileBreakDefault = parcelHelpers.interopDefault(_fileBreak);
+var _fileCheckFill = require("./icons/file-check-fill");
+var _fileCheckFillDefault = parcelHelpers.interopDefault(_fileCheckFill);
+var _fileCheck = require("./icons/file-check");
+var _fileCheckDefault = parcelHelpers.interopDefault(_fileCheck);
+var _fileCodeFill = require("./icons/file-code-fill");
+var _fileCodeFillDefault = parcelHelpers.interopDefault(_fileCodeFill);
+var _fileCode = require("./icons/file-code");
+var _fileCodeDefault = parcelHelpers.interopDefault(_fileCode);
+var _fileDiffFill = require("./icons/file-diff-fill");
+var _fileDiffFillDefault = parcelHelpers.interopDefault(_fileDiffFill);
+var _fileDiff = require("./icons/file-diff");
+var _fileDiffDefault = parcelHelpers.interopDefault(_fileDiff);
+var _fileEarmarkArrowDownFill = require("./icons/file-earmark-arrow-down-fill");
+var _fileEarmarkArrowDownFillDefault = parcelHelpers.interopDefault(_fileEarmarkArrowDownFill);
+var _fileEarmarkArrowDown = require("./icons/file-earmark-arrow-down");
+var _fileEarmarkArrowDownDefault = parcelHelpers.interopDefault(_fileEarmarkArrowDown);
+var _fileEarmarkArrowUpFill = require("./icons/file-earmark-arrow-up-fill");
+var _fileEarmarkArrowUpFillDefault = parcelHelpers.interopDefault(_fileEarmarkArrowUpFill);
+var _fileEarmarkArrowUp = require("./icons/file-earmark-arrow-up");
+var _fileEarmarkArrowUpDefault = parcelHelpers.interopDefault(_fileEarmarkArrowUp);
+var _fileEarmarkBarGraphFill = require("./icons/file-earmark-bar-graph-fill");
+var _fileEarmarkBarGraphFillDefault = parcelHelpers.interopDefault(_fileEarmarkBarGraphFill);
+var _fileEarmarkBarGraph = require("./icons/file-earmark-bar-graph");
+var _fileEarmarkBarGraphDefault = parcelHelpers.interopDefault(_fileEarmarkBarGraph);
+var _fileEarmarkBinaryFill = require("./icons/file-earmark-binary-fill");
+var _fileEarmarkBinaryFillDefault = parcelHelpers.interopDefault(_fileEarmarkBinaryFill);
+var _fileEarmarkBinary = require("./icons/file-earmark-binary");
+var _fileEarmarkBinaryDefault = parcelHelpers.interopDefault(_fileEarmarkBinary);
+var _fileEarmarkBreakFill = require("./icons/file-earmark-break-fill");
+var _fileEarmarkBreakFillDefault = parcelHelpers.interopDefault(_fileEarmarkBreakFill);
+var _fileEarmarkBreak = require("./icons/file-earmark-break");
+var _fileEarmarkBreakDefault = parcelHelpers.interopDefault(_fileEarmarkBreak);
+var _fileEarmarkCheckFill = require("./icons/file-earmark-check-fill");
+var _fileEarmarkCheckFillDefault = parcelHelpers.interopDefault(_fileEarmarkCheckFill);
+var _fileEarmarkCheck = require("./icons/file-earmark-check");
+var _fileEarmarkCheckDefault = parcelHelpers.interopDefault(_fileEarmarkCheck);
+var _fileEarmarkCodeFill = require("./icons/file-earmark-code-fill");
+var _fileEarmarkCodeFillDefault = parcelHelpers.interopDefault(_fileEarmarkCodeFill);
+var _fileEarmarkCode = require("./icons/file-earmark-code");
+var _fileEarmarkCodeDefault = parcelHelpers.interopDefault(_fileEarmarkCode);
+var _fileEarmarkDiffFill = require("./icons/file-earmark-diff-fill");
+var _fileEarmarkDiffFillDefault = parcelHelpers.interopDefault(_fileEarmarkDiffFill);
+var _fileEarmarkDiff = require("./icons/file-earmark-diff");
+var _fileEarmarkDiffDefault = parcelHelpers.interopDefault(_fileEarmarkDiff);
+var _fileEarmarkEaselFill = require("./icons/file-earmark-easel-fill");
+var _fileEarmarkEaselFillDefault = parcelHelpers.interopDefault(_fileEarmarkEaselFill);
+var _fileEarmarkEasel = require("./icons/file-earmark-easel");
+var _fileEarmarkEaselDefault = parcelHelpers.interopDefault(_fileEarmarkEasel);
+var _fileEarmarkExcelFill = require("./icons/file-earmark-excel-fill");
+var _fileEarmarkExcelFillDefault = parcelHelpers.interopDefault(_fileEarmarkExcelFill);
+var _fileEarmarkExcel = require("./icons/file-earmark-excel");
+var _fileEarmarkExcelDefault = parcelHelpers.interopDefault(_fileEarmarkExcel);
+var _fileEarmarkFill = require("./icons/file-earmark-fill");
+var _fileEarmarkFillDefault = parcelHelpers.interopDefault(_fileEarmarkFill);
+var _fileEarmarkFontFill = require("./icons/file-earmark-font-fill");
+var _fileEarmarkFontFillDefault = parcelHelpers.interopDefault(_fileEarmarkFontFill);
+var _fileEarmarkFont = require("./icons/file-earmark-font");
+var _fileEarmarkFontDefault = parcelHelpers.interopDefault(_fileEarmarkFont);
+var _fileEarmarkImageFill = require("./icons/file-earmark-image-fill");
+var _fileEarmarkImageFillDefault = parcelHelpers.interopDefault(_fileEarmarkImageFill);
+var _fileEarmarkImage = require("./icons/file-earmark-image");
+var _fileEarmarkImageDefault = parcelHelpers.interopDefault(_fileEarmarkImage);
+var _fileEarmarkLockFill = require("./icons/file-earmark-lock-fill");
+var _fileEarmarkLockFillDefault = parcelHelpers.interopDefault(_fileEarmarkLockFill);
+var _fileEarmarkLock = require("./icons/file-earmark-lock");
+var _fileEarmarkLockDefault = parcelHelpers.interopDefault(_fileEarmarkLock);
+var _fileEarmarkLock2Fill = require("./icons/file-earmark-lock2-fill");
+var _fileEarmarkLock2FillDefault = parcelHelpers.interopDefault(_fileEarmarkLock2Fill);
+var _fileEarmarkLock2 = require("./icons/file-earmark-lock2");
+var _fileEarmarkLock2Default = parcelHelpers.interopDefault(_fileEarmarkLock2);
+var _fileEarmarkMedicalFill = require("./icons/file-earmark-medical-fill");
+var _fileEarmarkMedicalFillDefault = parcelHelpers.interopDefault(_fileEarmarkMedicalFill);
+var _fileEarmarkMedical = require("./icons/file-earmark-medical");
+var _fileEarmarkMedicalDefault = parcelHelpers.interopDefault(_fileEarmarkMedical);
+var _fileEarmarkMinusFill = require("./icons/file-earmark-minus-fill");
+var _fileEarmarkMinusFillDefault = parcelHelpers.interopDefault(_fileEarmarkMinusFill);
+var _fileEarmarkMinus = require("./icons/file-earmark-minus");
+var _fileEarmarkMinusDefault = parcelHelpers.interopDefault(_fileEarmarkMinus);
+var _fileEarmarkMusicFill = require("./icons/file-earmark-music-fill");
+var _fileEarmarkMusicFillDefault = parcelHelpers.interopDefault(_fileEarmarkMusicFill);
+var _fileEarmarkMusic = require("./icons/file-earmark-music");
+var _fileEarmarkMusicDefault = parcelHelpers.interopDefault(_fileEarmarkMusic);
+var _fileEarmarkPdfFill = require("./icons/file-earmark-pdf-fill");
+var _fileEarmarkPdfFillDefault = parcelHelpers.interopDefault(_fileEarmarkPdfFill);
+var _fileEarmarkPdf = require("./icons/file-earmark-pdf");
+var _fileEarmarkPdfDefault = parcelHelpers.interopDefault(_fileEarmarkPdf);
+var _fileEarmarkPersonFill = require("./icons/file-earmark-person-fill");
+var _fileEarmarkPersonFillDefault = parcelHelpers.interopDefault(_fileEarmarkPersonFill);
+var _fileEarmarkPerson = require("./icons/file-earmark-person");
+var _fileEarmarkPersonDefault = parcelHelpers.interopDefault(_fileEarmarkPerson);
+var _fileEarmarkPlayFill = require("./icons/file-earmark-play-fill");
+var _fileEarmarkPlayFillDefault = parcelHelpers.interopDefault(_fileEarmarkPlayFill);
+var _fileEarmarkPlay = require("./icons/file-earmark-play");
+var _fileEarmarkPlayDefault = parcelHelpers.interopDefault(_fileEarmarkPlay);
+var _fileEarmarkPlusFill = require("./icons/file-earmark-plus-fill");
+var _fileEarmarkPlusFillDefault = parcelHelpers.interopDefault(_fileEarmarkPlusFill);
+var _fileEarmarkPlus = require("./icons/file-earmark-plus");
+var _fileEarmarkPlusDefault = parcelHelpers.interopDefault(_fileEarmarkPlus);
+var _fileEarmarkPostFill = require("./icons/file-earmark-post-fill");
+var _fileEarmarkPostFillDefault = parcelHelpers.interopDefault(_fileEarmarkPostFill);
+var _fileEarmarkPost = require("./icons/file-earmark-post");
+var _fileEarmarkPostDefault = parcelHelpers.interopDefault(_fileEarmarkPost);
+var _fileEarmarkPptFill = require("./icons/file-earmark-ppt-fill");
+var _fileEarmarkPptFillDefault = parcelHelpers.interopDefault(_fileEarmarkPptFill);
+var _fileEarmarkPpt = require("./icons/file-earmark-ppt");
+var _fileEarmarkPptDefault = parcelHelpers.interopDefault(_fileEarmarkPpt);
+var _fileEarmarkRichtextFill = require("./icons/file-earmark-richtext-fill");
+var _fileEarmarkRichtextFillDefault = parcelHelpers.interopDefault(_fileEarmarkRichtextFill);
+var _fileEarmarkRichtext = require("./icons/file-earmark-richtext");
+var _fileEarmarkRichtextDefault = parcelHelpers.interopDefault(_fileEarmarkRichtext);
+var _fileEarmarkRuledFill = require("./icons/file-earmark-ruled-fill");
+var _fileEarmarkRuledFillDefault = parcelHelpers.interopDefault(_fileEarmarkRuledFill);
+var _fileEarmarkRuled = require("./icons/file-earmark-ruled");
+var _fileEarmarkRuledDefault = parcelHelpers.interopDefault(_fileEarmarkRuled);
+var _fileEarmarkSlidesFill = require("./icons/file-earmark-slides-fill");
+var _fileEarmarkSlidesFillDefault = parcelHelpers.interopDefault(_fileEarmarkSlidesFill);
+var _fileEarmarkSlides = require("./icons/file-earmark-slides");
+var _fileEarmarkSlidesDefault = parcelHelpers.interopDefault(_fileEarmarkSlides);
+var _fileEarmarkSpreadsheetFill = require("./icons/file-earmark-spreadsheet-fill");
+var _fileEarmarkSpreadsheetFillDefault = parcelHelpers.interopDefault(_fileEarmarkSpreadsheetFill);
+var _fileEarmarkSpreadsheet = require("./icons/file-earmark-spreadsheet");
+var _fileEarmarkSpreadsheetDefault = parcelHelpers.interopDefault(_fileEarmarkSpreadsheet);
+var _fileEarmarkTextFill = require("./icons/file-earmark-text-fill");
+var _fileEarmarkTextFillDefault = parcelHelpers.interopDefault(_fileEarmarkTextFill);
+var _fileEarmarkText = require("./icons/file-earmark-text");
+var _fileEarmarkTextDefault = parcelHelpers.interopDefault(_fileEarmarkText);
+var _fileEarmarkWordFill = require("./icons/file-earmark-word-fill");
+var _fileEarmarkWordFillDefault = parcelHelpers.interopDefault(_fileEarmarkWordFill);
+var _fileEarmarkWord = require("./icons/file-earmark-word");
+var _fileEarmarkWordDefault = parcelHelpers.interopDefault(_fileEarmarkWord);
+var _fileEarmarkXFill = require("./icons/file-earmark-x-fill");
+var _fileEarmarkXFillDefault = parcelHelpers.interopDefault(_fileEarmarkXFill);
+var _fileEarmarkX = require("./icons/file-earmark-x");
+var _fileEarmarkXDefault = parcelHelpers.interopDefault(_fileEarmarkX);
+var _fileEarmarkZipFill = require("./icons/file-earmark-zip-fill");
+var _fileEarmarkZipFillDefault = parcelHelpers.interopDefault(_fileEarmarkZipFill);
+var _fileEarmarkZip = require("./icons/file-earmark-zip");
+var _fileEarmarkZipDefault = parcelHelpers.interopDefault(_fileEarmarkZip);
+var _fileEarmark = require("./icons/file-earmark");
+var _fileEarmarkDefault = parcelHelpers.interopDefault(_fileEarmark);
+var _fileEaselFill = require("./icons/file-easel-fill");
+var _fileEaselFillDefault = parcelHelpers.interopDefault(_fileEaselFill);
+var _fileEasel = require("./icons/file-easel");
+var _fileEaselDefault = parcelHelpers.interopDefault(_fileEasel);
+var _fileExcelFill = require("./icons/file-excel-fill");
+var _fileExcelFillDefault = parcelHelpers.interopDefault(_fileExcelFill);
+var _fileExcel = require("./icons/file-excel");
+var _fileExcelDefault = parcelHelpers.interopDefault(_fileExcel);
+var _fileFill = require("./icons/file-fill");
+var _fileFillDefault = parcelHelpers.interopDefault(_fileFill);
+var _fileFontFill = require("./icons/file-font-fill");
+var _fileFontFillDefault = parcelHelpers.interopDefault(_fileFontFill);
+var _fileFont = require("./icons/file-font");
+var _fileFontDefault = parcelHelpers.interopDefault(_fileFont);
+var _fileImageFill = require("./icons/file-image-fill");
+var _fileImageFillDefault = parcelHelpers.interopDefault(_fileImageFill);
+var _fileImage = require("./icons/file-image");
+var _fileImageDefault = parcelHelpers.interopDefault(_fileImage);
+var _fileLockFill = require("./icons/file-lock-fill");
+var _fileLockFillDefault = parcelHelpers.interopDefault(_fileLockFill);
+var _fileLock = require("./icons/file-lock");
+var _fileLockDefault = parcelHelpers.interopDefault(_fileLock);
+var _fileLock2Fill = require("./icons/file-lock2-fill");
+var _fileLock2FillDefault = parcelHelpers.interopDefault(_fileLock2Fill);
+var _fileLock2 = require("./icons/file-lock2");
+var _fileLock2Default = parcelHelpers.interopDefault(_fileLock2);
+var _fileMedicalFill = require("./icons/file-medical-fill");
+var _fileMedicalFillDefault = parcelHelpers.interopDefault(_fileMedicalFill);
+var _fileMedical = require("./icons/file-medical");
+var _fileMedicalDefault = parcelHelpers.interopDefault(_fileMedical);
+var _fileMinusFill = require("./icons/file-minus-fill");
+var _fileMinusFillDefault = parcelHelpers.interopDefault(_fileMinusFill);
+var _fileMinus = require("./icons/file-minus");
+var _fileMinusDefault = parcelHelpers.interopDefault(_fileMinus);
+var _fileMusicFill = require("./icons/file-music-fill");
+var _fileMusicFillDefault = parcelHelpers.interopDefault(_fileMusicFill);
+var _fileMusic = require("./icons/file-music");
+var _fileMusicDefault = parcelHelpers.interopDefault(_fileMusic);
+var _filePdfFill = require("./icons/file-pdf-fill");
+var _filePdfFillDefault = parcelHelpers.interopDefault(_filePdfFill);
+var _filePdf = require("./icons/file-pdf");
+var _filePdfDefault = parcelHelpers.interopDefault(_filePdf);
+var _filePersonFill = require("./icons/file-person-fill");
+var _filePersonFillDefault = parcelHelpers.interopDefault(_filePersonFill);
+var _filePerson = require("./icons/file-person");
+var _filePersonDefault = parcelHelpers.interopDefault(_filePerson);
+var _filePlayFill = require("./icons/file-play-fill");
+var _filePlayFillDefault = parcelHelpers.interopDefault(_filePlayFill);
+var _filePlay = require("./icons/file-play");
+var _filePlayDefault = parcelHelpers.interopDefault(_filePlay);
+var _filePlusFill = require("./icons/file-plus-fill");
+var _filePlusFillDefault = parcelHelpers.interopDefault(_filePlusFill);
+var _filePlus = require("./icons/file-plus");
+var _filePlusDefault = parcelHelpers.interopDefault(_filePlus);
+var _filePostFill = require("./icons/file-post-fill");
+var _filePostFillDefault = parcelHelpers.interopDefault(_filePostFill);
+var _filePost = require("./icons/file-post");
+var _filePostDefault = parcelHelpers.interopDefault(_filePost);
+var _filePptFill = require("./icons/file-ppt-fill");
+var _filePptFillDefault = parcelHelpers.interopDefault(_filePptFill);
+var _filePpt = require("./icons/file-ppt");
+var _filePptDefault = parcelHelpers.interopDefault(_filePpt);
+var _fileRichtextFill = require("./icons/file-richtext-fill");
+var _fileRichtextFillDefault = parcelHelpers.interopDefault(_fileRichtextFill);
+var _fileRichtext = require("./icons/file-richtext");
+var _fileRichtextDefault = parcelHelpers.interopDefault(_fileRichtext);
+var _fileRuledFill = require("./icons/file-ruled-fill");
+var _fileRuledFillDefault = parcelHelpers.interopDefault(_fileRuledFill);
+var _fileRuled = require("./icons/file-ruled");
+var _fileRuledDefault = parcelHelpers.interopDefault(_fileRuled);
+var _fileSlidesFill = require("./icons/file-slides-fill");
+var _fileSlidesFillDefault = parcelHelpers.interopDefault(_fileSlidesFill);
+var _fileSlides = require("./icons/file-slides");
+var _fileSlidesDefault = parcelHelpers.interopDefault(_fileSlides);
+var _fileSpreadsheetFill = require("./icons/file-spreadsheet-fill");
+var _fileSpreadsheetFillDefault = parcelHelpers.interopDefault(_fileSpreadsheetFill);
+var _fileSpreadsheet = require("./icons/file-spreadsheet");
+var _fileSpreadsheetDefault = parcelHelpers.interopDefault(_fileSpreadsheet);
+var _fileTextFill = require("./icons/file-text-fill");
+var _fileTextFillDefault = parcelHelpers.interopDefault(_fileTextFill);
+var _fileText = require("./icons/file-text");
+var _fileTextDefault = parcelHelpers.interopDefault(_fileText);
+var _fileWordFill = require("./icons/file-word-fill");
+var _fileWordFillDefault = parcelHelpers.interopDefault(_fileWordFill);
+var _fileWord = require("./icons/file-word");
+var _fileWordDefault = parcelHelpers.interopDefault(_fileWord);
+var _fileXFill = require("./icons/file-x-fill");
+var _fileXFillDefault = parcelHelpers.interopDefault(_fileXFill);
+var _fileX = require("./icons/file-x");
+var _fileXDefault = parcelHelpers.interopDefault(_fileX);
+var _fileZipFill = require("./icons/file-zip-fill");
+var _fileZipFillDefault = parcelHelpers.interopDefault(_fileZipFill);
+var _fileZip = require("./icons/file-zip");
+var _fileZipDefault = parcelHelpers.interopDefault(_fileZip);
+var _file = require("./icons/file");
+var _fileDefault = parcelHelpers.interopDefault(_file);
+var _filesAlt = require("./icons/files-alt");
+var _filesAltDefault = parcelHelpers.interopDefault(_filesAlt);
+var _files = require("./icons/files");
+var _filesDefault = parcelHelpers.interopDefault(_files);
+var _filetypeAac = require("./icons/filetype-aac");
+var _filetypeAacDefault = parcelHelpers.interopDefault(_filetypeAac);
+var _filetypeAi = require("./icons/filetype-ai");
+var _filetypeAiDefault = parcelHelpers.interopDefault(_filetypeAi);
+var _filetypeBmp = require("./icons/filetype-bmp");
+var _filetypeBmpDefault = parcelHelpers.interopDefault(_filetypeBmp);
+var _filetypeCs = require("./icons/filetype-cs");
+var _filetypeCsDefault = parcelHelpers.interopDefault(_filetypeCs);
+var _filetypeCss = require("./icons/filetype-css");
+var _filetypeCssDefault = parcelHelpers.interopDefault(_filetypeCss);
+var _filetypeCsv = require("./icons/filetype-csv");
+var _filetypeCsvDefault = parcelHelpers.interopDefault(_filetypeCsv);
+var _filetypeDoc = require("./icons/filetype-doc");
+var _filetypeDocDefault = parcelHelpers.interopDefault(_filetypeDoc);
+var _filetypeDocx = require("./icons/filetype-docx");
+var _filetypeDocxDefault = parcelHelpers.interopDefault(_filetypeDocx);
+var _filetypeExe = require("./icons/filetype-exe");
+var _filetypeExeDefault = parcelHelpers.interopDefault(_filetypeExe);
+var _filetypeGif = require("./icons/filetype-gif");
+var _filetypeGifDefault = parcelHelpers.interopDefault(_filetypeGif);
+var _filetypeHeic = require("./icons/filetype-heic");
+var _filetypeHeicDefault = parcelHelpers.interopDefault(_filetypeHeic);
+var _filetypeHtml = require("./icons/filetype-html");
+var _filetypeHtmlDefault = parcelHelpers.interopDefault(_filetypeHtml);
+var _filetypeJava = require("./icons/filetype-java");
+var _filetypeJavaDefault = parcelHelpers.interopDefault(_filetypeJava);
+var _filetypeJpg = require("./icons/filetype-jpg");
+var _filetypeJpgDefault = parcelHelpers.interopDefault(_filetypeJpg);
+var _filetypeJs = require("./icons/filetype-js");
+var _filetypeJsDefault = parcelHelpers.interopDefault(_filetypeJs);
+var _filetypeJson = require("./icons/filetype-json");
+var _filetypeJsonDefault = parcelHelpers.interopDefault(_filetypeJson);
+var _filetypeJsx = require("./icons/filetype-jsx");
+var _filetypeJsxDefault = parcelHelpers.interopDefault(_filetypeJsx);
+var _filetypeKey = require("./icons/filetype-key");
+var _filetypeKeyDefault = parcelHelpers.interopDefault(_filetypeKey);
+var _filetypeM4P = require("./icons/filetype-m4p");
+var _filetypeM4PDefault = parcelHelpers.interopDefault(_filetypeM4P);
+var _filetypeMd = require("./icons/filetype-md");
+var _filetypeMdDefault = parcelHelpers.interopDefault(_filetypeMd);
+var _filetypeMdx = require("./icons/filetype-mdx");
+var _filetypeMdxDefault = parcelHelpers.interopDefault(_filetypeMdx);
+var _filetypeMov = require("./icons/filetype-mov");
+var _filetypeMovDefault = parcelHelpers.interopDefault(_filetypeMov);
+var _filetypeMp3 = require("./icons/filetype-mp3");
+var _filetypeMp3Default = parcelHelpers.interopDefault(_filetypeMp3);
+var _filetypeMp4 = require("./icons/filetype-mp4");
+var _filetypeMp4Default = parcelHelpers.interopDefault(_filetypeMp4);
+var _filetypeOtf = require("./icons/filetype-otf");
+var _filetypeOtfDefault = parcelHelpers.interopDefault(_filetypeOtf);
+var _filetypePdf = require("./icons/filetype-pdf");
+var _filetypePdfDefault = parcelHelpers.interopDefault(_filetypePdf);
+var _filetypePhp = require("./icons/filetype-php");
+var _filetypePhpDefault = parcelHelpers.interopDefault(_filetypePhp);
+var _filetypePng = require("./icons/filetype-png");
+var _filetypePngDefault = parcelHelpers.interopDefault(_filetypePng);
+var _filetypePpt = require("./icons/filetype-ppt");
+var _filetypePptDefault = parcelHelpers.interopDefault(_filetypePpt);
+var _filetypePptx = require("./icons/filetype-pptx");
+var _filetypePptxDefault = parcelHelpers.interopDefault(_filetypePptx);
+var _filetypePsd = require("./icons/filetype-psd");
+var _filetypePsdDefault = parcelHelpers.interopDefault(_filetypePsd);
+var _filetypePy = require("./icons/filetype-py");
+var _filetypePyDefault = parcelHelpers.interopDefault(_filetypePy);
+var _filetypeRaw = require("./icons/filetype-raw");
+var _filetypeRawDefault = parcelHelpers.interopDefault(_filetypeRaw);
+var _filetypeRb = require("./icons/filetype-rb");
+var _filetypeRbDefault = parcelHelpers.interopDefault(_filetypeRb);
+var _filetypeSass = require("./icons/filetype-sass");
+var _filetypeSassDefault = parcelHelpers.interopDefault(_filetypeSass);
+var _filetypeScss = require("./icons/filetype-scss");
+var _filetypeScssDefault = parcelHelpers.interopDefault(_filetypeScss);
+var _filetypeSh = require("./icons/filetype-sh");
+var _filetypeShDefault = parcelHelpers.interopDefault(_filetypeSh);
+var _filetypeSql = require("./icons/filetype-sql");
+var _filetypeSqlDefault = parcelHelpers.interopDefault(_filetypeSql);
+var _filetypeSvg = require("./icons/filetype-svg");
+var _filetypeSvgDefault = parcelHelpers.interopDefault(_filetypeSvg);
+var _filetypeTiff = require("./icons/filetype-tiff");
+var _filetypeTiffDefault = parcelHelpers.interopDefault(_filetypeTiff);
+var _filetypeTsx = require("./icons/filetype-tsx");
+var _filetypeTsxDefault = parcelHelpers.interopDefault(_filetypeTsx);
+var _filetypeTtf = require("./icons/filetype-ttf");
+var _filetypeTtfDefault = parcelHelpers.interopDefault(_filetypeTtf);
+var _filetypeTxt = require("./icons/filetype-txt");
+var _filetypeTxtDefault = parcelHelpers.interopDefault(_filetypeTxt);
+var _filetypeWav = require("./icons/filetype-wav");
+var _filetypeWavDefault = parcelHelpers.interopDefault(_filetypeWav);
+var _filetypeWoff = require("./icons/filetype-woff");
+var _filetypeWoffDefault = parcelHelpers.interopDefault(_filetypeWoff);
+var _filetypeXls = require("./icons/filetype-xls");
+var _filetypeXlsDefault = parcelHelpers.interopDefault(_filetypeXls);
+var _filetypeXlsx = require("./icons/filetype-xlsx");
+var _filetypeXlsxDefault = parcelHelpers.interopDefault(_filetypeXlsx);
+var _filetypeXml = require("./icons/filetype-xml");
+var _filetypeXmlDefault = parcelHelpers.interopDefault(_filetypeXml);
+var _filetypeYml = require("./icons/filetype-yml");
+var _filetypeYmlDefault = parcelHelpers.interopDefault(_filetypeYml);
+var _film = require("./icons/film");
+var _filmDefault = parcelHelpers.interopDefault(_film);
+var _filterCircleFill = require("./icons/filter-circle-fill");
+var _filterCircleFillDefault = parcelHelpers.interopDefault(_filterCircleFill);
+var _filterCircle = require("./icons/filter-circle");
+var _filterCircleDefault = parcelHelpers.interopDefault(_filterCircle);
+var _filterLeft = require("./icons/filter-left");
+var _filterLeftDefault = parcelHelpers.interopDefault(_filterLeft);
+var _filterRight = require("./icons/filter-right");
+var _filterRightDefault = parcelHelpers.interopDefault(_filterRight);
+var _filterSquareFill = require("./icons/filter-square-fill");
+var _filterSquareFillDefault = parcelHelpers.interopDefault(_filterSquareFill);
+var _filterSquare = require("./icons/filter-square");
+var _filterSquareDefault = parcelHelpers.interopDefault(_filterSquare);
+var _filter = require("./icons/filter");
+var _filterDefault = parcelHelpers.interopDefault(_filter);
+var _fingerprint = require("./icons/fingerprint");
+var _fingerprintDefault = parcelHelpers.interopDefault(_fingerprint);
+var _fire = require("./icons/fire");
+var _fireDefault = parcelHelpers.interopDefault(_fire);
+var _flagFill = require("./icons/flag-fill");
+var _flagFillDefault = parcelHelpers.interopDefault(_flagFill);
+var _flag = require("./icons/flag");
+var _flagDefault = parcelHelpers.interopDefault(_flag);
+var _flower1 = require("./icons/flower1");
+var _flower1Default = parcelHelpers.interopDefault(_flower1);
+var _flower2 = require("./icons/flower2");
+var _flower2Default = parcelHelpers.interopDefault(_flower2);
+var _flower3 = require("./icons/flower3");
+var _flower3Default = parcelHelpers.interopDefault(_flower3);
+var _folderCheck = require("./icons/folder-check");
+var _folderCheckDefault = parcelHelpers.interopDefault(_folderCheck);
+var _folderFill = require("./icons/folder-fill");
+var _folderFillDefault = parcelHelpers.interopDefault(_folderFill);
+var _folderMinus = require("./icons/folder-minus");
+var _folderMinusDefault = parcelHelpers.interopDefault(_folderMinus);
+var _folderPlus = require("./icons/folder-plus");
+var _folderPlusDefault = parcelHelpers.interopDefault(_folderPlus);
+var _folderSymlinkFill = require("./icons/folder-symlink-fill");
+var _folderSymlinkFillDefault = parcelHelpers.interopDefault(_folderSymlinkFill);
+var _folderSymlink = require("./icons/folder-symlink");
+var _folderSymlinkDefault = parcelHelpers.interopDefault(_folderSymlink);
+var _folderX = require("./icons/folder-x");
+var _folderXDefault = parcelHelpers.interopDefault(_folderX);
+var _folder = require("./icons/folder");
+var _folderDefault = parcelHelpers.interopDefault(_folder);
+var _folder2Open = require("./icons/folder2-open");
+var _folder2OpenDefault = parcelHelpers.interopDefault(_folder2Open);
+var _folder2 = require("./icons/folder2");
+var _folder2Default = parcelHelpers.interopDefault(_folder2);
+var _fonts = require("./icons/fonts");
+var _fontsDefault = parcelHelpers.interopDefault(_fonts);
+var _forwardFill = require("./icons/forward-fill");
+var _forwardFillDefault = parcelHelpers.interopDefault(_forwardFill);
+var _forward = require("./icons/forward");
+var _forwardDefault = parcelHelpers.interopDefault(_forward);
+var _front = require("./icons/front");
+var _frontDefault = parcelHelpers.interopDefault(_front);
+var _fuelPumpDieselFill = require("./icons/fuel-pump-diesel-fill");
+var _fuelPumpDieselFillDefault = parcelHelpers.interopDefault(_fuelPumpDieselFill);
+var _fuelPumpDiesel = require("./icons/fuel-pump-diesel");
+var _fuelPumpDieselDefault = parcelHelpers.interopDefault(_fuelPumpDiesel);
+var _fuelPumpFill = require("./icons/fuel-pump-fill");
+var _fuelPumpFillDefault = parcelHelpers.interopDefault(_fuelPumpFill);
+var _fuelPump = require("./icons/fuel-pump");
+var _fuelPumpDefault = parcelHelpers.interopDefault(_fuelPump);
+var _fullscreenExit = require("./icons/fullscreen-exit");
+var _fullscreenExitDefault = parcelHelpers.interopDefault(_fullscreenExit);
+var _fullscreen = require("./icons/fullscreen");
+var _fullscreenDefault = parcelHelpers.interopDefault(_fullscreen);
+var _funnelFill = require("./icons/funnel-fill");
+var _funnelFillDefault = parcelHelpers.interopDefault(_funnelFill);
+var _funnel = require("./icons/funnel");
+var _funnelDefault = parcelHelpers.interopDefault(_funnel);
+var _gearFill = require("./icons/gear-fill");
+var _gearFillDefault = parcelHelpers.interopDefault(_gearFill);
+var _gearWideConnected = require("./icons/gear-wide-connected");
+var _gearWideConnectedDefault = parcelHelpers.interopDefault(_gearWideConnected);
+var _gearWide = require("./icons/gear-wide");
+var _gearWideDefault = parcelHelpers.interopDefault(_gearWide);
+var _gear = require("./icons/gear");
+var _gearDefault = parcelHelpers.interopDefault(_gear);
+var _gem = require("./icons/gem");
+var _gemDefault = parcelHelpers.interopDefault(_gem);
+var _genderAmbiguous = require("./icons/gender-ambiguous");
+var _genderAmbiguousDefault = parcelHelpers.interopDefault(_genderAmbiguous);
+var _genderFemale = require("./icons/gender-female");
+var _genderFemaleDefault = parcelHelpers.interopDefault(_genderFemale);
+var _genderMale = require("./icons/gender-male");
+var _genderMaleDefault = parcelHelpers.interopDefault(_genderMale);
+var _genderTrans = require("./icons/gender-trans");
+var _genderTransDefault = parcelHelpers.interopDefault(_genderTrans);
+var _geoAltFill = require("./icons/geo-alt-fill");
+var _geoAltFillDefault = parcelHelpers.interopDefault(_geoAltFill);
+var _geoAlt = require("./icons/geo-alt");
+var _geoAltDefault = parcelHelpers.interopDefault(_geoAlt);
+var _geoFill = require("./icons/geo-fill");
+var _geoFillDefault = parcelHelpers.interopDefault(_geoFill);
+var _geo = require("./icons/geo");
+var _geoDefault = parcelHelpers.interopDefault(_geo);
+var _giftFill = require("./icons/gift-fill");
+var _giftFillDefault = parcelHelpers.interopDefault(_giftFill);
+var _gift = require("./icons/gift");
+var _giftDefault = parcelHelpers.interopDefault(_gift);
+var _git = require("./icons/git");
+var _gitDefault = parcelHelpers.interopDefault(_git);
+var _github = require("./icons/github");
+var _githubDefault = parcelHelpers.interopDefault(_github);
+var _globeAmericas = require("./icons/globe-americas");
+var _globeAmericasDefault = parcelHelpers.interopDefault(_globeAmericas);
+var _globeAsiaAustralia = require("./icons/globe-asia-australia");
+var _globeAsiaAustraliaDefault = parcelHelpers.interopDefault(_globeAsiaAustralia);
+var _globeCentralSouthAsia = require("./icons/globe-central-south-asia");
+var _globeCentralSouthAsiaDefault = parcelHelpers.interopDefault(_globeCentralSouthAsia);
+var _globeEuropeAfrica = require("./icons/globe-europe-africa");
+var _globeEuropeAfricaDefault = parcelHelpers.interopDefault(_globeEuropeAfrica);
+var _globe = require("./icons/globe");
+var _globeDefault = parcelHelpers.interopDefault(_globe);
+var _globe2 = require("./icons/globe2");
+var _globe2Default = parcelHelpers.interopDefault(_globe2);
+var _googlePlay = require("./icons/google-play");
+var _googlePlayDefault = parcelHelpers.interopDefault(_googlePlay);
+var _google = require("./icons/google");
+var _googleDefault = parcelHelpers.interopDefault(_google);
+var _gpuCard = require("./icons/gpu-card");
+var _gpuCardDefault = parcelHelpers.interopDefault(_gpuCard);
+var _graphDownArrow = require("./icons/graph-down-arrow");
+var _graphDownArrowDefault = parcelHelpers.interopDefault(_graphDownArrow);
+var _graphDown = require("./icons/graph-down");
+var _graphDownDefault = parcelHelpers.interopDefault(_graphDown);
+var _graphUpArrow = require("./icons/graph-up-arrow");
+var _graphUpArrowDefault = parcelHelpers.interopDefault(_graphUpArrow);
+var _graphUp = require("./icons/graph-up");
+var _graphUpDefault = parcelHelpers.interopDefault(_graphUp);
+var _grid1X2Fill = require("./icons/grid-1x2-fill");
+var _grid1X2FillDefault = parcelHelpers.interopDefault(_grid1X2Fill);
+var _grid1X2 = require("./icons/grid-1x2");
+var _grid1X2Default = parcelHelpers.interopDefault(_grid1X2);
+var _grid3X2GapFill = require("./icons/grid-3x2-gap-fill");
+var _grid3X2GapFillDefault = parcelHelpers.interopDefault(_grid3X2GapFill);
+var _grid3X2Gap = require("./icons/grid-3x2-gap");
+var _grid3X2GapDefault = parcelHelpers.interopDefault(_grid3X2Gap);
+var _grid3X2 = require("./icons/grid-3x2");
+var _grid3X2Default = parcelHelpers.interopDefault(_grid3X2);
+var _grid3X3GapFill = require("./icons/grid-3x3-gap-fill");
+var _grid3X3GapFillDefault = parcelHelpers.interopDefault(_grid3X3GapFill);
+var _grid3X3Gap = require("./icons/grid-3x3-gap");
+var _grid3X3GapDefault = parcelHelpers.interopDefault(_grid3X3Gap);
+var _grid3X3 = require("./icons/grid-3x3");
+var _grid3X3Default = parcelHelpers.interopDefault(_grid3X3);
+var _gridFill = require("./icons/grid-fill");
+var _gridFillDefault = parcelHelpers.interopDefault(_gridFill);
+var _grid = require("./icons/grid");
+var _gridDefault = parcelHelpers.interopDefault(_grid);
+var _gripHorizontal = require("./icons/grip-horizontal");
+var _gripHorizontalDefault = parcelHelpers.interopDefault(_gripHorizontal);
+var _gripVertical = require("./icons/grip-vertical");
+var _gripVerticalDefault = parcelHelpers.interopDefault(_gripVertical);
+var _hCircleFill = require("./icons/h-circle-fill");
+var _hCircleFillDefault = parcelHelpers.interopDefault(_hCircleFill);
+var _hCircle = require("./icons/h-circle");
+var _hCircleDefault = parcelHelpers.interopDefault(_hCircle);
+var _hSquareFill = require("./icons/h-square-fill");
+var _hSquareFillDefault = parcelHelpers.interopDefault(_hSquareFill);
+var _hSquare = require("./icons/h-square");
+var _hSquareDefault = parcelHelpers.interopDefault(_hSquare);
+var _hammer = require("./icons/hammer");
+var _hammerDefault = parcelHelpers.interopDefault(_hammer);
+var _handIndexFill = require("./icons/hand-index-fill");
+var _handIndexFillDefault = parcelHelpers.interopDefault(_handIndexFill);
+var _handIndexThumbFill = require("./icons/hand-index-thumb-fill");
+var _handIndexThumbFillDefault = parcelHelpers.interopDefault(_handIndexThumbFill);
+var _handIndexThumb = require("./icons/hand-index-thumb");
+var _handIndexThumbDefault = parcelHelpers.interopDefault(_handIndexThumb);
+var _handIndex = require("./icons/hand-index");
+var _handIndexDefault = parcelHelpers.interopDefault(_handIndex);
+var _handThumbsDownFill = require("./icons/hand-thumbs-down-fill");
+var _handThumbsDownFillDefault = parcelHelpers.interopDefault(_handThumbsDownFill);
+var _handThumbsDown = require("./icons/hand-thumbs-down");
+var _handThumbsDownDefault = parcelHelpers.interopDefault(_handThumbsDown);
+var _handThumbsUpFill = require("./icons/hand-thumbs-up-fill");
+var _handThumbsUpFillDefault = parcelHelpers.interopDefault(_handThumbsUpFill);
+var _handThumbsUp = require("./icons/hand-thumbs-up");
+var _handThumbsUpDefault = parcelHelpers.interopDefault(_handThumbsUp);
+var _handbagFill = require("./icons/handbag-fill");
+var _handbagFillDefault = parcelHelpers.interopDefault(_handbagFill);
+var _handbag = require("./icons/handbag");
+var _handbagDefault = parcelHelpers.interopDefault(_handbag);
+var _hash = require("./icons/hash");
+var _hashDefault = parcelHelpers.interopDefault(_hash);
+var _hddFill = require("./icons/hdd-fill");
+var _hddFillDefault = parcelHelpers.interopDefault(_hddFill);
+var _hddNetworkFill = require("./icons/hdd-network-fill");
+var _hddNetworkFillDefault = parcelHelpers.interopDefault(_hddNetworkFill);
+var _hddNetwork = require("./icons/hdd-network");
+var _hddNetworkDefault = parcelHelpers.interopDefault(_hddNetwork);
+var _hddRackFill = require("./icons/hdd-rack-fill");
+var _hddRackFillDefault = parcelHelpers.interopDefault(_hddRackFill);
+var _hddRack = require("./icons/hdd-rack");
+var _hddRackDefault = parcelHelpers.interopDefault(_hddRack);
+var _hddStackFill = require("./icons/hdd-stack-fill");
+var _hddStackFillDefault = parcelHelpers.interopDefault(_hddStackFill);
+var _hddStack = require("./icons/hdd-stack");
+var _hddStackDefault = parcelHelpers.interopDefault(_hddStack);
+var _hdd = require("./icons/hdd");
+var _hddDefault = parcelHelpers.interopDefault(_hdd);
+var _hdmiFill = require("./icons/hdmi-fill");
+var _hdmiFillDefault = parcelHelpers.interopDefault(_hdmiFill);
+var _hdmi = require("./icons/hdmi");
+var _hdmiDefault = parcelHelpers.interopDefault(_hdmi);
+var _headphones = require("./icons/headphones");
+var _headphonesDefault = parcelHelpers.interopDefault(_headphones);
+var _headsetVr = require("./icons/headset-vr");
+var _headsetVrDefault = parcelHelpers.interopDefault(_headsetVr);
+var _headset = require("./icons/headset");
+var _headsetDefault = parcelHelpers.interopDefault(_headset);
+var _heartArrow = require("./icons/heart-arrow");
+var _heartArrowDefault = parcelHelpers.interopDefault(_heartArrow);
+var _heartFill = require("./icons/heart-fill");
+var _heartFillDefault = parcelHelpers.interopDefault(_heartFill);
+var _heartHalf = require("./icons/heart-half");
+var _heartHalfDefault = parcelHelpers.interopDefault(_heartHalf);
+var _heartPulseFill = require("./icons/heart-pulse-fill");
+var _heartPulseFillDefault = parcelHelpers.interopDefault(_heartPulseFill);
+var _heartPulse = require("./icons/heart-pulse");
+var _heartPulseDefault = parcelHelpers.interopDefault(_heartPulse);
+var _heart = require("./icons/heart");
+var _heartDefault = parcelHelpers.interopDefault(_heart);
+var _heartbreakFill = require("./icons/heartbreak-fill");
+var _heartbreakFillDefault = parcelHelpers.interopDefault(_heartbreakFill);
+var _heartbreak = require("./icons/heartbreak");
+var _heartbreakDefault = parcelHelpers.interopDefault(_heartbreak);
+var _hearts = require("./icons/hearts");
+var _heartsDefault = parcelHelpers.interopDefault(_hearts);
+var _heptagonFill = require("./icons/heptagon-fill");
+var _heptagonFillDefault = parcelHelpers.interopDefault(_heptagonFill);
+var _heptagonHalf = require("./icons/heptagon-half");
+var _heptagonHalfDefault = parcelHelpers.interopDefault(_heptagonHalf);
+var _heptagon = require("./icons/heptagon");
+var _heptagonDefault = parcelHelpers.interopDefault(_heptagon);
+var _hexagonFill = require("./icons/hexagon-fill");
+var _hexagonFillDefault = parcelHelpers.interopDefault(_hexagonFill);
+var _hexagonHalf = require("./icons/hexagon-half");
+var _hexagonHalfDefault = parcelHelpers.interopDefault(_hexagonHalf);
+var _hexagon = require("./icons/hexagon");
+var _hexagonDefault = parcelHelpers.interopDefault(_hexagon);
+var _hospitalFill = require("./icons/hospital-fill");
+var _hospitalFillDefault = parcelHelpers.interopDefault(_hospitalFill);
+var _hospital = require("./icons/hospital");
+var _hospitalDefault = parcelHelpers.interopDefault(_hospital);
+var _hourglassBottom = require("./icons/hourglass-bottom");
+var _hourglassBottomDefault = parcelHelpers.interopDefault(_hourglassBottom);
+var _hourglassSplit = require("./icons/hourglass-split");
+var _hourglassSplitDefault = parcelHelpers.interopDefault(_hourglassSplit);
+var _hourglassTop = require("./icons/hourglass-top");
+var _hourglassTopDefault = parcelHelpers.interopDefault(_hourglassTop);
+var _hourglass = require("./icons/hourglass");
+var _hourglassDefault = parcelHelpers.interopDefault(_hourglass);
+var _houseAddFill = require("./icons/house-add-fill");
+var _houseAddFillDefault = parcelHelpers.interopDefault(_houseAddFill);
+var _houseAdd = require("./icons/house-add");
+var _houseAddDefault = parcelHelpers.interopDefault(_houseAdd);
+var _houseCheckFill = require("./icons/house-check-fill");
+var _houseCheckFillDefault = parcelHelpers.interopDefault(_houseCheckFill);
+var _houseCheck = require("./icons/house-check");
+var _houseCheckDefault = parcelHelpers.interopDefault(_houseCheck);
+var _houseDashFill = require("./icons/house-dash-fill");
+var _houseDashFillDefault = parcelHelpers.interopDefault(_houseDashFill);
+var _houseDash = require("./icons/house-dash");
+var _houseDashDefault = parcelHelpers.interopDefault(_houseDash);
+var _houseDoorFill = require("./icons/house-door-fill");
+var _houseDoorFillDefault = parcelHelpers.interopDefault(_houseDoorFill);
+var _houseDoor = require("./icons/house-door");
+var _houseDoorDefault = parcelHelpers.interopDefault(_houseDoor);
+var _houseDownFill = require("./icons/house-down-fill");
+var _houseDownFillDefault = parcelHelpers.interopDefault(_houseDownFill);
+var _houseDown = require("./icons/house-down");
+var _houseDownDefault = parcelHelpers.interopDefault(_houseDown);
+var _houseExclamationFill = require("./icons/house-exclamation-fill");
+var _houseExclamationFillDefault = parcelHelpers.interopDefault(_houseExclamationFill);
+var _houseExclamation = require("./icons/house-exclamation");
+var _houseExclamationDefault = parcelHelpers.interopDefault(_houseExclamation);
+var _houseFill = require("./icons/house-fill");
+var _houseFillDefault = parcelHelpers.interopDefault(_houseFill);
+var _houseGearFill = require("./icons/house-gear-fill");
+var _houseGearFillDefault = parcelHelpers.interopDefault(_houseGearFill);
+var _houseGear = require("./icons/house-gear");
+var _houseGearDefault = parcelHelpers.interopDefault(_houseGear);
+var _houseHeartFill = require("./icons/house-heart-fill");
+var _houseHeartFillDefault = parcelHelpers.interopDefault(_houseHeartFill);
+var _houseHeart = require("./icons/house-heart");
+var _houseHeartDefault = parcelHelpers.interopDefault(_houseHeart);
+var _houseLockFill = require("./icons/house-lock-fill");
+var _houseLockFillDefault = parcelHelpers.interopDefault(_houseLockFill);
+var _houseLock = require("./icons/house-lock");
+var _houseLockDefault = parcelHelpers.interopDefault(_houseLock);
+var _houseSlashFill = require("./icons/house-slash-fill");
+var _houseSlashFillDefault = parcelHelpers.interopDefault(_houseSlashFill);
+var _houseSlash = require("./icons/house-slash");
+var _houseSlashDefault = parcelHelpers.interopDefault(_houseSlash);
+var _houseUpFill = require("./icons/house-up-fill");
+var _houseUpFillDefault = parcelHelpers.interopDefault(_houseUpFill);
+var _houseUp = require("./icons/house-up");
+var _houseUpDefault = parcelHelpers.interopDefault(_houseUp);
+var _houseXFill = require("./icons/house-x-fill");
+var _houseXFillDefault = parcelHelpers.interopDefault(_houseXFill);
+var _houseX = require("./icons/house-x");
+var _houseXDefault = parcelHelpers.interopDefault(_houseX);
+var _house = require("./icons/house");
+var _houseDefault = parcelHelpers.interopDefault(_house);
+var _housesFill = require("./icons/houses-fill");
+var _housesFillDefault = parcelHelpers.interopDefault(_housesFill);
+var _houses = require("./icons/houses");
+var _housesDefault = parcelHelpers.interopDefault(_houses);
+var _hr = require("./icons/hr");
+var _hrDefault = parcelHelpers.interopDefault(_hr);
+var _hurricane = require("./icons/hurricane");
+var _hurricaneDefault = parcelHelpers.interopDefault(_hurricane);
+var _hypnotize = require("./icons/hypnotize");
+var _hypnotizeDefault = parcelHelpers.interopDefault(_hypnotize);
+var _imageAlt = require("./icons/image-alt");
+var _imageAltDefault = parcelHelpers.interopDefault(_imageAlt);
+var _imageFill = require("./icons/image-fill");
+var _imageFillDefault = parcelHelpers.interopDefault(_imageFill);
+var _image = require("./icons/image");
+var _imageDefault = parcelHelpers.interopDefault(_image);
+var _images = require("./icons/images");
+var _imagesDefault = parcelHelpers.interopDefault(_images);
+var _inboxFill = require("./icons/inbox-fill");
+var _inboxFillDefault = parcelHelpers.interopDefault(_inboxFill);
+var _inbox = require("./icons/inbox");
+var _inboxDefault = parcelHelpers.interopDefault(_inbox);
+var _inboxesFill = require("./icons/inboxes-fill");
+var _inboxesFillDefault = parcelHelpers.interopDefault(_inboxesFill);
+var _inboxes = require("./icons/inboxes");
+var _inboxesDefault = parcelHelpers.interopDefault(_inboxes);
+var _incognito = require("./icons/incognito");
+var _incognitoDefault = parcelHelpers.interopDefault(_incognito);
+var _indent = require("./icons/indent");
+var _indentDefault = parcelHelpers.interopDefault(_indent);
+var _infinity = require("./icons/infinity");
+var _infinityDefault = parcelHelpers.interopDefault(_infinity);
+var _infoCircleFill = require("./icons/info-circle-fill");
+var _infoCircleFillDefault = parcelHelpers.interopDefault(_infoCircleFill);
+var _infoCircle = require("./icons/info-circle");
+var _infoCircleDefault = parcelHelpers.interopDefault(_infoCircle);
+var _infoLg = require("./icons/info-lg");
+var _infoLgDefault = parcelHelpers.interopDefault(_infoLg);
+var _infoSquareFill = require("./icons/info-square-fill");
+var _infoSquareFillDefault = parcelHelpers.interopDefault(_infoSquareFill);
+var _infoSquare = require("./icons/info-square");
+var _infoSquareDefault = parcelHelpers.interopDefault(_infoSquare);
+var _info = require("./icons/info");
+var _infoDefault = parcelHelpers.interopDefault(_info);
+var _inputCursorText = require("./icons/input-cursor-text");
+var _inputCursorTextDefault = parcelHelpers.interopDefault(_inputCursorText);
+var _inputCursor = require("./icons/input-cursor");
+var _inputCursorDefault = parcelHelpers.interopDefault(_inputCursor);
+var _instagram = require("./icons/instagram");
+var _instagramDefault = parcelHelpers.interopDefault(_instagram);
+var _intersect = require("./icons/intersect");
+var _intersectDefault = parcelHelpers.interopDefault(_intersect);
+var _journalAlbum = require("./icons/journal-album");
+var _journalAlbumDefault = parcelHelpers.interopDefault(_journalAlbum);
+var _journalArrowDown = require("./icons/journal-arrow-down");
+var _journalArrowDownDefault = parcelHelpers.interopDefault(_journalArrowDown);
+var _journalArrowUp = require("./icons/journal-arrow-up");
+var _journalArrowUpDefault = parcelHelpers.interopDefault(_journalArrowUp);
+var _journalBookmarkFill = require("./icons/journal-bookmark-fill");
+var _journalBookmarkFillDefault = parcelHelpers.interopDefault(_journalBookmarkFill);
+var _journalBookmark = require("./icons/journal-bookmark");
+var _journalBookmarkDefault = parcelHelpers.interopDefault(_journalBookmark);
+var _journalCheck = require("./icons/journal-check");
+var _journalCheckDefault = parcelHelpers.interopDefault(_journalCheck);
+var _journalCode = require("./icons/journal-code");
+var _journalCodeDefault = parcelHelpers.interopDefault(_journalCode);
+var _journalMedical = require("./icons/journal-medical");
+var _journalMedicalDefault = parcelHelpers.interopDefault(_journalMedical);
+var _journalMinus = require("./icons/journal-minus");
+var _journalMinusDefault = parcelHelpers.interopDefault(_journalMinus);
+var _journalPlus = require("./icons/journal-plus");
+var _journalPlusDefault = parcelHelpers.interopDefault(_journalPlus);
+var _journalRichtext = require("./icons/journal-richtext");
+var _journalRichtextDefault = parcelHelpers.interopDefault(_journalRichtext);
+var _journalText = require("./icons/journal-text");
+var _journalTextDefault = parcelHelpers.interopDefault(_journalText);
+var _journalX = require("./icons/journal-x");
+var _journalXDefault = parcelHelpers.interopDefault(_journalX);
+var _journal = require("./icons/journal");
+var _journalDefault = parcelHelpers.interopDefault(_journal);
+var _journals = require("./icons/journals");
+var _journalsDefault = parcelHelpers.interopDefault(_journals);
+var _joystick = require("./icons/joystick");
+var _joystickDefault = parcelHelpers.interopDefault(_joystick);
+var _justifyLeft = require("./icons/justify-left");
+var _justifyLeftDefault = parcelHelpers.interopDefault(_justifyLeft);
+var _justifyRight = require("./icons/justify-right");
+var _justifyRightDefault = parcelHelpers.interopDefault(_justifyRight);
+var _justify = require("./icons/justify");
+var _justifyDefault = parcelHelpers.interopDefault(_justify);
+var _kanbanFill = require("./icons/kanban-fill");
+var _kanbanFillDefault = parcelHelpers.interopDefault(_kanbanFill);
+var _kanban = require("./icons/kanban");
+var _kanbanDefault = parcelHelpers.interopDefault(_kanban);
+var _keyFill = require("./icons/key-fill");
+var _keyFillDefault = parcelHelpers.interopDefault(_keyFill);
+var _key = require("./icons/key");
+var _keyDefault = parcelHelpers.interopDefault(_key);
+var _keyboardFill = require("./icons/keyboard-fill");
+var _keyboardFillDefault = parcelHelpers.interopDefault(_keyboardFill);
+var _keyboard = require("./icons/keyboard");
+var _keyboardDefault = parcelHelpers.interopDefault(_keyboard);
+var _ladder = require("./icons/ladder");
+var _ladderDefault = parcelHelpers.interopDefault(_ladder);
+var _lampFill = require("./icons/lamp-fill");
+var _lampFillDefault = parcelHelpers.interopDefault(_lampFill);
+var _lamp = require("./icons/lamp");
+var _lampDefault = parcelHelpers.interopDefault(_lamp);
+var _laptopFill = require("./icons/laptop-fill");
+var _laptopFillDefault = parcelHelpers.interopDefault(_laptopFill);
+var _laptop = require("./icons/laptop");
+var _laptopDefault = parcelHelpers.interopDefault(_laptop);
+var _layerBackward = require("./icons/layer-backward");
+var _layerBackwardDefault = parcelHelpers.interopDefault(_layerBackward);
+var _layerForward = require("./icons/layer-forward");
+var _layerForwardDefault = parcelHelpers.interopDefault(_layerForward);
+var _layersFill = require("./icons/layers-fill");
+var _layersFillDefault = parcelHelpers.interopDefault(_layersFill);
+var _layersHalf = require("./icons/layers-half");
+var _layersHalfDefault = parcelHelpers.interopDefault(_layersHalf);
+var _layers = require("./icons/layers");
+var _layersDefault = parcelHelpers.interopDefault(_layers);
+var _layoutSidebarInsetReverse = require("./icons/layout-sidebar-inset-reverse");
+var _layoutSidebarInsetReverseDefault = parcelHelpers.interopDefault(_layoutSidebarInsetReverse);
+var _layoutSidebarInset = require("./icons/layout-sidebar-inset");
+var _layoutSidebarInsetDefault = parcelHelpers.interopDefault(_layoutSidebarInset);
+var _layoutSidebarReverse = require("./icons/layout-sidebar-reverse");
+var _layoutSidebarReverseDefault = parcelHelpers.interopDefault(_layoutSidebarReverse);
+var _layoutSidebar = require("./icons/layout-sidebar");
+var _layoutSidebarDefault = parcelHelpers.interopDefault(_layoutSidebar);
+var _layoutSplit = require("./icons/layout-split");
+var _layoutSplitDefault = parcelHelpers.interopDefault(_layoutSplit);
+var _layoutTextSidebarReverse = require("./icons/layout-text-sidebar-reverse");
+var _layoutTextSidebarReverseDefault = parcelHelpers.interopDefault(_layoutTextSidebarReverse);
+var _layoutTextSidebar = require("./icons/layout-text-sidebar");
+var _layoutTextSidebarDefault = parcelHelpers.interopDefault(_layoutTextSidebar);
+var _layoutTextWindowReverse = require("./icons/layout-text-window-reverse");
+var _layoutTextWindowReverseDefault = parcelHelpers.interopDefault(_layoutTextWindowReverse);
+var _layoutTextWindow = require("./icons/layout-text-window");
+var _layoutTextWindowDefault = parcelHelpers.interopDefault(_layoutTextWindow);
+var _layoutThreeColumns = require("./icons/layout-three-columns");
+var _layoutThreeColumnsDefault = parcelHelpers.interopDefault(_layoutThreeColumns);
+var _layoutWtf = require("./icons/layout-wtf");
+var _layoutWtfDefault = parcelHelpers.interopDefault(_layoutWtf);
+var _lifePreserver = require("./icons/life-preserver");
+var _lifePreserverDefault = parcelHelpers.interopDefault(_lifePreserver);
+var _lightbulbFill = require("./icons/lightbulb-fill");
+var _lightbulbFillDefault = parcelHelpers.interopDefault(_lightbulbFill);
+var _lightbulbOffFill = require("./icons/lightbulb-off-fill");
+var _lightbulbOffFillDefault = parcelHelpers.interopDefault(_lightbulbOffFill);
+var _lightbulbOff = require("./icons/lightbulb-off");
+var _lightbulbOffDefault = parcelHelpers.interopDefault(_lightbulbOff);
+var _lightbulb = require("./icons/lightbulb");
+var _lightbulbDefault = parcelHelpers.interopDefault(_lightbulb);
+var _lightningChargeFill = require("./icons/lightning-charge-fill");
+var _lightningChargeFillDefault = parcelHelpers.interopDefault(_lightningChargeFill);
+var _lightningCharge = require("./icons/lightning-charge");
+var _lightningChargeDefault = parcelHelpers.interopDefault(_lightningCharge);
+var _lightningFill = require("./icons/lightning-fill");
+var _lightningFillDefault = parcelHelpers.interopDefault(_lightningFill);
+var _lightning = require("./icons/lightning");
+var _lightningDefault = parcelHelpers.interopDefault(_lightning);
+var _line = require("./icons/line");
+var _lineDefault = parcelHelpers.interopDefault(_line);
+var _link45Deg = require("./icons/link-45deg");
+var _link45DegDefault = parcelHelpers.interopDefault(_link45Deg);
+var _link = require("./icons/link");
+var _linkDefault = parcelHelpers.interopDefault(_link);
+var _linkedin = require("./icons/linkedin");
+var _linkedinDefault = parcelHelpers.interopDefault(_linkedin);
+var _listCheck = require("./icons/list-check");
+var _listCheckDefault = parcelHelpers.interopDefault(_listCheck);
+var _listColumnsReverse = require("./icons/list-columns-reverse");
+var _listColumnsReverseDefault = parcelHelpers.interopDefault(_listColumnsReverse);
+var _listColumns = require("./icons/list-columns");
+var _listColumnsDefault = parcelHelpers.interopDefault(_listColumns);
+var _listNested = require("./icons/list-nested");
+var _listNestedDefault = parcelHelpers.interopDefault(_listNested);
+var _listOl = require("./icons/list-ol");
+var _listOlDefault = parcelHelpers.interopDefault(_listOl);
+var _listStars = require("./icons/list-stars");
+var _listStarsDefault = parcelHelpers.interopDefault(_listStars);
+var _listTask = require("./icons/list-task");
+var _listTaskDefault = parcelHelpers.interopDefault(_listTask);
+var _listUl = require("./icons/list-ul");
+var _listUlDefault = parcelHelpers.interopDefault(_listUl);
+var _list = require("./icons/list");
+var _listDefault = parcelHelpers.interopDefault(_list);
+var _lockFill = require("./icons/lock-fill");
+var _lockFillDefault = parcelHelpers.interopDefault(_lockFill);
+var _lock = require("./icons/lock");
+var _lockDefault = parcelHelpers.interopDefault(_lock);
+var _lungsFill = require("./icons/lungs-fill");
+var _lungsFillDefault = parcelHelpers.interopDefault(_lungsFill);
+var _lungs = require("./icons/lungs");
+var _lungsDefault = parcelHelpers.interopDefault(_lungs);
+var _magic = require("./icons/magic");
+var _magicDefault = parcelHelpers.interopDefault(_magic);
+var _magnetFill = require("./icons/magnet-fill");
+var _magnetFillDefault = parcelHelpers.interopDefault(_magnetFill);
+var _magnet = require("./icons/magnet");
+var _magnetDefault = parcelHelpers.interopDefault(_magnet);
+var _mailbox = require("./icons/mailbox");
+var _mailboxDefault = parcelHelpers.interopDefault(_mailbox);
+var _mailbox2 = require("./icons/mailbox2");
+var _mailbox2Default = parcelHelpers.interopDefault(_mailbox2);
+var _mapFill = require("./icons/map-fill");
+var _mapFillDefault = parcelHelpers.interopDefault(_mapFill);
+var _map = require("./icons/map");
+var _mapDefault = parcelHelpers.interopDefault(_map);
+var _markdownFill = require("./icons/markdown-fill");
+var _markdownFillDefault = parcelHelpers.interopDefault(_markdownFill);
+var _markdown = require("./icons/markdown");
+var _markdownDefault = parcelHelpers.interopDefault(_markdown);
+var _mask = require("./icons/mask");
+var _maskDefault = parcelHelpers.interopDefault(_mask);
+var _mastodon = require("./icons/mastodon");
+var _mastodonDefault = parcelHelpers.interopDefault(_mastodon);
+var _medium = require("./icons/medium");
+var _mediumDefault = parcelHelpers.interopDefault(_medium);
+var _megaphoneFill = require("./icons/megaphone-fill");
+var _megaphoneFillDefault = parcelHelpers.interopDefault(_megaphoneFill);
+var _megaphone = require("./icons/megaphone");
+var _megaphoneDefault = parcelHelpers.interopDefault(_megaphone);
+var _memory = require("./icons/memory");
+var _memoryDefault = parcelHelpers.interopDefault(_memory);
+var _menuAppFill = require("./icons/menu-app-fill");
+var _menuAppFillDefault = parcelHelpers.interopDefault(_menuAppFill);
+var _menuApp = require("./icons/menu-app");
+var _menuAppDefault = parcelHelpers.interopDefault(_menuApp);
+var _menuButtonFill = require("./icons/menu-button-fill");
+var _menuButtonFillDefault = parcelHelpers.interopDefault(_menuButtonFill);
+var _menuButtonWideFill = require("./icons/menu-button-wide-fill");
+var _menuButtonWideFillDefault = parcelHelpers.interopDefault(_menuButtonWideFill);
+var _menuButtonWide = require("./icons/menu-button-wide");
+var _menuButtonWideDefault = parcelHelpers.interopDefault(_menuButtonWide);
+var _menuButton = require("./icons/menu-button");
+var _menuButtonDefault = parcelHelpers.interopDefault(_menuButton);
+var _menuDown = require("./icons/menu-down");
+var _menuDownDefault = parcelHelpers.interopDefault(_menuDown);
+var _menuUp = require("./icons/menu-up");
+var _menuUpDefault = parcelHelpers.interopDefault(_menuUp);
+var _messenger = require("./icons/messenger");
+var _messengerDefault = parcelHelpers.interopDefault(_messenger);
+var _meta = require("./icons/meta");
+var _metaDefault = parcelHelpers.interopDefault(_meta);
+var _micFill = require("./icons/mic-fill");
+var _micFillDefault = parcelHelpers.interopDefault(_micFill);
+var _micMuteFill = require("./icons/mic-mute-fill");
+var _micMuteFillDefault = parcelHelpers.interopDefault(_micMuteFill);
+var _micMute = require("./icons/mic-mute");
+var _micMuteDefault = parcelHelpers.interopDefault(_micMute);
+var _mic = require("./icons/mic");
+var _micDefault = parcelHelpers.interopDefault(_mic);
+var _microsoftTeams = require("./icons/microsoft-teams");
+var _microsoftTeamsDefault = parcelHelpers.interopDefault(_microsoftTeams);
+var _microsoft = require("./icons/microsoft");
+var _microsoftDefault = parcelHelpers.interopDefault(_microsoft);
+var _minecartLoaded = require("./icons/minecart-loaded");
+var _minecartLoadedDefault = parcelHelpers.interopDefault(_minecartLoaded);
+var _minecart = require("./icons/minecart");
+var _minecartDefault = parcelHelpers.interopDefault(_minecart);
+var _modemFill = require("./icons/modem-fill");
+var _modemFillDefault = parcelHelpers.interopDefault(_modemFill);
+var _modem = require("./icons/modem");
+var _modemDefault = parcelHelpers.interopDefault(_modem);
+var _moisture = require("./icons/moisture");
+var _moistureDefault = parcelHelpers.interopDefault(_moisture);
+var _moonFill = require("./icons/moon-fill");
+var _moonFillDefault = parcelHelpers.interopDefault(_moonFill);
+var _moonStarsFill = require("./icons/moon-stars-fill");
+var _moonStarsFillDefault = parcelHelpers.interopDefault(_moonStarsFill);
+var _moonStars = require("./icons/moon-stars");
+var _moonStarsDefault = parcelHelpers.interopDefault(_moonStars);
+var _moon = require("./icons/moon");
+var _moonDefault = parcelHelpers.interopDefault(_moon);
+var _mortarboardFill = require("./icons/mortarboard-fill");
+var _mortarboardFillDefault = parcelHelpers.interopDefault(_mortarboardFill);
+var _mortarboard = require("./icons/mortarboard");
+var _mortarboardDefault = parcelHelpers.interopDefault(_mortarboard);
+var _motherboardFill = require("./icons/motherboard-fill");
+var _motherboardFillDefault = parcelHelpers.interopDefault(_motherboardFill);
+var _motherboard = require("./icons/motherboard");
+var _motherboardDefault = parcelHelpers.interopDefault(_motherboard);
+var _mouseFill = require("./icons/mouse-fill");
+var _mouseFillDefault = parcelHelpers.interopDefault(_mouseFill);
+var _mouse = require("./icons/mouse");
+var _mouseDefault = parcelHelpers.interopDefault(_mouse);
+var _mouse2Fill = require("./icons/mouse2-fill");
+var _mouse2FillDefault = parcelHelpers.interopDefault(_mouse2Fill);
+var _mouse2 = require("./icons/mouse2");
+var _mouse2Default = parcelHelpers.interopDefault(_mouse2);
+var _mouse3Fill = require("./icons/mouse3-fill");
+var _mouse3FillDefault = parcelHelpers.interopDefault(_mouse3Fill);
+var _mouse3 = require("./icons/mouse3");
+var _mouse3Default = parcelHelpers.interopDefault(_mouse3);
+var _musicNoteBeamed = require("./icons/music-note-beamed");
+var _musicNoteBeamedDefault = parcelHelpers.interopDefault(_musicNoteBeamed);
+var _musicNoteList = require("./icons/music-note-list");
+var _musicNoteListDefault = parcelHelpers.interopDefault(_musicNoteList);
+var _musicNote = require("./icons/music-note");
+var _musicNoteDefault = parcelHelpers.interopDefault(_musicNote);
+var _musicPlayerFill = require("./icons/music-player-fill");
+var _musicPlayerFillDefault = parcelHelpers.interopDefault(_musicPlayerFill);
+var _musicPlayer = require("./icons/music-player");
+var _musicPlayerDefault = parcelHelpers.interopDefault(_musicPlayer);
+var _newspaper = require("./icons/newspaper");
+var _newspaperDefault = parcelHelpers.interopDefault(_newspaper);
+var _nintendoSwitch = require("./icons/nintendo-switch");
+var _nintendoSwitchDefault = parcelHelpers.interopDefault(_nintendoSwitch);
+var _nodeMinusFill = require("./icons/node-minus-fill");
+var _nodeMinusFillDefault = parcelHelpers.interopDefault(_nodeMinusFill);
+var _nodeMinus = require("./icons/node-minus");
+var _nodeMinusDefault = parcelHelpers.interopDefault(_nodeMinus);
+var _nodePlusFill = require("./icons/node-plus-fill");
+var _nodePlusFillDefault = parcelHelpers.interopDefault(_nodePlusFill);
+var _nodePlus = require("./icons/node-plus");
+var _nodePlusDefault = parcelHelpers.interopDefault(_nodePlus);
+var _nutFill = require("./icons/nut-fill");
+var _nutFillDefault = parcelHelpers.interopDefault(_nutFill);
+var _nut = require("./icons/nut");
+var _nutDefault = parcelHelpers.interopDefault(_nut);
+var _nvidia = require("./icons/nvidia");
+var _nvidiaDefault = parcelHelpers.interopDefault(_nvidia);
+var _octagonFill = require("./icons/octagon-fill");
+var _octagonFillDefault = parcelHelpers.interopDefault(_octagonFill);
+var _octagonHalf = require("./icons/octagon-half");
+var _octagonHalfDefault = parcelHelpers.interopDefault(_octagonHalf);
+var _octagon = require("./icons/octagon");
+var _octagonDefault = parcelHelpers.interopDefault(_octagon);
+var _opticalAudioFill = require("./icons/optical-audio-fill");
+var _opticalAudioFillDefault = parcelHelpers.interopDefault(_opticalAudioFill);
+var _opticalAudio = require("./icons/optical-audio");
+var _opticalAudioDefault = parcelHelpers.interopDefault(_opticalAudio);
+var _option = require("./icons/option");
+var _optionDefault = parcelHelpers.interopDefault(_option);
+var _outlet = require("./icons/outlet");
+var _outletDefault = parcelHelpers.interopDefault(_outlet);
+var _pCircleFill = require("./icons/p-circle-fill");
+var _pCircleFillDefault = parcelHelpers.interopDefault(_pCircleFill);
+var _pCircle = require("./icons/p-circle");
+var _pCircleDefault = parcelHelpers.interopDefault(_pCircle);
+var _pSquareFill = require("./icons/p-square-fill");
+var _pSquareFillDefault = parcelHelpers.interopDefault(_pSquareFill);
+var _pSquare = require("./icons/p-square");
+var _pSquareDefault = parcelHelpers.interopDefault(_pSquare);
+var _paintBucket = require("./icons/paint-bucket");
+var _paintBucketDefault = parcelHelpers.interopDefault(_paintBucket);
+var _paletteFill = require("./icons/palette-fill");
+var _paletteFillDefault = parcelHelpers.interopDefault(_paletteFill);
+var _palette = require("./icons/palette");
+var _paletteDefault = parcelHelpers.interopDefault(_palette);
+var _palette2 = require("./icons/palette2");
+var _palette2Default = parcelHelpers.interopDefault(_palette2);
+var _paperclip = require("./icons/paperclip");
+var _paperclipDefault = parcelHelpers.interopDefault(_paperclip);
+var _paragraph = require("./icons/paragraph");
+var _paragraphDefault = parcelHelpers.interopDefault(_paragraph);
+var _passFill = require("./icons/pass-fill");
+var _passFillDefault = parcelHelpers.interopDefault(_passFill);
+var _pass = require("./icons/pass");
+var _passDefault = parcelHelpers.interopDefault(_pass);
+var _patchCheckFill = require("./icons/patch-check-fill");
+var _patchCheckFillDefault = parcelHelpers.interopDefault(_patchCheckFill);
+var _patchCheck = require("./icons/patch-check");
+var _patchCheckDefault = parcelHelpers.interopDefault(_patchCheck);
+var _patchExclamationFill = require("./icons/patch-exclamation-fill");
+var _patchExclamationFillDefault = parcelHelpers.interopDefault(_patchExclamationFill);
+var _patchExclamation = require("./icons/patch-exclamation");
+var _patchExclamationDefault = parcelHelpers.interopDefault(_patchExclamation);
+var _patchMinusFill = require("./icons/patch-minus-fill");
+var _patchMinusFillDefault = parcelHelpers.interopDefault(_patchMinusFill);
+var _patchMinus = require("./icons/patch-minus");
+var _patchMinusDefault = parcelHelpers.interopDefault(_patchMinus);
+var _patchPlusFill = require("./icons/patch-plus-fill");
+var _patchPlusFillDefault = parcelHelpers.interopDefault(_patchPlusFill);
+var _patchPlus = require("./icons/patch-plus");
+var _patchPlusDefault = parcelHelpers.interopDefault(_patchPlus);
+var _patchQuestionFill = require("./icons/patch-question-fill");
+var _patchQuestionFillDefault = parcelHelpers.interopDefault(_patchQuestionFill);
+var _patchQuestion = require("./icons/patch-question");
+var _patchQuestionDefault = parcelHelpers.interopDefault(_patchQuestion);
+var _pauseBtnFill = require("./icons/pause-btn-fill");
+var _pauseBtnFillDefault = parcelHelpers.interopDefault(_pauseBtnFill);
+var _pauseBtn = require("./icons/pause-btn");
+var _pauseBtnDefault = parcelHelpers.interopDefault(_pauseBtn);
+var _pauseCircleFill = require("./icons/pause-circle-fill");
+var _pauseCircleFillDefault = parcelHelpers.interopDefault(_pauseCircleFill);
+var _pauseCircle = require("./icons/pause-circle");
+var _pauseCircleDefault = parcelHelpers.interopDefault(_pauseCircle);
+var _pauseFill = require("./icons/pause-fill");
+var _pauseFillDefault = parcelHelpers.interopDefault(_pauseFill);
+var _pause = require("./icons/pause");
+var _pauseDefault = parcelHelpers.interopDefault(_pause);
+var _paypal = require("./icons/paypal");
+var _paypalDefault = parcelHelpers.interopDefault(_paypal);
+var _pcDisplayHorizontal = require("./icons/pc-display-horizontal");
+var _pcDisplayHorizontalDefault = parcelHelpers.interopDefault(_pcDisplayHorizontal);
+var _pcDisplay = require("./icons/pc-display");
+var _pcDisplayDefault = parcelHelpers.interopDefault(_pcDisplay);
+var _pcHorizontal = require("./icons/pc-horizontal");
+var _pcHorizontalDefault = parcelHelpers.interopDefault(_pcHorizontal);
+var _pc = require("./icons/pc");
+var _pcDefault = parcelHelpers.interopDefault(_pc);
+var _pciCard = require("./icons/pci-card");
+var _pciCardDefault = parcelHelpers.interopDefault(_pciCard);
+var _peaceFill = require("./icons/peace-fill");
+var _peaceFillDefault = parcelHelpers.interopDefault(_peaceFill);
+var _peace = require("./icons/peace");
+var _peaceDefault = parcelHelpers.interopDefault(_peace);
+var _penFill = require("./icons/pen-fill");
+var _penFillDefault = parcelHelpers.interopDefault(_penFill);
+var _pen = require("./icons/pen");
+var _penDefault = parcelHelpers.interopDefault(_pen);
+var _pencilFill = require("./icons/pencil-fill");
+var _pencilFillDefault = parcelHelpers.interopDefault(_pencilFill);
+var _pencilSquare = require("./icons/pencil-square");
+var _pencilSquareDefault = parcelHelpers.interopDefault(_pencilSquare);
+var _pencil = require("./icons/pencil");
+var _pencilDefault = parcelHelpers.interopDefault(_pencil);
+var _pentagonFill = require("./icons/pentagon-fill");
+var _pentagonFillDefault = parcelHelpers.interopDefault(_pentagonFill);
+var _pentagonHalf = require("./icons/pentagon-half");
+var _pentagonHalfDefault = parcelHelpers.interopDefault(_pentagonHalf);
+var _pentagon = require("./icons/pentagon");
+var _pentagonDefault = parcelHelpers.interopDefault(_pentagon);
+var _peopleFill = require("./icons/people-fill");
+var _peopleFillDefault = parcelHelpers.interopDefault(_peopleFill);
+var _people = require("./icons/people");
+var _peopleDefault = parcelHelpers.interopDefault(_people);
+var _percent = require("./icons/percent");
+var _percentDefault = parcelHelpers.interopDefault(_percent);
+var _personAdd = require("./icons/person-add");
+var _personAddDefault = parcelHelpers.interopDefault(_personAdd);
+var _personBadgeFill = require("./icons/person-badge-fill");
+var _personBadgeFillDefault = parcelHelpers.interopDefault(_personBadgeFill);
+var _personBadge = require("./icons/person-badge");
+var _personBadgeDefault = parcelHelpers.interopDefault(_personBadge);
+var _personBoundingBox = require("./icons/person-bounding-box");
+var _personBoundingBoxDefault = parcelHelpers.interopDefault(_personBoundingBox);
+var _personCheckFill = require("./icons/person-check-fill");
+var _personCheckFillDefault = parcelHelpers.interopDefault(_personCheckFill);
+var _personCheck = require("./icons/person-check");
+var _personCheckDefault = parcelHelpers.interopDefault(_personCheck);
+var _personCircle = require("./icons/person-circle");
+var _personCircleDefault = parcelHelpers.interopDefault(_personCircle);
+var _personDashFill = require("./icons/person-dash-fill");
+var _personDashFillDefault = parcelHelpers.interopDefault(_personDashFill);
+var _personDash = require("./icons/person-dash");
+var _personDashDefault = parcelHelpers.interopDefault(_personDash);
+var _personDown = require("./icons/person-down");
+var _personDownDefault = parcelHelpers.interopDefault(_personDown);
+var _personExclamation = require("./icons/person-exclamation");
+var _personExclamationDefault = parcelHelpers.interopDefault(_personExclamation);
+var _personFillAdd = require("./icons/person-fill-add");
+var _personFillAddDefault = parcelHelpers.interopDefault(_personFillAdd);
+var _personFillCheck = require("./icons/person-fill-check");
+var _personFillCheckDefault = parcelHelpers.interopDefault(_personFillCheck);
+var _personFillDash = require("./icons/person-fill-dash");
+var _personFillDashDefault = parcelHelpers.interopDefault(_personFillDash);
+var _personFillDown = require("./icons/person-fill-down");
+var _personFillDownDefault = parcelHelpers.interopDefault(_personFillDown);
+var _personFillExclamation = require("./icons/person-fill-exclamation");
+var _personFillExclamationDefault = parcelHelpers.interopDefault(_personFillExclamation);
+var _personFillGear = require("./icons/person-fill-gear");
+var _personFillGearDefault = parcelHelpers.interopDefault(_personFillGear);
+var _personFillLock = require("./icons/person-fill-lock");
+var _personFillLockDefault = parcelHelpers.interopDefault(_personFillLock);
+var _personFillSlash = require("./icons/person-fill-slash");
+var _personFillSlashDefault = parcelHelpers.interopDefault(_personFillSlash);
+var _personFillUp = require("./icons/person-fill-up");
+var _personFillUpDefault = parcelHelpers.interopDefault(_personFillUp);
+var _personFillX = require("./icons/person-fill-x");
+var _personFillXDefault = parcelHelpers.interopDefault(_personFillX);
+var _personFill = require("./icons/person-fill");
+var _personFillDefault = parcelHelpers.interopDefault(_personFill);
+var _personGear = require("./icons/person-gear");
+var _personGearDefault = parcelHelpers.interopDefault(_personGear);
+var _personHeart = require("./icons/person-heart");
+var _personHeartDefault = parcelHelpers.interopDefault(_personHeart);
+var _personHearts = require("./icons/person-hearts");
+var _personHeartsDefault = parcelHelpers.interopDefault(_personHearts);
+var _personLinesFill = require("./icons/person-lines-fill");
+var _personLinesFillDefault = parcelHelpers.interopDefault(_personLinesFill);
+var _personLock = require("./icons/person-lock");
+var _personLockDefault = parcelHelpers.interopDefault(_personLock);
+var _personPlusFill = require("./icons/person-plus-fill");
+var _personPlusFillDefault = parcelHelpers.interopDefault(_personPlusFill);
+var _personPlus = require("./icons/person-plus");
+var _personPlusDefault = parcelHelpers.interopDefault(_personPlus);
+var _personRolodex = require("./icons/person-rolodex");
+var _personRolodexDefault = parcelHelpers.interopDefault(_personRolodex);
+var _personSlash = require("./icons/person-slash");
+var _personSlashDefault = parcelHelpers.interopDefault(_personSlash);
+var _personSquare = require("./icons/person-square");
+var _personSquareDefault = parcelHelpers.interopDefault(_personSquare);
+var _personUp = require("./icons/person-up");
+var _personUpDefault = parcelHelpers.interopDefault(_personUp);
+var _personVcardFill = require("./icons/person-vcard-fill");
+var _personVcardFillDefault = parcelHelpers.interopDefault(_personVcardFill);
+var _personVcard = require("./icons/person-vcard");
+var _personVcardDefault = parcelHelpers.interopDefault(_personVcard);
+var _personVideo = require("./icons/person-video");
+var _personVideoDefault = parcelHelpers.interopDefault(_personVideo);
+var _personVideo2 = require("./icons/person-video2");
+var _personVideo2Default = parcelHelpers.interopDefault(_personVideo2);
+var _personVideo3 = require("./icons/person-video3");
+var _personVideo3Default = parcelHelpers.interopDefault(_personVideo3);
+var _personWorkspace = require("./icons/person-workspace");
+var _personWorkspaceDefault = parcelHelpers.interopDefault(_personWorkspace);
+var _personXFill = require("./icons/person-x-fill");
+var _personXFillDefault = parcelHelpers.interopDefault(_personXFill);
+var _personX = require("./icons/person-x");
+var _personXDefault = parcelHelpers.interopDefault(_personX);
+var _person = require("./icons/person");
+var _personDefault = parcelHelpers.interopDefault(_person);
+var _phoneFill = require("./icons/phone-fill");
+var _phoneFillDefault = parcelHelpers.interopDefault(_phoneFill);
+var _phoneFlip = require("./icons/phone-flip");
+var _phoneFlipDefault = parcelHelpers.interopDefault(_phoneFlip);
+var _phoneLandscapeFill = require("./icons/phone-landscape-fill");
+var _phoneLandscapeFillDefault = parcelHelpers.interopDefault(_phoneLandscapeFill);
+var _phoneLandscape = require("./icons/phone-landscape");
+var _phoneLandscapeDefault = parcelHelpers.interopDefault(_phoneLandscape);
+var _phoneVibrateFill = require("./icons/phone-vibrate-fill");
+var _phoneVibrateFillDefault = parcelHelpers.interopDefault(_phoneVibrateFill);
+var _phoneVibrate = require("./icons/phone-vibrate");
+var _phoneVibrateDefault = parcelHelpers.interopDefault(_phoneVibrate);
+var _phone = require("./icons/phone");
+var _phoneDefault = parcelHelpers.interopDefault(_phone);
+var _pieChartFill = require("./icons/pie-chart-fill");
+var _pieChartFillDefault = parcelHelpers.interopDefault(_pieChartFill);
+var _pieChart = require("./icons/pie-chart");
+var _pieChartDefault = parcelHelpers.interopDefault(_pieChart);
+var _piggyBankFill = require("./icons/piggy-bank-fill");
+var _piggyBankFillDefault = parcelHelpers.interopDefault(_piggyBankFill);
+var _piggyBank = require("./icons/piggy-bank");
+var _piggyBankDefault = parcelHelpers.interopDefault(_piggyBank);
+var _pinAngleFill = require("./icons/pin-angle-fill");
+var _pinAngleFillDefault = parcelHelpers.interopDefault(_pinAngleFill);
+var _pinAngle = require("./icons/pin-angle");
+var _pinAngleDefault = parcelHelpers.interopDefault(_pinAngle);
+var _pinFill = require("./icons/pin-fill");
+var _pinFillDefault = parcelHelpers.interopDefault(_pinFill);
+var _pinMapFill = require("./icons/pin-map-fill");
+var _pinMapFillDefault = parcelHelpers.interopDefault(_pinMapFill);
+var _pinMap = require("./icons/pin-map");
+var _pinMapDefault = parcelHelpers.interopDefault(_pinMap);
+var _pin = require("./icons/pin");
+var _pinDefault = parcelHelpers.interopDefault(_pin);
+var _pinterest = require("./icons/pinterest");
+var _pinterestDefault = parcelHelpers.interopDefault(_pinterest);
+var _pipFill = require("./icons/pip-fill");
+var _pipFillDefault = parcelHelpers.interopDefault(_pipFill);
+var _pip = require("./icons/pip");
+var _pipDefault = parcelHelpers.interopDefault(_pip);
+var _playBtnFill = require("./icons/play-btn-fill");
+var _playBtnFillDefault = parcelHelpers.interopDefault(_playBtnFill);
+var _playBtn = require("./icons/play-btn");
+var _playBtnDefault = parcelHelpers.interopDefault(_playBtn);
+var _playCircleFill = require("./icons/play-circle-fill");
+var _playCircleFillDefault = parcelHelpers.interopDefault(_playCircleFill);
+var _playCircle = require("./icons/play-circle");
+var _playCircleDefault = parcelHelpers.interopDefault(_playCircle);
+var _playFill = require("./icons/play-fill");
+var _playFillDefault = parcelHelpers.interopDefault(_playFill);
+var _play = require("./icons/play");
+var _playDefault = parcelHelpers.interopDefault(_play);
+var _playstation = require("./icons/playstation");
+var _playstationDefault = parcelHelpers.interopDefault(_playstation);
+var _plugFill = require("./icons/plug-fill");
+var _plugFillDefault = parcelHelpers.interopDefault(_plugFill);
+var _plug = require("./icons/plug");
+var _plugDefault = parcelHelpers.interopDefault(_plug);
+var _plugin = require("./icons/plugin");
+var _pluginDefault = parcelHelpers.interopDefault(_plugin);
+var _plusCircleDotted = require("./icons/plus-circle-dotted");
+var _plusCircleDottedDefault = parcelHelpers.interopDefault(_plusCircleDotted);
+var _plusCircleFill = require("./icons/plus-circle-fill");
+var _plusCircleFillDefault = parcelHelpers.interopDefault(_plusCircleFill);
+var _plusCircle = require("./icons/plus-circle");
+var _plusCircleDefault = parcelHelpers.interopDefault(_plusCircle);
+var _plusLg = require("./icons/plus-lg");
+var _plusLgDefault = parcelHelpers.interopDefault(_plusLg);
+var _plusSlashMinus = require("./icons/plus-slash-minus");
+var _plusSlashMinusDefault = parcelHelpers.interopDefault(_plusSlashMinus);
+var _plusSquareDotted = require("./icons/plus-square-dotted");
+var _plusSquareDottedDefault = parcelHelpers.interopDefault(_plusSquareDotted);
+var _plusSquareFill = require("./icons/plus-square-fill");
+var _plusSquareFillDefault = parcelHelpers.interopDefault(_plusSquareFill);
+var _plusSquare = require("./icons/plus-square");
+var _plusSquareDefault = parcelHelpers.interopDefault(_plusSquare);
+var _plus = require("./icons/plus");
+var _plusDefault = parcelHelpers.interopDefault(_plus);
+var _postageFill = require("./icons/postage-fill");
+var _postageFillDefault = parcelHelpers.interopDefault(_postageFill);
+var _postageHeartFill = require("./icons/postage-heart-fill");
+var _postageHeartFillDefault = parcelHelpers.interopDefault(_postageHeartFill);
+var _postageHeart = require("./icons/postage-heart");
+var _postageHeartDefault = parcelHelpers.interopDefault(_postageHeart);
+var _postage = require("./icons/postage");
+var _postageDefault = parcelHelpers.interopDefault(_postage);
+var _postcardFill = require("./icons/postcard-fill");
+var _postcardFillDefault = parcelHelpers.interopDefault(_postcardFill);
+var _postcardHeartFill = require("./icons/postcard-heart-fill");
+var _postcardHeartFillDefault = parcelHelpers.interopDefault(_postcardHeartFill);
+var _postcardHeart = require("./icons/postcard-heart");
+var _postcardHeartDefault = parcelHelpers.interopDefault(_postcardHeart);
+var _postcard = require("./icons/postcard");
+var _postcardDefault = parcelHelpers.interopDefault(_postcard);
+var _power = require("./icons/power");
+var _powerDefault = parcelHelpers.interopDefault(_power);
+var _prescription = require("./icons/prescription");
+var _prescriptionDefault = parcelHelpers.interopDefault(_prescription);
+var _prescription2 = require("./icons/prescription2");
+var _prescription2Default = parcelHelpers.interopDefault(_prescription2);
+var _printerFill = require("./icons/printer-fill");
+var _printerFillDefault = parcelHelpers.interopDefault(_printerFill);
+var _printer = require("./icons/printer");
+var _printerDefault = parcelHelpers.interopDefault(_printer);
+var _projectorFill = require("./icons/projector-fill");
+var _projectorFillDefault = parcelHelpers.interopDefault(_projectorFill);
+var _projector = require("./icons/projector");
+var _projectorDefault = parcelHelpers.interopDefault(_projector);
+var _puzzleFill = require("./icons/puzzle-fill");
+var _puzzleFillDefault = parcelHelpers.interopDefault(_puzzleFill);
+var _puzzle = require("./icons/puzzle");
+var _puzzleDefault = parcelHelpers.interopDefault(_puzzle);
+var _qrCodeScan = require("./icons/qr-code-scan");
+var _qrCodeScanDefault = parcelHelpers.interopDefault(_qrCodeScan);
+var _qrCode = require("./icons/qr-code");
+var _qrCodeDefault = parcelHelpers.interopDefault(_qrCode);
+var _questionCircleFill = require("./icons/question-circle-fill");
+var _questionCircleFillDefault = parcelHelpers.interopDefault(_questionCircleFill);
+var _questionCircle = require("./icons/question-circle");
+var _questionCircleDefault = parcelHelpers.interopDefault(_questionCircle);
+var _questionDiamondFill = require("./icons/question-diamond-fill");
+var _questionDiamondFillDefault = parcelHelpers.interopDefault(_questionDiamondFill);
+var _questionDiamond = require("./icons/question-diamond");
+var _questionDiamondDefault = parcelHelpers.interopDefault(_questionDiamond);
+var _questionLg = require("./icons/question-lg");
+var _questionLgDefault = parcelHelpers.interopDefault(_questionLg);
+var _questionOctagonFill = require("./icons/question-octagon-fill");
+var _questionOctagonFillDefault = parcelHelpers.interopDefault(_questionOctagonFill);
+var _questionOctagon = require("./icons/question-octagon");
+var _questionOctagonDefault = parcelHelpers.interopDefault(_questionOctagon);
+var _questionSquareFill = require("./icons/question-square-fill");
+var _questionSquareFillDefault = parcelHelpers.interopDefault(_questionSquareFill);
+var _questionSquare = require("./icons/question-square");
+var _questionSquareDefault = parcelHelpers.interopDefault(_questionSquare);
+var _question = require("./icons/question");
+var _questionDefault = parcelHelpers.interopDefault(_question);
+var _quora = require("./icons/quora");
+var _quoraDefault = parcelHelpers.interopDefault(_quora);
+var _quote = require("./icons/quote");
+var _quoteDefault = parcelHelpers.interopDefault(_quote);
+var _rCircleFill = require("./icons/r-circle-fill");
+var _rCircleFillDefault = parcelHelpers.interopDefault(_rCircleFill);
+var _rCircle = require("./icons/r-circle");
+var _rCircleDefault = parcelHelpers.interopDefault(_rCircle);
+var _rSquareFill = require("./icons/r-square-fill");
+var _rSquareFillDefault = parcelHelpers.interopDefault(_rSquareFill);
+var _rSquare = require("./icons/r-square");
+var _rSquareDefault = parcelHelpers.interopDefault(_rSquare);
+var _radioactive = require("./icons/radioactive");
+var _radioactiveDefault = parcelHelpers.interopDefault(_radioactive);
+var _rainbow = require("./icons/rainbow");
+var _rainbowDefault = parcelHelpers.interopDefault(_rainbow);
+var _receiptCutoff = require("./icons/receipt-cutoff");
+var _receiptCutoffDefault = parcelHelpers.interopDefault(_receiptCutoff);
+var _receipt = require("./icons/receipt");
+var _receiptDefault = parcelHelpers.interopDefault(_receipt);
+var _reception0 = require("./icons/reception-0");
+var _reception0Default = parcelHelpers.interopDefault(_reception0);
+var _reception1 = require("./icons/reception-1");
+var _reception1Default = parcelHelpers.interopDefault(_reception1);
+var _reception2 = require("./icons/reception-2");
+var _reception2Default = parcelHelpers.interopDefault(_reception2);
+var _reception3 = require("./icons/reception-3");
+var _reception3Default = parcelHelpers.interopDefault(_reception3);
+var _reception4 = require("./icons/reception-4");
+var _reception4Default = parcelHelpers.interopDefault(_reception4);
+var _recordBtnFill = require("./icons/record-btn-fill");
+var _recordBtnFillDefault = parcelHelpers.interopDefault(_recordBtnFill);
+var _recordBtn = require("./icons/record-btn");
+var _recordBtnDefault = parcelHelpers.interopDefault(_recordBtn);
+var _recordCircleFill = require("./icons/record-circle-fill");
+var _recordCircleFillDefault = parcelHelpers.interopDefault(_recordCircleFill);
+var _recordCircle = require("./icons/record-circle");
+var _recordCircleDefault = parcelHelpers.interopDefault(_recordCircle);
+var _recordFill = require("./icons/record-fill");
+var _recordFillDefault = parcelHelpers.interopDefault(_recordFill);
+var _record = require("./icons/record");
+var _recordDefault = parcelHelpers.interopDefault(_record);
+var _record2Fill = require("./icons/record2-fill");
+var _record2FillDefault = parcelHelpers.interopDefault(_record2Fill);
+var _record2 = require("./icons/record2");
+var _record2Default = parcelHelpers.interopDefault(_record2);
+var _recycle = require("./icons/recycle");
+var _recycleDefault = parcelHelpers.interopDefault(_recycle);
+var _reddit = require("./icons/reddit");
+var _redditDefault = parcelHelpers.interopDefault(_reddit);
+var _regex = require("./icons/regex");
+var _regexDefault = parcelHelpers.interopDefault(_regex);
+var _repeat1 = require("./icons/repeat-1");
+var _repeat1Default = parcelHelpers.interopDefault(_repeat1);
+var _repeat = require("./icons/repeat");
+var _repeatDefault = parcelHelpers.interopDefault(_repeat);
+var _replyAllFill = require("./icons/reply-all-fill");
+var _replyAllFillDefault = parcelHelpers.interopDefault(_replyAllFill);
+var _replyAll = require("./icons/reply-all");
+var _replyAllDefault = parcelHelpers.interopDefault(_replyAll);
+var _replyFill = require("./icons/reply-fill");
+var _replyFillDefault = parcelHelpers.interopDefault(_replyFill);
+var _reply = require("./icons/reply");
+var _replyDefault = parcelHelpers.interopDefault(_reply);
+var _rewindBtnFill = require("./icons/rewind-btn-fill");
+var _rewindBtnFillDefault = parcelHelpers.interopDefault(_rewindBtnFill);
+var _rewindBtn = require("./icons/rewind-btn");
+var _rewindBtnDefault = parcelHelpers.interopDefault(_rewindBtn);
+var _rewindCircleFill = require("./icons/rewind-circle-fill");
+var _rewindCircleFillDefault = parcelHelpers.interopDefault(_rewindCircleFill);
+var _rewindCircle = require("./icons/rewind-circle");
+var _rewindCircleDefault = parcelHelpers.interopDefault(_rewindCircle);
+var _rewindFill = require("./icons/rewind-fill");
+var _rewindFillDefault = parcelHelpers.interopDefault(_rewindFill);
+var _rewind = require("./icons/rewind");
+var _rewindDefault = parcelHelpers.interopDefault(_rewind);
+var _robot = require("./icons/robot");
+var _robotDefault = parcelHelpers.interopDefault(_robot);
+var _rocketFill = require("./icons/rocket-fill");
+var _rocketFillDefault = parcelHelpers.interopDefault(_rocketFill);
+var _rocketTakeoffFill = require("./icons/rocket-takeoff-fill");
+var _rocketTakeoffFillDefault = parcelHelpers.interopDefault(_rocketTakeoffFill);
+var _rocketTakeoff = require("./icons/rocket-takeoff");
+var _rocketTakeoffDefault = parcelHelpers.interopDefault(_rocketTakeoff);
+var _rocket = require("./icons/rocket");
+var _rocketDefault = parcelHelpers.interopDefault(_rocket);
+var _routerFill = require("./icons/router-fill");
+var _routerFillDefault = parcelHelpers.interopDefault(_routerFill);
+var _router = require("./icons/router");
+var _routerDefault = parcelHelpers.interopDefault(_router);
+var _rssFill = require("./icons/rss-fill");
+var _rssFillDefault = parcelHelpers.interopDefault(_rssFill);
+var _rss = require("./icons/rss");
+var _rssDefault = parcelHelpers.interopDefault(_rss);
+var _rulers = require("./icons/rulers");
+var _rulersDefault = parcelHelpers.interopDefault(_rulers);
+var _safeFill = require("./icons/safe-fill");
+var _safeFillDefault = parcelHelpers.interopDefault(_safeFill);
+var _safe = require("./icons/safe");
+var _safeDefault = parcelHelpers.interopDefault(_safe);
+var _safe2Fill = require("./icons/safe2-fill");
+var _safe2FillDefault = parcelHelpers.interopDefault(_safe2Fill);
+var _safe2 = require("./icons/safe2");
+var _safe2Default = parcelHelpers.interopDefault(_safe2);
+var _saveFill = require("./icons/save-fill");
+var _saveFillDefault = parcelHelpers.interopDefault(_saveFill);
+var _save = require("./icons/save");
+var _saveDefault = parcelHelpers.interopDefault(_save);
+var _save2Fill = require("./icons/save2-fill");
+var _save2FillDefault = parcelHelpers.interopDefault(_save2Fill);
+var _save2 = require("./icons/save2");
+var _save2Default = parcelHelpers.interopDefault(_save2);
+var _scissors = require("./icons/scissors");
+var _scissorsDefault = parcelHelpers.interopDefault(_scissors);
+var _scooter = require("./icons/scooter");
+var _scooterDefault = parcelHelpers.interopDefault(_scooter);
+var _screwdriver = require("./icons/screwdriver");
+var _screwdriverDefault = parcelHelpers.interopDefault(_screwdriver);
+var _sdCardFill = require("./icons/sd-card-fill");
+var _sdCardFillDefault = parcelHelpers.interopDefault(_sdCardFill);
+var _sdCard = require("./icons/sd-card");
+var _sdCardDefault = parcelHelpers.interopDefault(_sdCard);
+var _searchHeartFill = require("./icons/search-heart-fill");
+var _searchHeartFillDefault = parcelHelpers.interopDefault(_searchHeartFill);
+var _searchHeart = require("./icons/search-heart");
+var _searchHeartDefault = parcelHelpers.interopDefault(_searchHeart);
+var _search = require("./icons/search");
+var _searchDefault = parcelHelpers.interopDefault(_search);
+var _segmentedNav = require("./icons/segmented-nav");
+var _segmentedNavDefault = parcelHelpers.interopDefault(_segmentedNav);
+var _sendCheckFill = require("./icons/send-check-fill");
+var _sendCheckFillDefault = parcelHelpers.interopDefault(_sendCheckFill);
+var _sendCheck = require("./icons/send-check");
+var _sendCheckDefault = parcelHelpers.interopDefault(_sendCheck);
+var _sendDashFill = require("./icons/send-dash-fill");
+var _sendDashFillDefault = parcelHelpers.interopDefault(_sendDashFill);
+var _sendDash = require("./icons/send-dash");
+var _sendDashDefault = parcelHelpers.interopDefault(_sendDash);
+var _sendExclamationFill = require("./icons/send-exclamation-fill");
+var _sendExclamationFillDefault = parcelHelpers.interopDefault(_sendExclamationFill);
+var _sendExclamation = require("./icons/send-exclamation");
+var _sendExclamationDefault = parcelHelpers.interopDefault(_sendExclamation);
+var _sendFill = require("./icons/send-fill");
+var _sendFillDefault = parcelHelpers.interopDefault(_sendFill);
+var _sendPlusFill = require("./icons/send-plus-fill");
+var _sendPlusFillDefault = parcelHelpers.interopDefault(_sendPlusFill);
+var _sendPlus = require("./icons/send-plus");
+var _sendPlusDefault = parcelHelpers.interopDefault(_sendPlus);
+var _sendSlashFill = require("./icons/send-slash-fill");
+var _sendSlashFillDefault = parcelHelpers.interopDefault(_sendSlashFill);
+var _sendSlash = require("./icons/send-slash");
+var _sendSlashDefault = parcelHelpers.interopDefault(_sendSlash);
+var _sendXFill = require("./icons/send-x-fill");
+var _sendXFillDefault = parcelHelpers.interopDefault(_sendXFill);
+var _sendX = require("./icons/send-x");
+var _sendXDefault = parcelHelpers.interopDefault(_sendX);
+var _send = require("./icons/send");
+var _sendDefault = parcelHelpers.interopDefault(_send);
+var _server = require("./icons/server");
+var _serverDefault = parcelHelpers.interopDefault(_server);
+var _shareFill = require("./icons/share-fill");
+var _shareFillDefault = parcelHelpers.interopDefault(_shareFill);
+var _share = require("./icons/share");
+var _shareDefault = parcelHelpers.interopDefault(_share);
+var _shieldCheck = require("./icons/shield-check");
+var _shieldCheckDefault = parcelHelpers.interopDefault(_shieldCheck);
+var _shieldExclamation = require("./icons/shield-exclamation");
+var _shieldExclamationDefault = parcelHelpers.interopDefault(_shieldExclamation);
+var _shieldFillCheck = require("./icons/shield-fill-check");
+var _shieldFillCheckDefault = parcelHelpers.interopDefault(_shieldFillCheck);
+var _shieldFillExclamation = require("./icons/shield-fill-exclamation");
+var _shieldFillExclamationDefault = parcelHelpers.interopDefault(_shieldFillExclamation);
+var _shieldFillMinus = require("./icons/shield-fill-minus");
+var _shieldFillMinusDefault = parcelHelpers.interopDefault(_shieldFillMinus);
+var _shieldFillPlus = require("./icons/shield-fill-plus");
+var _shieldFillPlusDefault = parcelHelpers.interopDefault(_shieldFillPlus);
+var _shieldFillX = require("./icons/shield-fill-x");
+var _shieldFillXDefault = parcelHelpers.interopDefault(_shieldFillX);
+var _shieldFill = require("./icons/shield-fill");
+var _shieldFillDefault = parcelHelpers.interopDefault(_shieldFill);
+var _shieldLockFill = require("./icons/shield-lock-fill");
+var _shieldLockFillDefault = parcelHelpers.interopDefault(_shieldLockFill);
+var _shieldLock = require("./icons/shield-lock");
+var _shieldLockDefault = parcelHelpers.interopDefault(_shieldLock);
+var _shieldMinus = require("./icons/shield-minus");
+var _shieldMinusDefault = parcelHelpers.interopDefault(_shieldMinus);
+var _shieldPlus = require("./icons/shield-plus");
+var _shieldPlusDefault = parcelHelpers.interopDefault(_shieldPlus);
+var _shieldShaded = require("./icons/shield-shaded");
+var _shieldShadedDefault = parcelHelpers.interopDefault(_shieldShaded);
+var _shieldSlashFill = require("./icons/shield-slash-fill");
+var _shieldSlashFillDefault = parcelHelpers.interopDefault(_shieldSlashFill);
+var _shieldSlash = require("./icons/shield-slash");
+var _shieldSlashDefault = parcelHelpers.interopDefault(_shieldSlash);
+var _shieldX = require("./icons/shield-x");
+var _shieldXDefault = parcelHelpers.interopDefault(_shieldX);
+var _shield = require("./icons/shield");
+var _shieldDefault = parcelHelpers.interopDefault(_shield);
+var _shiftFill = require("./icons/shift-fill");
+var _shiftFillDefault = parcelHelpers.interopDefault(_shiftFill);
+var _shift = require("./icons/shift");
+var _shiftDefault = parcelHelpers.interopDefault(_shift);
+var _shopWindow = require("./icons/shop-window");
+var _shopWindowDefault = parcelHelpers.interopDefault(_shopWindow);
+var _shop = require("./icons/shop");
+var _shopDefault = parcelHelpers.interopDefault(_shop);
+var _shuffle = require("./icons/shuffle");
+var _shuffleDefault = parcelHelpers.interopDefault(_shuffle);
+var _signDeadEndFill = require("./icons/sign-dead-end-fill");
+var _signDeadEndFillDefault = parcelHelpers.interopDefault(_signDeadEndFill);
+var _signDeadEnd = require("./icons/sign-dead-end");
+var _signDeadEndDefault = parcelHelpers.interopDefault(_signDeadEnd);
+var _signDoNotEnterFill = require("./icons/sign-do-not-enter-fill");
+var _signDoNotEnterFillDefault = parcelHelpers.interopDefault(_signDoNotEnterFill);
+var _signDoNotEnter = require("./icons/sign-do-not-enter");
+var _signDoNotEnterDefault = parcelHelpers.interopDefault(_signDoNotEnter);
+var _signIntersectionFill = require("./icons/sign-intersection-fill");
+var _signIntersectionFillDefault = parcelHelpers.interopDefault(_signIntersectionFill);
+var _signIntersectionSideFill = require("./icons/sign-intersection-side-fill");
+var _signIntersectionSideFillDefault = parcelHelpers.interopDefault(_signIntersectionSideFill);
+var _signIntersectionSide = require("./icons/sign-intersection-side");
+var _signIntersectionSideDefault = parcelHelpers.interopDefault(_signIntersectionSide);
+var _signIntersectionTFill = require("./icons/sign-intersection-t-fill");
+var _signIntersectionTFillDefault = parcelHelpers.interopDefault(_signIntersectionTFill);
+var _signIntersectionT = require("./icons/sign-intersection-t");
+var _signIntersectionTDefault = parcelHelpers.interopDefault(_signIntersectionT);
+var _signIntersectionYFill = require("./icons/sign-intersection-y-fill");
+var _signIntersectionYFillDefault = parcelHelpers.interopDefault(_signIntersectionYFill);
+var _signIntersectionY = require("./icons/sign-intersection-y");
+var _signIntersectionYDefault = parcelHelpers.interopDefault(_signIntersectionY);
+var _signIntersection = require("./icons/sign-intersection");
+var _signIntersectionDefault = parcelHelpers.interopDefault(_signIntersection);
+var _signMergeLeftFill = require("./icons/sign-merge-left-fill");
+var _signMergeLeftFillDefault = parcelHelpers.interopDefault(_signMergeLeftFill);
+var _signMergeLeft = require("./icons/sign-merge-left");
+var _signMergeLeftDefault = parcelHelpers.interopDefault(_signMergeLeft);
+var _signMergeRightFill = require("./icons/sign-merge-right-fill");
+var _signMergeRightFillDefault = parcelHelpers.interopDefault(_signMergeRightFill);
+var _signMergeRight = require("./icons/sign-merge-right");
+var _signMergeRightDefault = parcelHelpers.interopDefault(_signMergeRight);
+var _signNoLeftTurnFill = require("./icons/sign-no-left-turn-fill");
+var _signNoLeftTurnFillDefault = parcelHelpers.interopDefault(_signNoLeftTurnFill);
+var _signNoLeftTurn = require("./icons/sign-no-left-turn");
+var _signNoLeftTurnDefault = parcelHelpers.interopDefault(_signNoLeftTurn);
+var _signNoParkingFill = require("./icons/sign-no-parking-fill");
+var _signNoParkingFillDefault = parcelHelpers.interopDefault(_signNoParkingFill);
+var _signNoParking = require("./icons/sign-no-parking");
+var _signNoParkingDefault = parcelHelpers.interopDefault(_signNoParking);
+var _signNoRightTurnFill = require("./icons/sign-no-right-turn-fill");
+var _signNoRightTurnFillDefault = parcelHelpers.interopDefault(_signNoRightTurnFill);
+var _signNoRightTurn = require("./icons/sign-no-right-turn");
+var _signNoRightTurnDefault = parcelHelpers.interopDefault(_signNoRightTurn);
+var _signRailroadFill = require("./icons/sign-railroad-fill");
+var _signRailroadFillDefault = parcelHelpers.interopDefault(_signRailroadFill);
+var _signRailroad = require("./icons/sign-railroad");
+var _signRailroadDefault = parcelHelpers.interopDefault(_signRailroad);
+var _signStopFill = require("./icons/sign-stop-fill");
+var _signStopFillDefault = parcelHelpers.interopDefault(_signStopFill);
+var _signStopLightsFill = require("./icons/sign-stop-lights-fill");
+var _signStopLightsFillDefault = parcelHelpers.interopDefault(_signStopLightsFill);
+var _signStopLights = require("./icons/sign-stop-lights");
+var _signStopLightsDefault = parcelHelpers.interopDefault(_signStopLights);
+var _signStop = require("./icons/sign-stop");
+var _signStopDefault = parcelHelpers.interopDefault(_signStop);
+var _signTurnLeftFill = require("./icons/sign-turn-left-fill");
+var _signTurnLeftFillDefault = parcelHelpers.interopDefault(_signTurnLeftFill);
+var _signTurnLeft = require("./icons/sign-turn-left");
+var _signTurnLeftDefault = parcelHelpers.interopDefault(_signTurnLeft);
+var _signTurnRightFill = require("./icons/sign-turn-right-fill");
+var _signTurnRightFillDefault = parcelHelpers.interopDefault(_signTurnRightFill);
+var _signTurnRight = require("./icons/sign-turn-right");
+var _signTurnRightDefault = parcelHelpers.interopDefault(_signTurnRight);
+var _signTurnSlightLeftFill = require("./icons/sign-turn-slight-left-fill");
+var _signTurnSlightLeftFillDefault = parcelHelpers.interopDefault(_signTurnSlightLeftFill);
+var _signTurnSlightLeft = require("./icons/sign-turn-slight-left");
+var _signTurnSlightLeftDefault = parcelHelpers.interopDefault(_signTurnSlightLeft);
+var _signTurnSlightRightFill = require("./icons/sign-turn-slight-right-fill");
+var _signTurnSlightRightFillDefault = parcelHelpers.interopDefault(_signTurnSlightRightFill);
+var _signTurnSlightRight = require("./icons/sign-turn-slight-right");
+var _signTurnSlightRightDefault = parcelHelpers.interopDefault(_signTurnSlightRight);
+var _signYieldFill = require("./icons/sign-yield-fill");
+var _signYieldFillDefault = parcelHelpers.interopDefault(_signYieldFill);
+var _signYield = require("./icons/sign-yield");
+var _signYieldDefault = parcelHelpers.interopDefault(_signYield);
+var _signal = require("./icons/signal");
+var _signalDefault = parcelHelpers.interopDefault(_signal);
+var _signpost2Fill = require("./icons/signpost-2-fill");
+var _signpost2FillDefault = parcelHelpers.interopDefault(_signpost2Fill);
+var _signpost2 = require("./icons/signpost-2");
+var _signpost2Default = parcelHelpers.interopDefault(_signpost2);
+var _signpostFill = require("./icons/signpost-fill");
+var _signpostFillDefault = parcelHelpers.interopDefault(_signpostFill);
+var _signpostSplitFill = require("./icons/signpost-split-fill");
+var _signpostSplitFillDefault = parcelHelpers.interopDefault(_signpostSplitFill);
+var _signpostSplit = require("./icons/signpost-split");
+var _signpostSplitDefault = parcelHelpers.interopDefault(_signpostSplit);
+var _signpost = require("./icons/signpost");
+var _signpostDefault = parcelHelpers.interopDefault(_signpost);
+var _simFill = require("./icons/sim-fill");
+var _simFillDefault = parcelHelpers.interopDefault(_simFill);
+var _sim = require("./icons/sim");
+var _simDefault = parcelHelpers.interopDefault(_sim);
+var _sinaWeibo = require("./icons/sina-weibo");
+var _sinaWeiboDefault = parcelHelpers.interopDefault(_sinaWeibo);
+var _skipBackwardBtnFill = require("./icons/skip-backward-btn-fill");
+var _skipBackwardBtnFillDefault = parcelHelpers.interopDefault(_skipBackwardBtnFill);
+var _skipBackwardBtn = require("./icons/skip-backward-btn");
+var _skipBackwardBtnDefault = parcelHelpers.interopDefault(_skipBackwardBtn);
+var _skipBackwardCircleFill = require("./icons/skip-backward-circle-fill");
+var _skipBackwardCircleFillDefault = parcelHelpers.interopDefault(_skipBackwardCircleFill);
+var _skipBackwardCircle = require("./icons/skip-backward-circle");
+var _skipBackwardCircleDefault = parcelHelpers.interopDefault(_skipBackwardCircle);
+var _skipBackwardFill = require("./icons/skip-backward-fill");
+var _skipBackwardFillDefault = parcelHelpers.interopDefault(_skipBackwardFill);
+var _skipBackward = require("./icons/skip-backward");
+var _skipBackwardDefault = parcelHelpers.interopDefault(_skipBackward);
+var _skipEndBtnFill = require("./icons/skip-end-btn-fill");
+var _skipEndBtnFillDefault = parcelHelpers.interopDefault(_skipEndBtnFill);
+var _skipEndBtn = require("./icons/skip-end-btn");
+var _skipEndBtnDefault = parcelHelpers.interopDefault(_skipEndBtn);
+var _skipEndCircleFill = require("./icons/skip-end-circle-fill");
+var _skipEndCircleFillDefault = parcelHelpers.interopDefault(_skipEndCircleFill);
+var _skipEndCircle = require("./icons/skip-end-circle");
+var _skipEndCircleDefault = parcelHelpers.interopDefault(_skipEndCircle);
+var _skipEndFill = require("./icons/skip-end-fill");
+var _skipEndFillDefault = parcelHelpers.interopDefault(_skipEndFill);
+var _skipEnd = require("./icons/skip-end");
+var _skipEndDefault = parcelHelpers.interopDefault(_skipEnd);
+var _skipForwardBtnFill = require("./icons/skip-forward-btn-fill");
+var _skipForwardBtnFillDefault = parcelHelpers.interopDefault(_skipForwardBtnFill);
+var _skipForwardBtn = require("./icons/skip-forward-btn");
+var _skipForwardBtnDefault = parcelHelpers.interopDefault(_skipForwardBtn);
+var _skipForwardCircleFill = require("./icons/skip-forward-circle-fill");
+var _skipForwardCircleFillDefault = parcelHelpers.interopDefault(_skipForwardCircleFill);
+var _skipForwardCircle = require("./icons/skip-forward-circle");
+var _skipForwardCircleDefault = parcelHelpers.interopDefault(_skipForwardCircle);
+var _skipForwardFill = require("./icons/skip-forward-fill");
+var _skipForwardFillDefault = parcelHelpers.interopDefault(_skipForwardFill);
+var _skipForward = require("./icons/skip-forward");
+var _skipForwardDefault = parcelHelpers.interopDefault(_skipForward);
+var _skipStartBtnFill = require("./icons/skip-start-btn-fill");
+var _skipStartBtnFillDefault = parcelHelpers.interopDefault(_skipStartBtnFill);
+var _skipStartBtn = require("./icons/skip-start-btn");
+var _skipStartBtnDefault = parcelHelpers.interopDefault(_skipStartBtn);
+var _skipStartCircleFill = require("./icons/skip-start-circle-fill");
+var _skipStartCircleFillDefault = parcelHelpers.interopDefault(_skipStartCircleFill);
+var _skipStartCircle = require("./icons/skip-start-circle");
+var _skipStartCircleDefault = parcelHelpers.interopDefault(_skipStartCircle);
+var _skipStartFill = require("./icons/skip-start-fill");
+var _skipStartFillDefault = parcelHelpers.interopDefault(_skipStartFill);
+var _skipStart = require("./icons/skip-start");
+var _skipStartDefault = parcelHelpers.interopDefault(_skipStart);
+var _skype = require("./icons/skype");
+var _skypeDefault = parcelHelpers.interopDefault(_skype);
+var _slack = require("./icons/slack");
+var _slackDefault = parcelHelpers.interopDefault(_slack);
+var _slashCircleFill = require("./icons/slash-circle-fill");
+var _slashCircleFillDefault = parcelHelpers.interopDefault(_slashCircleFill);
+var _slashCircle = require("./icons/slash-circle");
+var _slashCircleDefault = parcelHelpers.interopDefault(_slashCircle);
+var _slashLg = require("./icons/slash-lg");
+var _slashLgDefault = parcelHelpers.interopDefault(_slashLg);
+var _slashSquareFill = require("./icons/slash-square-fill");
+var _slashSquareFillDefault = parcelHelpers.interopDefault(_slashSquareFill);
+var _slashSquare = require("./icons/slash-square");
+var _slashSquareDefault = parcelHelpers.interopDefault(_slashSquare);
+var _slash = require("./icons/slash");
+var _slashDefault = parcelHelpers.interopDefault(_slash);
+var _sliders = require("./icons/sliders");
+var _slidersDefault = parcelHelpers.interopDefault(_sliders);
+var _sliders2Vertical = require("./icons/sliders2-vertical");
+var _sliders2VerticalDefault = parcelHelpers.interopDefault(_sliders2Vertical);
+var _sliders2 = require("./icons/sliders2");
+var _sliders2Default = parcelHelpers.interopDefault(_sliders2);
+var _smartwatch = require("./icons/smartwatch");
+var _smartwatchDefault = parcelHelpers.interopDefault(_smartwatch);
+var _snapchat = require("./icons/snapchat");
+var _snapchatDefault = parcelHelpers.interopDefault(_snapchat);
+var _snow = require("./icons/snow");
+var _snowDefault = parcelHelpers.interopDefault(_snow);
+var _snow2 = require("./icons/snow2");
+var _snow2Default = parcelHelpers.interopDefault(_snow2);
+var _snow3 = require("./icons/snow3");
+var _snow3Default = parcelHelpers.interopDefault(_snow3);
+var _sortAlphaDownAlt = require("./icons/sort-alpha-down-alt");
+var _sortAlphaDownAltDefault = parcelHelpers.interopDefault(_sortAlphaDownAlt);
+var _sortAlphaDown = require("./icons/sort-alpha-down");
+var _sortAlphaDownDefault = parcelHelpers.interopDefault(_sortAlphaDown);
+var _sortAlphaUpAlt = require("./icons/sort-alpha-up-alt");
+var _sortAlphaUpAltDefault = parcelHelpers.interopDefault(_sortAlphaUpAlt);
+var _sortAlphaUp = require("./icons/sort-alpha-up");
+var _sortAlphaUpDefault = parcelHelpers.interopDefault(_sortAlphaUp);
+var _sortDownAlt = require("./icons/sort-down-alt");
+var _sortDownAltDefault = parcelHelpers.interopDefault(_sortDownAlt);
+var _sortDown = require("./icons/sort-down");
+var _sortDownDefault = parcelHelpers.interopDefault(_sortDown);
+var _sortNumericDownAlt = require("./icons/sort-numeric-down-alt");
+var _sortNumericDownAltDefault = parcelHelpers.interopDefault(_sortNumericDownAlt);
+var _sortNumericDown = require("./icons/sort-numeric-down");
+var _sortNumericDownDefault = parcelHelpers.interopDefault(_sortNumericDown);
+var _sortNumericUpAlt = require("./icons/sort-numeric-up-alt");
+var _sortNumericUpAltDefault = parcelHelpers.interopDefault(_sortNumericUpAlt);
+var _sortNumericUp = require("./icons/sort-numeric-up");
+var _sortNumericUpDefault = parcelHelpers.interopDefault(_sortNumericUp);
+var _sortUpAlt = require("./icons/sort-up-alt");
+var _sortUpAltDefault = parcelHelpers.interopDefault(_sortUpAlt);
+var _sortUp = require("./icons/sort-up");
+var _sortUpDefault = parcelHelpers.interopDefault(_sortUp);
+var _soundwave = require("./icons/soundwave");
+var _soundwaveDefault = parcelHelpers.interopDefault(_soundwave);
+var _speakerFill = require("./icons/speaker-fill");
+var _speakerFillDefault = parcelHelpers.interopDefault(_speakerFill);
+var _speaker = require("./icons/speaker");
+var _speakerDefault = parcelHelpers.interopDefault(_speaker);
+var _speedometer = require("./icons/speedometer");
+var _speedometerDefault = parcelHelpers.interopDefault(_speedometer);
+var _speedometer2 = require("./icons/speedometer2");
+var _speedometer2Default = parcelHelpers.interopDefault(_speedometer2);
+var _spellcheck = require("./icons/spellcheck");
+var _spellcheckDefault = parcelHelpers.interopDefault(_spellcheck);
+var _spotify = require("./icons/spotify");
+var _spotifyDefault = parcelHelpers.interopDefault(_spotify);
+var _squareFill = require("./icons/square-fill");
+var _squareFillDefault = parcelHelpers.interopDefault(_squareFill);
+var _squareHalf = require("./icons/square-half");
+var _squareHalfDefault = parcelHelpers.interopDefault(_squareHalf);
+var _square = require("./icons/square");
+var _squareDefault = parcelHelpers.interopDefault(_square);
+var _stackOverflow = require("./icons/stack-overflow");
+var _stackOverflowDefault = parcelHelpers.interopDefault(_stackOverflow);
+var _stack = require("./icons/stack");
+var _stackDefault = parcelHelpers.interopDefault(_stack);
+var _starFill = require("./icons/star-fill");
+var _starFillDefault = parcelHelpers.interopDefault(_starFill);
+var _starHalf = require("./icons/star-half");
+var _starHalfDefault = parcelHelpers.interopDefault(_starHalf);
+var _star = require("./icons/star");
+var _starDefault = parcelHelpers.interopDefault(_star);
+var _stars = require("./icons/stars");
+var _starsDefault = parcelHelpers.interopDefault(_stars);
+var _steam = require("./icons/steam");
+var _steamDefault = parcelHelpers.interopDefault(_steam);
+var _stickiesFill = require("./icons/stickies-fill");
+var _stickiesFillDefault = parcelHelpers.interopDefault(_stickiesFill);
+var _stickies = require("./icons/stickies");
+var _stickiesDefault = parcelHelpers.interopDefault(_stickies);
+var _stickyFill = require("./icons/sticky-fill");
+var _stickyFillDefault = parcelHelpers.interopDefault(_stickyFill);
+var _sticky = require("./icons/sticky");
+var _stickyDefault = parcelHelpers.interopDefault(_sticky);
+var _stopBtnFill = require("./icons/stop-btn-fill");
+var _stopBtnFillDefault = parcelHelpers.interopDefault(_stopBtnFill);
+var _stopBtn = require("./icons/stop-btn");
+var _stopBtnDefault = parcelHelpers.interopDefault(_stopBtn);
+var _stopCircleFill = require("./icons/stop-circle-fill");
+var _stopCircleFillDefault = parcelHelpers.interopDefault(_stopCircleFill);
+var _stopCircle = require("./icons/stop-circle");
+var _stopCircleDefault = parcelHelpers.interopDefault(_stopCircle);
+var _stopFill = require("./icons/stop-fill");
+var _stopFillDefault = parcelHelpers.interopDefault(_stopFill);
+var _stop = require("./icons/stop");
+var _stopDefault = parcelHelpers.interopDefault(_stop);
+var _stoplightsFill = require("./icons/stoplights-fill");
+var _stoplightsFillDefault = parcelHelpers.interopDefault(_stoplightsFill);
+var _stoplights = require("./icons/stoplights");
+var _stoplightsDefault = parcelHelpers.interopDefault(_stoplights);
+var _stopwatchFill = require("./icons/stopwatch-fill");
+var _stopwatchFillDefault = parcelHelpers.interopDefault(_stopwatchFill);
+var _stopwatch = require("./icons/stopwatch");
+var _stopwatchDefault = parcelHelpers.interopDefault(_stopwatch);
+var _strava = require("./icons/strava");
+var _stravaDefault = parcelHelpers.interopDefault(_strava);
+var _stripe = require("./icons/stripe");
+var _stripeDefault = parcelHelpers.interopDefault(_stripe);
+var _subscript = require("./icons/subscript");
+var _subscriptDefault = parcelHelpers.interopDefault(_subscript);
+var _subtract = require("./icons/subtract");
+var _subtractDefault = parcelHelpers.interopDefault(_subtract);
+var _suitClubFill = require("./icons/suit-club-fill");
+var _suitClubFillDefault = parcelHelpers.interopDefault(_suitClubFill);
+var _suitClub = require("./icons/suit-club");
+var _suitClubDefault = parcelHelpers.interopDefault(_suitClub);
+var _suitDiamondFill = require("./icons/suit-diamond-fill");
+var _suitDiamondFillDefault = parcelHelpers.interopDefault(_suitDiamondFill);
+var _suitDiamond = require("./icons/suit-diamond");
+var _suitDiamondDefault = parcelHelpers.interopDefault(_suitDiamond);
+var _suitHeartFill = require("./icons/suit-heart-fill");
+var _suitHeartFillDefault = parcelHelpers.interopDefault(_suitHeartFill);
+var _suitHeart = require("./icons/suit-heart");
+var _suitHeartDefault = parcelHelpers.interopDefault(_suitHeart);
+var _suitSpadeFill = require("./icons/suit-spade-fill");
+var _suitSpadeFillDefault = parcelHelpers.interopDefault(_suitSpadeFill);
+var _suitSpade = require("./icons/suit-spade");
+var _suitSpadeDefault = parcelHelpers.interopDefault(_suitSpade);
+var _sunFill = require("./icons/sun-fill");
+var _sunFillDefault = parcelHelpers.interopDefault(_sunFill);
+var _sun = require("./icons/sun");
+var _sunDefault = parcelHelpers.interopDefault(_sun);
+var _sunglasses = require("./icons/sunglasses");
+var _sunglassesDefault = parcelHelpers.interopDefault(_sunglasses);
+var _sunriseFill = require("./icons/sunrise-fill");
+var _sunriseFillDefault = parcelHelpers.interopDefault(_sunriseFill);
+var _sunrise = require("./icons/sunrise");
+var _sunriseDefault = parcelHelpers.interopDefault(_sunrise);
+var _sunsetFill = require("./icons/sunset-fill");
+var _sunsetFillDefault = parcelHelpers.interopDefault(_sunsetFill);
+var _sunset = require("./icons/sunset");
+var _sunsetDefault = parcelHelpers.interopDefault(_sunset);
+var _superscript = require("./icons/superscript");
+var _superscriptDefault = parcelHelpers.interopDefault(_superscript);
+var _symmetryHorizontal = require("./icons/symmetry-horizontal");
+var _symmetryHorizontalDefault = parcelHelpers.interopDefault(_symmetryHorizontal);
+var _symmetryVertical = require("./icons/symmetry-vertical");
+var _symmetryVerticalDefault = parcelHelpers.interopDefault(_symmetryVertical);
+var _table = require("./icons/table");
+var _tableDefault = parcelHelpers.interopDefault(_table);
+var _tabletFill = require("./icons/tablet-fill");
+var _tabletFillDefault = parcelHelpers.interopDefault(_tabletFill);
+var _tabletLandscapeFill = require("./icons/tablet-landscape-fill");
+var _tabletLandscapeFillDefault = parcelHelpers.interopDefault(_tabletLandscapeFill);
+var _tabletLandscape = require("./icons/tablet-landscape");
+var _tabletLandscapeDefault = parcelHelpers.interopDefault(_tabletLandscape);
+var _tablet = require("./icons/tablet");
+var _tabletDefault = parcelHelpers.interopDefault(_tablet);
+var _tagFill = require("./icons/tag-fill");
+var _tagFillDefault = parcelHelpers.interopDefault(_tagFill);
+var _tag = require("./icons/tag");
+var _tagDefault = parcelHelpers.interopDefault(_tag);
+var _tagsFill = require("./icons/tags-fill");
+var _tagsFillDefault = parcelHelpers.interopDefault(_tagsFill);
+var _tags = require("./icons/tags");
+var _tagsDefault = parcelHelpers.interopDefault(_tags);
+var _taxiFrontFill = require("./icons/taxi-front-fill");
+var _taxiFrontFillDefault = parcelHelpers.interopDefault(_taxiFrontFill);
+var _taxiFront = require("./icons/taxi-front");
+var _taxiFrontDefault = parcelHelpers.interopDefault(_taxiFront);
+var _telegram = require("./icons/telegram");
+var _telegramDefault = parcelHelpers.interopDefault(_telegram);
+var _telephoneFill = require("./icons/telephone-fill");
+var _telephoneFillDefault = parcelHelpers.interopDefault(_telephoneFill);
+var _telephoneForwardFill = require("./icons/telephone-forward-fill");
+var _telephoneForwardFillDefault = parcelHelpers.interopDefault(_telephoneForwardFill);
+var _telephoneForward = require("./icons/telephone-forward");
+var _telephoneForwardDefault = parcelHelpers.interopDefault(_telephoneForward);
+var _telephoneInboundFill = require("./icons/telephone-inbound-fill");
+var _telephoneInboundFillDefault = parcelHelpers.interopDefault(_telephoneInboundFill);
+var _telephoneInbound = require("./icons/telephone-inbound");
+var _telephoneInboundDefault = parcelHelpers.interopDefault(_telephoneInbound);
+var _telephoneMinusFill = require("./icons/telephone-minus-fill");
+var _telephoneMinusFillDefault = parcelHelpers.interopDefault(_telephoneMinusFill);
+var _telephoneMinus = require("./icons/telephone-minus");
+var _telephoneMinusDefault = parcelHelpers.interopDefault(_telephoneMinus);
+var _telephoneOutboundFill = require("./icons/telephone-outbound-fill");
+var _telephoneOutboundFillDefault = parcelHelpers.interopDefault(_telephoneOutboundFill);
+var _telephoneOutbound = require("./icons/telephone-outbound");
+var _telephoneOutboundDefault = parcelHelpers.interopDefault(_telephoneOutbound);
+var _telephonePlusFill = require("./icons/telephone-plus-fill");
+var _telephonePlusFillDefault = parcelHelpers.interopDefault(_telephonePlusFill);
+var _telephonePlus = require("./icons/telephone-plus");
+var _telephonePlusDefault = parcelHelpers.interopDefault(_telephonePlus);
+var _telephoneXFill = require("./icons/telephone-x-fill");
+var _telephoneXFillDefault = parcelHelpers.interopDefault(_telephoneXFill);
+var _telephoneX = require("./icons/telephone-x");
+var _telephoneXDefault = parcelHelpers.interopDefault(_telephoneX);
+var _telephone = require("./icons/telephone");
+var _telephoneDefault = parcelHelpers.interopDefault(_telephone);
+var _tencentQq = require("./icons/tencent-qq");
+var _tencentQqDefault = parcelHelpers.interopDefault(_tencentQq);
+var _terminalDash = require("./icons/terminal-dash");
+var _terminalDashDefault = parcelHelpers.interopDefault(_terminalDash);
+var _terminalFill = require("./icons/terminal-fill");
+var _terminalFillDefault = parcelHelpers.interopDefault(_terminalFill);
+var _terminalPlus = require("./icons/terminal-plus");
+var _terminalPlusDefault = parcelHelpers.interopDefault(_terminalPlus);
+var _terminalSplit = require("./icons/terminal-split");
+var _terminalSplitDefault = parcelHelpers.interopDefault(_terminalSplit);
+var _terminalX = require("./icons/terminal-x");
+var _terminalXDefault = parcelHelpers.interopDefault(_terminalX);
+var _terminal = require("./icons/terminal");
+var _terminalDefault = parcelHelpers.interopDefault(_terminal);
+var _textCenter = require("./icons/text-center");
+var _textCenterDefault = parcelHelpers.interopDefault(_textCenter);
+var _textIndentLeft = require("./icons/text-indent-left");
+var _textIndentLeftDefault = parcelHelpers.interopDefault(_textIndentLeft);
+var _textIndentRight = require("./icons/text-indent-right");
+var _textIndentRightDefault = parcelHelpers.interopDefault(_textIndentRight);
+var _textLeft = require("./icons/text-left");
+var _textLeftDefault = parcelHelpers.interopDefault(_textLeft);
+var _textParagraph = require("./icons/text-paragraph");
+var _textParagraphDefault = parcelHelpers.interopDefault(_textParagraph);
+var _textRight = require("./icons/text-right");
+var _textRightDefault = parcelHelpers.interopDefault(_textRight);
+var _textWrap = require("./icons/text-wrap");
+var _textWrapDefault = parcelHelpers.interopDefault(_textWrap);
+var _textareaResize = require("./icons/textarea-resize");
+var _textareaResizeDefault = parcelHelpers.interopDefault(_textareaResize);
+var _textareaT = require("./icons/textarea-t");
+var _textareaTDefault = parcelHelpers.interopDefault(_textareaT);
+var _textarea = require("./icons/textarea");
+var _textareaDefault = parcelHelpers.interopDefault(_textarea);
+var _thermometerHalf = require("./icons/thermometer-half");
+var _thermometerHalfDefault = parcelHelpers.interopDefault(_thermometerHalf);
+var _thermometerHigh = require("./icons/thermometer-high");
+var _thermometerHighDefault = parcelHelpers.interopDefault(_thermometerHigh);
+var _thermometerLow = require("./icons/thermometer-low");
+var _thermometerLowDefault = parcelHelpers.interopDefault(_thermometerLow);
+var _thermometerSnow = require("./icons/thermometer-snow");
+var _thermometerSnowDefault = parcelHelpers.interopDefault(_thermometerSnow);
+var _thermometerSun = require("./icons/thermometer-sun");
+var _thermometerSunDefault = parcelHelpers.interopDefault(_thermometerSun);
+var _thermometer = require("./icons/thermometer");
+var _thermometerDefault = parcelHelpers.interopDefault(_thermometer);
+var _threeDotsVertical = require("./icons/three-dots-vertical");
+var _threeDotsVerticalDefault = parcelHelpers.interopDefault(_threeDotsVertical);
+var _threeDots = require("./icons/three-dots");
+var _threeDotsDefault = parcelHelpers.interopDefault(_threeDots);
+var _thunderboltFill = require("./icons/thunderbolt-fill");
+var _thunderboltFillDefault = parcelHelpers.interopDefault(_thunderboltFill);
+var _thunderbolt = require("./icons/thunderbolt");
+var _thunderboltDefault = parcelHelpers.interopDefault(_thunderbolt);
+var _ticketDetailedFill = require("./icons/ticket-detailed-fill");
+var _ticketDetailedFillDefault = parcelHelpers.interopDefault(_ticketDetailedFill);
+var _ticketDetailed = require("./icons/ticket-detailed");
+var _ticketDetailedDefault = parcelHelpers.interopDefault(_ticketDetailed);
+var _ticketFill = require("./icons/ticket-fill");
+var _ticketFillDefault = parcelHelpers.interopDefault(_ticketFill);
+var _ticketPerforatedFill = require("./icons/ticket-perforated-fill");
+var _ticketPerforatedFillDefault = parcelHelpers.interopDefault(_ticketPerforatedFill);
+var _ticketPerforated = require("./icons/ticket-perforated");
+var _ticketPerforatedDefault = parcelHelpers.interopDefault(_ticketPerforated);
+var _ticket = require("./icons/ticket");
+var _ticketDefault = parcelHelpers.interopDefault(_ticket);
+var _tiktok = require("./icons/tiktok");
+var _tiktokDefault = parcelHelpers.interopDefault(_tiktok);
+var _toggleOff = require("./icons/toggle-off");
+var _toggleOffDefault = parcelHelpers.interopDefault(_toggleOff);
+var _toggleOn = require("./icons/toggle-on");
+var _toggleOnDefault = parcelHelpers.interopDefault(_toggleOn);
+var _toggle2Off = require("./icons/toggle2-off");
+var _toggle2OffDefault = parcelHelpers.interopDefault(_toggle2Off);
+var _toggle2On = require("./icons/toggle2-on");
+var _toggle2OnDefault = parcelHelpers.interopDefault(_toggle2On);
+var _toggles = require("./icons/toggles");
+var _togglesDefault = parcelHelpers.interopDefault(_toggles);
+var _toggles2 = require("./icons/toggles2");
+var _toggles2Default = parcelHelpers.interopDefault(_toggles2);
+var _tools = require("./icons/tools");
+var _toolsDefault = parcelHelpers.interopDefault(_tools);
+var _tornado = require("./icons/tornado");
+var _tornadoDefault = parcelHelpers.interopDefault(_tornado);
+var _trainFreightFrontFill = require("./icons/train-freight-front-fill");
+var _trainFreightFrontFillDefault = parcelHelpers.interopDefault(_trainFreightFrontFill);
+var _trainFreightFront = require("./icons/train-freight-front");
+var _trainFreightFrontDefault = parcelHelpers.interopDefault(_trainFreightFront);
+var _trainFrontFill = require("./icons/train-front-fill");
+var _trainFrontFillDefault = parcelHelpers.interopDefault(_trainFrontFill);
+var _trainFront = require("./icons/train-front");
+var _trainFrontDefault = parcelHelpers.interopDefault(_trainFront);
+var _trainLightrailFrontFill = require("./icons/train-lightrail-front-fill");
+var _trainLightrailFrontFillDefault = parcelHelpers.interopDefault(_trainLightrailFrontFill);
+var _trainLightrailFront = require("./icons/train-lightrail-front");
+var _trainLightrailFrontDefault = parcelHelpers.interopDefault(_trainLightrailFront);
+var _translate = require("./icons/translate");
+var _translateDefault = parcelHelpers.interopDefault(_translate);
+var _trashFill = require("./icons/trash-fill");
+var _trashFillDefault = parcelHelpers.interopDefault(_trashFill);
+var _trash = require("./icons/trash");
+var _trashDefault = parcelHelpers.interopDefault(_trash);
+var _trash2Fill = require("./icons/trash2-fill");
+var _trash2FillDefault = parcelHelpers.interopDefault(_trash2Fill);
+var _trash2 = require("./icons/trash2");
+var _trash2Default = parcelHelpers.interopDefault(_trash2);
+var _trash3Fill = require("./icons/trash3-fill");
+var _trash3FillDefault = parcelHelpers.interopDefault(_trash3Fill);
+var _trash3 = require("./icons/trash3");
+var _trash3Default = parcelHelpers.interopDefault(_trash3);
+var _treeFill = require("./icons/tree-fill");
+var _treeFillDefault = parcelHelpers.interopDefault(_treeFill);
+var _tree = require("./icons/tree");
+var _treeDefault = parcelHelpers.interopDefault(_tree);
+var _trello = require("./icons/trello");
+var _trelloDefault = parcelHelpers.interopDefault(_trello);
+var _triangleFill = require("./icons/triangle-fill");
+var _triangleFillDefault = parcelHelpers.interopDefault(_triangleFill);
+var _triangleHalf = require("./icons/triangle-half");
+var _triangleHalfDefault = parcelHelpers.interopDefault(_triangleHalf);
+var _triangle = require("./icons/triangle");
+var _triangleDefault = parcelHelpers.interopDefault(_triangle);
+var _trophyFill = require("./icons/trophy-fill");
+var _trophyFillDefault = parcelHelpers.interopDefault(_trophyFill);
+var _trophy = require("./icons/trophy");
+var _trophyDefault = parcelHelpers.interopDefault(_trophy);
+var _tropicalStorm = require("./icons/tropical-storm");
+var _tropicalStormDefault = parcelHelpers.interopDefault(_tropicalStorm);
+var _truckFlatbed = require("./icons/truck-flatbed");
+var _truckFlatbedDefault = parcelHelpers.interopDefault(_truckFlatbed);
+var _truckFrontFill = require("./icons/truck-front-fill");
+var _truckFrontFillDefault = parcelHelpers.interopDefault(_truckFrontFill);
+var _truckFront = require("./icons/truck-front");
+var _truckFrontDefault = parcelHelpers.interopDefault(_truckFront);
+var _truck = require("./icons/truck");
+var _truckDefault = parcelHelpers.interopDefault(_truck);
+var _tsunami = require("./icons/tsunami");
+var _tsunamiDefault = parcelHelpers.interopDefault(_tsunami);
+var _tvFill = require("./icons/tv-fill");
+var _tvFillDefault = parcelHelpers.interopDefault(_tvFill);
+var _tv = require("./icons/tv");
+var _tvDefault = parcelHelpers.interopDefault(_tv);
+var _twitch = require("./icons/twitch");
+var _twitchDefault = parcelHelpers.interopDefault(_twitch);
+var _twitter = require("./icons/twitter");
+var _twitterDefault = parcelHelpers.interopDefault(_twitter);
+var _typeBold = require("./icons/type-bold");
+var _typeBoldDefault = parcelHelpers.interopDefault(_typeBold);
+var _typeH1 = require("./icons/type-h1");
+var _typeH1Default = parcelHelpers.interopDefault(_typeH1);
+var _typeH2 = require("./icons/type-h2");
+var _typeH2Default = parcelHelpers.interopDefault(_typeH2);
+var _typeH3 = require("./icons/type-h3");
+var _typeH3Default = parcelHelpers.interopDefault(_typeH3);
+var _typeItalic = require("./icons/type-italic");
+var _typeItalicDefault = parcelHelpers.interopDefault(_typeItalic);
+var _typeStrikethrough = require("./icons/type-strikethrough");
+var _typeStrikethroughDefault = parcelHelpers.interopDefault(_typeStrikethrough);
+var _typeUnderline = require("./icons/type-underline");
+var _typeUnderlineDefault = parcelHelpers.interopDefault(_typeUnderline);
+var _type = require("./icons/type");
+var _typeDefault = parcelHelpers.interopDefault(_type);
+var _ubuntu = require("./icons/ubuntu");
+var _ubuntuDefault = parcelHelpers.interopDefault(_ubuntu);
+var _uiChecksGrid = require("./icons/ui-checks-grid");
+var _uiChecksGridDefault = parcelHelpers.interopDefault(_uiChecksGrid);
+var _uiChecks = require("./icons/ui-checks");
+var _uiChecksDefault = parcelHelpers.interopDefault(_uiChecks);
+var _uiRadiosGrid = require("./icons/ui-radios-grid");
+var _uiRadiosGridDefault = parcelHelpers.interopDefault(_uiRadiosGrid);
+var _uiRadios = require("./icons/ui-radios");
+var _uiRadiosDefault = parcelHelpers.interopDefault(_uiRadios);
+var _umbrellaFill = require("./icons/umbrella-fill");
+var _umbrellaFillDefault = parcelHelpers.interopDefault(_umbrellaFill);
+var _umbrella = require("./icons/umbrella");
+var _umbrellaDefault = parcelHelpers.interopDefault(_umbrella);
+var _unindent = require("./icons/unindent");
+var _unindentDefault = parcelHelpers.interopDefault(_unindent);
+var _union = require("./icons/union");
+var _unionDefault = parcelHelpers.interopDefault(_union);
+var _unity = require("./icons/unity");
+var _unityDefault = parcelHelpers.interopDefault(_unity);
+var _universalAccessCircle = require("./icons/universal-access-circle");
+var _universalAccessCircleDefault = parcelHelpers.interopDefault(_universalAccessCircle);
+var _universalAccess = require("./icons/universal-access");
+var _universalAccessDefault = parcelHelpers.interopDefault(_universalAccess);
+var _unlockFill = require("./icons/unlock-fill");
+var _unlockFillDefault = parcelHelpers.interopDefault(_unlockFill);
+var _unlock = require("./icons/unlock");
+var _unlockDefault = parcelHelpers.interopDefault(_unlock);
+var _upcScan = require("./icons/upc-scan");
+var _upcScanDefault = parcelHelpers.interopDefault(_upcScan);
+var _upc = require("./icons/upc");
+var _upcDefault = parcelHelpers.interopDefault(_upc);
+var _upload = require("./icons/upload");
+var _uploadDefault = parcelHelpers.interopDefault(_upload);
+var _usbCFill = require("./icons/usb-c-fill");
+var _usbCFillDefault = parcelHelpers.interopDefault(_usbCFill);
+var _usbC = require("./icons/usb-c");
+var _usbCDefault = parcelHelpers.interopDefault(_usbC);
+var _usbDriveFill = require("./icons/usb-drive-fill");
+var _usbDriveFillDefault = parcelHelpers.interopDefault(_usbDriveFill);
+var _usbDrive = require("./icons/usb-drive");
+var _usbDriveDefault = parcelHelpers.interopDefault(_usbDrive);
+var _usbFill = require("./icons/usb-fill");
+var _usbFillDefault = parcelHelpers.interopDefault(_usbFill);
+var _usbMicroFill = require("./icons/usb-micro-fill");
+var _usbMicroFillDefault = parcelHelpers.interopDefault(_usbMicroFill);
+var _usbMicro = require("./icons/usb-micro");
+var _usbMicroDefault = parcelHelpers.interopDefault(_usbMicro);
+var _usbMiniFill = require("./icons/usb-mini-fill");
+var _usbMiniFillDefault = parcelHelpers.interopDefault(_usbMiniFill);
+var _usbMini = require("./icons/usb-mini");
+var _usbMiniDefault = parcelHelpers.interopDefault(_usbMini);
+var _usbPlugFill = require("./icons/usb-plug-fill");
+var _usbPlugFillDefault = parcelHelpers.interopDefault(_usbPlugFill);
+var _usbPlug = require("./icons/usb-plug");
+var _usbPlugDefault = parcelHelpers.interopDefault(_usbPlug);
+var _usbSymbol = require("./icons/usb-symbol");
+var _usbSymbolDefault = parcelHelpers.interopDefault(_usbSymbol);
+var _usb = require("./icons/usb");
+var _usbDefault = parcelHelpers.interopDefault(_usb);
+var _valentine = require("./icons/valentine");
+var _valentineDefault = parcelHelpers.interopDefault(_valentine);
+var _valentine2 = require("./icons/valentine2");
+var _valentine2Default = parcelHelpers.interopDefault(_valentine2);
+var _vectorPen = require("./icons/vector-pen");
+var _vectorPenDefault = parcelHelpers.interopDefault(_vectorPen);
+var _viewList = require("./icons/view-list");
+var _viewListDefault = parcelHelpers.interopDefault(_viewList);
+var _viewStacked = require("./icons/view-stacked");
+var _viewStackedDefault = parcelHelpers.interopDefault(_viewStacked);
+var _vimeo = require("./icons/vimeo");
+var _vimeoDefault = parcelHelpers.interopDefault(_vimeo);
+var _vinylFill = require("./icons/vinyl-fill");
+var _vinylFillDefault = parcelHelpers.interopDefault(_vinylFill);
+var _vinyl = require("./icons/vinyl");
+var _vinylDefault = parcelHelpers.interopDefault(_vinyl);
+var _virus = require("./icons/virus");
+var _virusDefault = parcelHelpers.interopDefault(_virus);
+var _virus2 = require("./icons/virus2");
+var _virus2Default = parcelHelpers.interopDefault(_virus2);
+var _voicemail = require("./icons/voicemail");
+var _voicemailDefault = parcelHelpers.interopDefault(_voicemail);
+var _volumeDownFill = require("./icons/volume-down-fill");
+var _volumeDownFillDefault = parcelHelpers.interopDefault(_volumeDownFill);
+var _volumeDown = require("./icons/volume-down");
+var _volumeDownDefault = parcelHelpers.interopDefault(_volumeDown);
+var _volumeMuteFill = require("./icons/volume-mute-fill");
+var _volumeMuteFillDefault = parcelHelpers.interopDefault(_volumeMuteFill);
+var _volumeMute = require("./icons/volume-mute");
+var _volumeMuteDefault = parcelHelpers.interopDefault(_volumeMute);
+var _volumeOffFill = require("./icons/volume-off-fill");
+var _volumeOffFillDefault = parcelHelpers.interopDefault(_volumeOffFill);
+var _volumeOff = require("./icons/volume-off");
+var _volumeOffDefault = parcelHelpers.interopDefault(_volumeOff);
+var _volumeUpFill = require("./icons/volume-up-fill");
+var _volumeUpFillDefault = parcelHelpers.interopDefault(_volumeUpFill);
+var _volumeUp = require("./icons/volume-up");
+var _volumeUpDefault = parcelHelpers.interopDefault(_volumeUp);
+var _vr = require("./icons/vr");
+var _vrDefault = parcelHelpers.interopDefault(_vr);
+var _walletFill = require("./icons/wallet-fill");
+var _walletFillDefault = parcelHelpers.interopDefault(_walletFill);
+var _wallet = require("./icons/wallet");
+var _walletDefault = parcelHelpers.interopDefault(_wallet);
+var _wallet2 = require("./icons/wallet2");
+var _wallet2Default = parcelHelpers.interopDefault(_wallet2);
+var _watch = require("./icons/watch");
+var _watchDefault = parcelHelpers.interopDefault(_watch);
+var _water = require("./icons/water");
+var _waterDefault = parcelHelpers.interopDefault(_water);
+var _webcamFill = require("./icons/webcam-fill");
+var _webcamFillDefault = parcelHelpers.interopDefault(_webcamFill);
+var _webcam = require("./icons/webcam");
+var _webcamDefault = parcelHelpers.interopDefault(_webcam);
+var _wechat = require("./icons/wechat");
+var _wechatDefault = parcelHelpers.interopDefault(_wechat);
+var _whatsapp = require("./icons/whatsapp");
+var _whatsappDefault = parcelHelpers.interopDefault(_whatsapp);
+var _wifi1 = require("./icons/wifi-1");
+var _wifi1Default = parcelHelpers.interopDefault(_wifi1);
+var _wifi2 = require("./icons/wifi-2");
+var _wifi2Default = parcelHelpers.interopDefault(_wifi2);
+var _wifiOff = require("./icons/wifi-off");
+var _wifiOffDefault = parcelHelpers.interopDefault(_wifiOff);
+var _wifi = require("./icons/wifi");
+var _wifiDefault = parcelHelpers.interopDefault(_wifi);
+var _wikipedia = require("./icons/wikipedia");
+var _wikipediaDefault = parcelHelpers.interopDefault(_wikipedia);
+var _wind = require("./icons/wind");
+var _windDefault = parcelHelpers.interopDefault(_wind);
+var _windowDash = require("./icons/window-dash");
+var _windowDashDefault = parcelHelpers.interopDefault(_windowDash);
+var _windowDesktop = require("./icons/window-desktop");
+var _windowDesktopDefault = parcelHelpers.interopDefault(_windowDesktop);
+var _windowDock = require("./icons/window-dock");
+var _windowDockDefault = parcelHelpers.interopDefault(_windowDock);
+var _windowFullscreen = require("./icons/window-fullscreen");
+var _windowFullscreenDefault = parcelHelpers.interopDefault(_windowFullscreen);
+var _windowPlus = require("./icons/window-plus");
+var _windowPlusDefault = parcelHelpers.interopDefault(_windowPlus);
+var _windowSidebar = require("./icons/window-sidebar");
+var _windowSidebarDefault = parcelHelpers.interopDefault(_windowSidebar);
+var _windowSplit = require("./icons/window-split");
+var _windowSplitDefault = parcelHelpers.interopDefault(_windowSplit);
+var _windowStack = require("./icons/window-stack");
+var _windowStackDefault = parcelHelpers.interopDefault(_windowStack);
+var _windowX = require("./icons/window-x");
+var _windowXDefault = parcelHelpers.interopDefault(_windowX);
+var _window = require("./icons/window");
+var _windowDefault = parcelHelpers.interopDefault(_window);
+var _windows = require("./icons/windows");
+var _windowsDefault = parcelHelpers.interopDefault(_windows);
+var _wordpress = require("./icons/wordpress");
+var _wordpressDefault = parcelHelpers.interopDefault(_wordpress);
+var _wrenchAdjustableCircleFill = require("./icons/wrench-adjustable-circle-fill");
+var _wrenchAdjustableCircleFillDefault = parcelHelpers.interopDefault(_wrenchAdjustableCircleFill);
+var _wrenchAdjustableCircle = require("./icons/wrench-adjustable-circle");
+var _wrenchAdjustableCircleDefault = parcelHelpers.interopDefault(_wrenchAdjustableCircle);
+var _wrenchAdjustable = require("./icons/wrench-adjustable");
+var _wrenchAdjustableDefault = parcelHelpers.interopDefault(_wrenchAdjustable);
+var _wrench = require("./icons/wrench");
+var _wrenchDefault = parcelHelpers.interopDefault(_wrench);
+var _xCircleFill = require("./icons/x-circle-fill");
+var _xCircleFillDefault = parcelHelpers.interopDefault(_xCircleFill);
+var _xCircle = require("./icons/x-circle");
+var _xCircleDefault = parcelHelpers.interopDefault(_xCircle);
+var _xDiamondFill = require("./icons/x-diamond-fill");
+var _xDiamondFillDefault = parcelHelpers.interopDefault(_xDiamondFill);
+var _xDiamond = require("./icons/x-diamond");
+var _xDiamondDefault = parcelHelpers.interopDefault(_xDiamond);
+var _xLg = require("./icons/x-lg");
+var _xLgDefault = parcelHelpers.interopDefault(_xLg);
+var _xOctagonFill = require("./icons/x-octagon-fill");
+var _xOctagonFillDefault = parcelHelpers.interopDefault(_xOctagonFill);
+var _xOctagon = require("./icons/x-octagon");
+var _xOctagonDefault = parcelHelpers.interopDefault(_xOctagon);
+var _xSquareFill = require("./icons/x-square-fill");
+var _xSquareFillDefault = parcelHelpers.interopDefault(_xSquareFill);
+var _xSquare = require("./icons/x-square");
+var _xSquareDefault = parcelHelpers.interopDefault(_xSquare);
+var _x = require("./icons/x");
+var _xDefault = parcelHelpers.interopDefault(_x);
+var _xbox = require("./icons/xbox");
+var _xboxDefault = parcelHelpers.interopDefault(_xbox);
+var _yelp = require("./icons/yelp");
+var _yelpDefault = parcelHelpers.interopDefault(_yelp);
+var _yinYang = require("./icons/yin-yang");
+var _yinYangDefault = parcelHelpers.interopDefault(_yinYang);
+var _youtube = require("./icons/youtube");
+var _youtubeDefault = parcelHelpers.interopDefault(_youtube);
+var _zoomIn = require("./icons/zoom-in");
+var _zoomInDefault = parcelHelpers.interopDefault(_zoomIn);
+var _zoomOut = require("./icons/zoom-out");
+var _zoomOutDefault = parcelHelpers.interopDefault(_zoomOut);
+
+},{"./icons/0-circle-fill":false,"./icons/0-circle":false,"./icons/0-square-fill":false,"./icons/0-square":false,"./icons/1-circle-fill":false,"./icons/1-circle":false,"./icons/1-square-fill":false,"./icons/1-square":false,"./icons/123":false,"./icons/2-circle-fill":false,"./icons/2-circle":false,"./icons/2-square-fill":false,"./icons/2-square":false,"./icons/3-circle-fill":false,"./icons/3-circle":false,"./icons/3-square-fill":false,"./icons/3-square":false,"./icons/4-circle-fill":false,"./icons/4-circle":false,"./icons/4-square-fill":false,"./icons/4-square":false,"./icons/5-circle-fill":false,"./icons/5-circle":false,"./icons/5-square-fill":false,"./icons/5-square":false,"./icons/6-circle-fill":false,"./icons/6-circle":false,"./icons/6-square-fill":false,"./icons/6-square":false,"./icons/7-circle-fill":false,"./icons/7-circle":false,"./icons/7-square-fill":false,"./icons/7-square":false,"./icons/8-circle-fill":false,"./icons/8-circle":false,"./icons/8-square-fill":false,"./icons/8-square":false,"./icons/9-circle-fill":false,"./icons/9-circle":false,"./icons/9-square-fill":false,"./icons/9-square":false,"./icons/activity":false,"./icons/airplane-engines-fill":false,"./icons/airplane-engines":false,"./icons/airplane-fill":false,"./icons/airplane":false,"./icons/alarm-fill":false,"./icons/alarm":false,"./icons/alexa":false,"./icons/align-bottom":false,"./icons/align-center":false,"./icons/align-end":false,"./icons/align-middle":false,"./icons/align-start":false,"./icons/align-top":false,"./icons/alipay":false,"./icons/alt":false,"./icons/amd":false,"./icons/android":false,"./icons/android2":false,"./icons/app-indicator":false,"./icons/app":false,"./icons/apple":false,"./icons/archive-fill":false,"./icons/archive":false,"./icons/arrow-90deg-down":false,"./icons/arrow-90deg-left":false,"./icons/arrow-90deg-right":false,"./icons/arrow-90deg-up":false,"./icons/arrow-bar-down":false,"./icons/arrow-bar-left":false,"./icons/arrow-bar-right":false,"./icons/arrow-bar-up":false,"./icons/arrow-clockwise":false,"./icons/arrow-counterclockwise":false,"./icons/arrow-down-circle-fill":false,"./icons/arrow-down-circle":false,"./icons/arrow-down-left-circle-fill":false,"./icons/arrow-down-left-circle":false,"./icons/arrow-down-left-square-fill":false,"./icons/arrow-down-left-square":false,"./icons/arrow-down-left":false,"./icons/arrow-down-right-circle-fill":false,"./icons/arrow-down-right-circle":false,"./icons/arrow-down-right-square-fill":false,"./icons/arrow-down-right-square":false,"./icons/arrow-down-right":false,"./icons/arrow-down-short":false,"./icons/arrow-down-square-fill":false,"./icons/arrow-down-square":false,"./icons/arrow-down-up":false,"./icons/arrow-down":false,"./icons/arrow-left-circle-fill":false,"./icons/arrow-left-circle":false,"./icons/arrow-left-right":false,"./icons/arrow-left-short":false,"./icons/arrow-left-square-fill":false,"./icons/arrow-left-square":false,"./icons/arrow-left":false,"./icons/arrow-repeat":false,"./icons/arrow-return-left":false,"./icons/arrow-return-right":false,"./icons/arrow-right-circle-fill":false,"./icons/arrow-right-circle":false,"./icons/arrow-right-short":false,"./icons/arrow-right-square-fill":false,"./icons/arrow-right-square":false,"./icons/arrow-right":false,"./icons/arrow-through-heart-fill":false,"./icons/arrow-through-heart":false,"./icons/arrow-up-circle-fill":false,"./icons/arrow-up-circle":false,"./icons/arrow-up-left-circle-fill":false,"./icons/arrow-up-left-circle":false,"./icons/arrow-up-left-square-fill":false,"./icons/arrow-up-left-square":false,"./icons/arrow-up-left":false,"./icons/arrow-up-right-circle-fill":false,"./icons/arrow-up-right-circle":false,"./icons/arrow-up-right-square-fill":false,"./icons/arrow-up-right-square":false,"./icons/arrow-up-right":false,"./icons/arrow-up-short":false,"./icons/arrow-up-square-fill":false,"./icons/arrow-up-square":false,"./icons/arrow-up":false,"./icons/arrows-angle-contract":false,"./icons/arrows-angle-expand":false,"./icons/arrows-collapse":false,"./icons/arrows-expand":false,"./icons/arrows-fullscreen":false,"./icons/arrows-move":false,"./icons/aspect-ratio-fill":false,"./icons/aspect-ratio":false,"./icons/asterisk":false,"./icons/at":false,"./icons/award-fill":false,"./icons/award":false,"./icons/back":false,"./icons/backspace-fill":false,"./icons/backspace-reverse-fill":false,"./icons/backspace-reverse":false,"./icons/backspace":false,"./icons/badge-3d-fill":false,"./icons/badge-3d":false,"./icons/badge-4k-fill":false,"./icons/badge-4k":false,"./icons/badge-8k-fill":false,"./icons/badge-8k":false,"./icons/badge-ad-fill":false,"./icons/badge-ad":false,"./icons/badge-ar-fill":false,"./icons/badge-ar":false,"./icons/badge-cc-fill":false,"./icons/badge-cc":false,"./icons/badge-hd-fill":false,"./icons/badge-hd":false,"./icons/badge-sd-fill":false,"./icons/badge-sd":false,"./icons/badge-tm-fill":false,"./icons/badge-tm":false,"./icons/badge-vo-fill":false,"./icons/badge-vo":false,"./icons/badge-vr-fill":false,"./icons/badge-vr":false,"./icons/badge-wc-fill":false,"./icons/badge-wc":false,"./icons/bag-check-fill":false,"./icons/bag-check":false,"./icons/bag-dash-fill":false,"./icons/bag-dash":false,"./icons/bag-fill":false,"./icons/bag-heart-fill":false,"./icons/bag-heart":false,"./icons/bag-plus-fill":false,"./icons/bag-plus":false,"./icons/bag-x-fill":false,"./icons/bag-x":false,"./icons/bag":false,"./icons/balloon-fill":false,"./icons/balloon-heart-fill":false,"./icons/balloon-heart":false,"./icons/balloon":false,"./icons/bandaid-fill":false,"./icons/bandaid":false,"./icons/bank":false,"./icons/bank2":false,"./icons/bar-chart-fill":false,"./icons/bar-chart-line-fill":false,"./icons/bar-chart-line":false,"./icons/bar-chart-steps":false,"./icons/bar-chart":false,"./icons/basket-fill":false,"./icons/basket":false,"./icons/basket2-fill":false,"./icons/basket2":false,"./icons/basket3-fill":false,"./icons/basket3":false,"./icons/battery-charging":false,"./icons/battery-full":false,"./icons/battery-half":false,"./icons/battery":false,"./icons/behance":false,"./icons/bell-fill":false,"./icons/bell-slash-fill":false,"./icons/bell-slash":false,"./icons/bell":false,"./icons/bezier":false,"./icons/bezier2":false,"./icons/bicycle":false,"./icons/binoculars-fill":false,"./icons/binoculars":false,"./icons/blockquote-left":false,"./icons/blockquote-right":false,"./icons/bluetooth":false,"./icons/body-text":false,"./icons/book-fill":false,"./icons/book-half":false,"./icons/book":false,"./icons/bookmark-check-fill":false,"./icons/bookmark-check":false,"./icons/bookmark-dash-fill":false,"./icons/bookmark-dash":false,"./icons/bookmark-fill":false,"./icons/bookmark-heart-fill":"8P4TF","./icons/bookmark-heart":"7rGlC","./icons/bookmark-plus-fill":false,"./icons/bookmark-plus":false,"./icons/bookmark-star-fill":false,"./icons/bookmark-star":false,"./icons/bookmark-x-fill":false,"./icons/bookmark-x":false,"./icons/bookmark":false,"./icons/bookmarks-fill":false,"./icons/bookmarks":false,"./icons/bookshelf":false,"./icons/boombox-fill":false,"./icons/boombox":false,"./icons/bootstrap-fill":false,"./icons/bootstrap-reboot":false,"./icons/bootstrap":false,"./icons/border-all":false,"./icons/border-bottom":false,"./icons/border-center":false,"./icons/border-inner":false,"./icons/border-left":false,"./icons/border-middle":false,"./icons/border-outer":false,"./icons/border-right":false,"./icons/border-style":false,"./icons/border-top":false,"./icons/border-width":false,"./icons/border":false,"./icons/bounding-box-circles":false,"./icons/bounding-box":false,"./icons/box-arrow-down-left":false,"./icons/box-arrow-down-right":false,"./icons/box-arrow-down":false,"./icons/box-arrow-in-down-left":false,"./icons/box-arrow-in-down-right":false,"./icons/box-arrow-in-down":false,"./icons/box-arrow-in-left":false,"./icons/box-arrow-in-right":false,"./icons/box-arrow-in-up-left":false,"./icons/box-arrow-in-up-right":false,"./icons/box-arrow-in-up":false,"./icons/box-arrow-left":false,"./icons/box-arrow-right":false,"./icons/box-arrow-up-left":false,"./icons/box-arrow-up-right":false,"./icons/box-arrow-up":false,"./icons/box-fill":false,"./icons/box-seam-fill":false,"./icons/box-seam":false,"./icons/box":false,"./icons/box2-fill":false,"./icons/box2-heart-fill":false,"./icons/box2-heart":false,"./icons/box2":false,"./icons/boxes":false,"./icons/braces-asterisk":false,"./icons/braces":false,"./icons/bricks":false,"./icons/briefcase-fill":false,"./icons/briefcase":false,"./icons/brightness-alt-high-fill":false,"./icons/brightness-alt-high":false,"./icons/brightness-alt-low-fill":false,"./icons/brightness-alt-low":false,"./icons/brightness-high-fill":false,"./icons/brightness-high":false,"./icons/brightness-low-fill":false,"./icons/brightness-low":false,"./icons/broadcast-pin":false,"./icons/broadcast":false,"./icons/browser-chrome":false,"./icons/browser-edge":false,"./icons/browser-firefox":false,"./icons/browser-safari":false,"./icons/brush-fill":false,"./icons/brush":false,"./icons/bucket-fill":false,"./icons/bucket":false,"./icons/bug-fill":false,"./icons/bug":false,"./icons/building-add":false,"./icons/building-check":false,"./icons/building-dash":false,"./icons/building-down":false,"./icons/building-exclamation":false,"./icons/building-fill-add":false,"./icons/building-fill-check":false,"./icons/building-fill-dash":false,"./icons/building-fill-down":false,"./icons/building-fill-exclamation":false,"./icons/building-fill-gear":false,"./icons/building-fill-lock":false,"./icons/building-fill-slash":false,"./icons/building-fill-up":false,"./icons/building-fill-x":false,"./icons/building-fill":false,"./icons/building-gear":false,"./icons/building-lock":false,"./icons/building-slash":false,"./icons/building-up":false,"./icons/building-x":false,"./icons/building":false,"./icons/buildings-fill":false,"./icons/buildings":false,"./icons/bullseye":false,"./icons/bus-front-fill":false,"./icons/bus-front":false,"./icons/c-circle-fill":false,"./icons/c-circle":false,"./icons/c-square-fill":false,"./icons/c-square":false,"./icons/calculator-fill":false,"./icons/calculator":false,"./icons/calendar-check-fill":false,"./icons/calendar-check":false,"./icons/calendar-date-fill":false,"./icons/calendar-date":false,"./icons/calendar-day-fill":false,"./icons/calendar-day":false,"./icons/calendar-event-fill":false,"./icons/calendar-event":false,"./icons/calendar-fill":false,"./icons/calendar-heart-fill":false,"./icons/calendar-heart":false,"./icons/calendar-minus-fill":false,"./icons/calendar-minus":false,"./icons/calendar-month-fill":false,"./icons/calendar-month":false,"./icons/calendar-plus-fill":false,"./icons/calendar-plus":false,"./icons/calendar-range-fill":false,"./icons/calendar-range":false,"./icons/calendar-week-fill":false,"./icons/calendar-week":false,"./icons/calendar-x-fill":false,"./icons/calendar-x":false,"./icons/calendar":false,"./icons/calendar2-check-fill":false,"./icons/calendar2-check":false,"./icons/calendar2-date-fill":false,"./icons/calendar2-date":false,"./icons/calendar2-day-fill":false,"./icons/calendar2-day":false,"./icons/calendar2-event-fill":false,"./icons/calendar2-event":false,"./icons/calendar2-fill":false,"./icons/calendar2-heart-fill":false,"./icons/calendar2-heart":false,"./icons/calendar2-minus-fill":false,"./icons/calendar2-minus":false,"./icons/calendar2-month-fill":false,"./icons/calendar2-month":false,"./icons/calendar2-plus-fill":false,"./icons/calendar2-plus":false,"./icons/calendar2-range-fill":false,"./icons/calendar2-range":false,"./icons/calendar2-week-fill":false,"./icons/calendar2-week":false,"./icons/calendar2-x-fill":false,"./icons/calendar2-x":false,"./icons/calendar2":false,"./icons/calendar3-event-fill":false,"./icons/calendar3-event":false,"./icons/calendar3-fill":false,"./icons/calendar3-range-fill":false,"./icons/calendar3-range":false,"./icons/calendar3-week-fill":false,"./icons/calendar3-week":false,"./icons/calendar3":false,"./icons/calendar4-event":false,"./icons/calendar4-range":false,"./icons/calendar4-week":false,"./icons/calendar4":false,"./icons/camera-fill":false,"./icons/camera-reels-fill":false,"./icons/camera-reels":false,"./icons/camera-video-fill":false,"./icons/camera-video-off-fill":false,"./icons/camera-video-off":false,"./icons/camera-video":false,"./icons/camera":false,"./icons/camera2":false,"./icons/capslock-fill":false,"./icons/capslock":false,"./icons/capsule-pill":false,"./icons/capsule":false,"./icons/car-front-fill":false,"./icons/car-front":false,"./icons/card-checklist":false,"./icons/card-heading":false,"./icons/card-image":false,"./icons/card-list":false,"./icons/card-text":false,"./icons/caret-down-fill":false,"./icons/caret-down-square-fill":false,"./icons/caret-down-square":false,"./icons/caret-down":false,"./icons/caret-left-fill":false,"./icons/caret-left-square-fill":false,"./icons/caret-left-square":false,"./icons/caret-left":false,"./icons/caret-right-fill":false,"./icons/caret-right-square-fill":false,"./icons/caret-right-square":false,"./icons/caret-right":false,"./icons/caret-up-fill":false,"./icons/caret-up-square-fill":false,"./icons/caret-up-square":false,"./icons/caret-up":false,"./icons/cart-check-fill":false,"./icons/cart-check":false,"./icons/cart-dash-fill":false,"./icons/cart-dash":false,"./icons/cart-fill":false,"./icons/cart-plus-fill":false,"./icons/cart-plus":false,"./icons/cart-x-fill":false,"./icons/cart-x":false,"./icons/cart":false,"./icons/cart2":false,"./icons/cart3":false,"./icons/cart4":false,"./icons/cash-coin":false,"./icons/cash-stack":false,"./icons/cash":false,"./icons/cassette-fill":false,"./icons/cassette":false,"./icons/cast":false,"./icons/cc-circle-fill":false,"./icons/cc-circle":false,"./icons/cc-square-fill":false,"./icons/cc-square":false,"./icons/chat-dots-fill":false,"./icons/chat-dots":false,"./icons/chat-fill":false,"./icons/chat-heart-fill":false,"./icons/chat-heart":false,"./icons/chat-left-dots-fill":false,"./icons/chat-left-dots":false,"./icons/chat-left-fill":false,"./icons/chat-left-heart-fill":false,"./icons/chat-left-heart":false,"./icons/chat-left-quote-fill":false,"./icons/chat-left-quote":false,"./icons/chat-left-text-fill":false,"./icons/chat-left-text":false,"./icons/chat-left":false,"./icons/chat-quote-fill":false,"./icons/chat-quote":false,"./icons/chat-right-dots-fill":false,"./icons/chat-right-dots":false,"./icons/chat-right-fill":false,"./icons/chat-right-heart-fill":false,"./icons/chat-right-heart":false,"./icons/chat-right-quote-fill":false,"./icons/chat-right-quote":false,"./icons/chat-right-text-fill":false,"./icons/chat-right-text":false,"./icons/chat-right":false,"./icons/chat-square-dots-fill":false,"./icons/chat-square-dots":false,"./icons/chat-square-fill":false,"./icons/chat-square-heart-fill":false,"./icons/chat-square-heart":false,"./icons/chat-square-quote-fill":false,"./icons/chat-square-quote":false,"./icons/chat-square-text-fill":false,"./icons/chat-square-text":false,"./icons/chat-square":false,"./icons/chat-text-fill":false,"./icons/chat-text":false,"./icons/chat":false,"./icons/check-all":false,"./icons/check-circle-fill":false,"./icons/check-circle":false,"./icons/check-lg":false,"./icons/check-square-fill":false,"./icons/check-square":false,"./icons/check":false,"./icons/check2-all":false,"./icons/check2-circle":false,"./icons/check2-square":false,"./icons/check2":false,"./icons/chevron-bar-contract":false,"./icons/chevron-bar-down":false,"./icons/chevron-bar-expand":false,"./icons/chevron-bar-left":false,"./icons/chevron-bar-right":false,"./icons/chevron-bar-up":false,"./icons/chevron-compact-down":false,"./icons/chevron-compact-left":false,"./icons/chevron-compact-right":false,"./icons/chevron-compact-up":false,"./icons/chevron-contract":false,"./icons/chevron-double-down":false,"./icons/chevron-double-left":false,"./icons/chevron-double-right":false,"./icons/chevron-double-up":false,"./icons/chevron-down":false,"./icons/chevron-expand":false,"./icons/chevron-left":false,"./icons/chevron-right":false,"./icons/chevron-up":false,"./icons/circle-fill":false,"./icons/circle-half":false,"./icons/circle-square":false,"./icons/circle":false,"./icons/clipboard-check-fill":false,"./icons/clipboard-check":false,"./icons/clipboard-data-fill":false,"./icons/clipboard-data":false,"./icons/clipboard-fill":false,"./icons/clipboard-heart-fill":false,"./icons/clipboard-heart":false,"./icons/clipboard-minus-fill":false,"./icons/clipboard-minus":false,"./icons/clipboard-plus-fill":false,"./icons/clipboard-plus":false,"./icons/clipboard-pulse":false,"./icons/clipboard-x-fill":false,"./icons/clipboard-x":false,"./icons/clipboard":false,"./icons/clipboard2-check-fill":false,"./icons/clipboard2-check":false,"./icons/clipboard2-data-fill":false,"./icons/clipboard2-data":false,"./icons/clipboard2-fill":false,"./icons/clipboard2-heart-fill":false,"./icons/clipboard2-heart":false,"./icons/clipboard2-minus-fill":false,"./icons/clipboard2-minus":false,"./icons/clipboard2-plus-fill":false,"./icons/clipboard2-plus":false,"./icons/clipboard2-pulse-fill":false,"./icons/clipboard2-pulse":false,"./icons/clipboard2-x-fill":false,"./icons/clipboard2-x":false,"./icons/clipboard2":false,"./icons/clock-fill":false,"./icons/clock-history":false,"./icons/clock":false,"./icons/cloud-arrow-down-fill":false,"./icons/cloud-arrow-down":false,"./icons/cloud-arrow-up-fill":false,"./icons/cloud-arrow-up":false,"./icons/cloud-check-fill":false,"./icons/cloud-check":false,"./icons/cloud-download-fill":false,"./icons/cloud-download":false,"./icons/cloud-drizzle-fill":false,"./icons/cloud-drizzle":false,"./icons/cloud-fill":false,"./icons/cloud-fog-fill":false,"./icons/cloud-fog":false,"./icons/cloud-fog2-fill":false,"./icons/cloud-fog2":false,"./icons/cloud-hail-fill":false,"./icons/cloud-hail":false,"./icons/cloud-haze-fill":false,"./icons/cloud-haze":false,"./icons/cloud-haze2-fill":false,"./icons/cloud-haze2":false,"./icons/cloud-lightning-fill":false,"./icons/cloud-lightning-rain-fill":false,"./icons/cloud-lightning-rain":false,"./icons/cloud-lightning":false,"./icons/cloud-minus-fill":false,"./icons/cloud-minus":false,"./icons/cloud-moon-fill":false,"./icons/cloud-moon":false,"./icons/cloud-plus-fill":false,"./icons/cloud-plus":false,"./icons/cloud-rain-fill":false,"./icons/cloud-rain-heavy-fill":false,"./icons/cloud-rain-heavy":false,"./icons/cloud-rain":false,"./icons/cloud-slash-fill":false,"./icons/cloud-slash":false,"./icons/cloud-sleet-fill":false,"./icons/cloud-sleet":false,"./icons/cloud-snow-fill":false,"./icons/cloud-snow":false,"./icons/cloud-sun-fill":false,"./icons/cloud-sun":false,"./icons/cloud-upload-fill":false,"./icons/cloud-upload":false,"./icons/cloud":false,"./icons/clouds-fill":false,"./icons/clouds":false,"./icons/cloudy-fill":false,"./icons/cloudy":false,"./icons/code-slash":false,"./icons/code-square":false,"./icons/code":false,"./icons/coin":false,"./icons/collection-fill":false,"./icons/collection-play-fill":false,"./icons/collection-play":false,"./icons/collection":false,"./icons/columns-gap":false,"./icons/columns":false,"./icons/command":false,"./icons/compass-fill":false,"./icons/compass":false,"./icons/cone-striped":false,"./icons/cone":false,"./icons/controller":false,"./icons/cpu-fill":false,"./icons/cpu":false,"./icons/credit-card-2-back-fill":false,"./icons/credit-card-2-back":false,"./icons/credit-card-2-front-fill":false,"./icons/credit-card-2-front":false,"./icons/credit-card-fill":false,"./icons/credit-card":false,"./icons/crop":false,"./icons/cup-fill":false,"./icons/cup-hot-fill":false,"./icons/cup-hot":false,"./icons/cup-straw":false,"./icons/cup":false,"./icons/currency-bitcoin":false,"./icons/currency-dollar":false,"./icons/currency-euro":false,"./icons/currency-exchange":false,"./icons/currency-pound":false,"./icons/currency-rupee":false,"./icons/currency-yen":false,"./icons/cursor-fill":false,"./icons/cursor-text":false,"./icons/cursor":false,"./icons/dash-circle-dotted":false,"./icons/dash-circle-fill":false,"./icons/dash-circle":false,"./icons/dash-lg":false,"./icons/dash-square-dotted":false,"./icons/dash-square-fill":false,"./icons/dash-square":false,"./icons/dash":false,"./icons/database-add":false,"./icons/database-check":false,"./icons/database-dash":false,"./icons/database-down":false,"./icons/database-exclamation":false,"./icons/database-fill-add":false,"./icons/database-fill-check":false,"./icons/database-fill-dash":false,"./icons/database-fill-down":false,"./icons/database-fill-exclamation":false,"./icons/database-fill-gear":false,"./icons/database-fill-lock":false,"./icons/database-fill-slash":false,"./icons/database-fill-up":false,"./icons/database-fill-x":false,"./icons/database-fill":false,"./icons/database-gear":false,"./icons/database-lock":false,"./icons/database-slash":false,"./icons/database-up":false,"./icons/database-x":false,"./icons/database":false,"./icons/device-hdd-fill":false,"./icons/device-hdd":false,"./icons/device-ssd-fill":false,"./icons/device-ssd":false,"./icons/diagram-2-fill":false,"./icons/diagram-2":false,"./icons/diagram-3-fill":false,"./icons/diagram-3":false,"./icons/diamond-fill":false,"./icons/diamond-half":false,"./icons/diamond":false,"./icons/dice-1-fill":false,"./icons/dice-1":false,"./icons/dice-2-fill":false,"./icons/dice-2":false,"./icons/dice-3-fill":false,"./icons/dice-3":false,"./icons/dice-4-fill":false,"./icons/dice-4":false,"./icons/dice-5-fill":false,"./icons/dice-5":false,"./icons/dice-6-fill":false,"./icons/dice-6":false,"./icons/disc-fill":false,"./icons/disc":false,"./icons/discord":false,"./icons/display-fill":false,"./icons/display":false,"./icons/displayport-fill":false,"./icons/displayport":false,"./icons/distribute-horizontal":false,"./icons/distribute-vertical":false,"./icons/door-closed-fill":false,"./icons/door-closed":false,"./icons/door-open-fill":false,"./icons/door-open":false,"./icons/dot":false,"./icons/download":false,"./icons/dpad-fill":false,"./icons/dpad":false,"./icons/dribbble":false,"./icons/dropbox":false,"./icons/droplet-fill":false,"./icons/droplet-half":false,"./icons/droplet":false,"./icons/ear-fill":false,"./icons/ear":false,"./icons/earbuds":false,"./icons/easel-fill":false,"./icons/easel":false,"./icons/easel2-fill":false,"./icons/easel2":false,"./icons/easel3-fill":false,"./icons/easel3":false,"./icons/egg-fill":false,"./icons/egg-fried":false,"./icons/egg":false,"./icons/eject-fill":false,"./icons/eject":false,"./icons/emoji-angry-fill":false,"./icons/emoji-angry":false,"./icons/emoji-dizzy-fill":false,"./icons/emoji-dizzy":false,"./icons/emoji-expressionless-fill":false,"./icons/emoji-expressionless":false,"./icons/emoji-frown-fill":false,"./icons/emoji-frown":false,"./icons/emoji-heart-eyes-fill":false,"./icons/emoji-heart-eyes":false,"./icons/emoji-kiss-fill":false,"./icons/emoji-kiss":false,"./icons/emoji-laughing-fill":false,"./icons/emoji-laughing":false,"./icons/emoji-neutral-fill":false,"./icons/emoji-neutral":false,"./icons/emoji-smile-fill":false,"./icons/emoji-smile-upside-down-fill":false,"./icons/emoji-smile-upside-down":false,"./icons/emoji-smile":false,"./icons/emoji-sunglasses-fill":false,"./icons/emoji-sunglasses":false,"./icons/emoji-wink-fill":false,"./icons/emoji-wink":false,"./icons/envelope-at-fill":false,"./icons/envelope-at":false,"./icons/envelope-check-fill":false,"./icons/envelope-check":false,"./icons/envelope-dash-fill":false,"./icons/envelope-dash":false,"./icons/envelope-exclamation-fill":false,"./icons/envelope-exclamation":false,"./icons/envelope-fill":false,"./icons/envelope-heart-fill":false,"./icons/envelope-heart":false,"./icons/envelope-open-fill":false,"./icons/envelope-open-heart-fill":false,"./icons/envelope-open-heart":false,"./icons/envelope-open":false,"./icons/envelope-paper-fill":false,"./icons/envelope-paper-heart-fill":false,"./icons/envelope-paper-heart":false,"./icons/envelope-paper":false,"./icons/envelope-plus-fill":false,"./icons/envelope-plus":false,"./icons/envelope-slash-fill":false,"./icons/envelope-slash":false,"./icons/envelope-x-fill":false,"./icons/envelope-x":false,"./icons/envelope":false,"./icons/eraser-fill":false,"./icons/eraser":false,"./icons/escape":false,"./icons/ethernet":false,"./icons/ev-front-fill":false,"./icons/ev-front":false,"./icons/ev-station-fill":false,"./icons/ev-station":false,"./icons/exclamation-circle-fill":false,"./icons/exclamation-circle":false,"./icons/exclamation-diamond-fill":false,"./icons/exclamation-diamond":false,"./icons/exclamation-lg":false,"./icons/exclamation-octagon-fill":false,"./icons/exclamation-octagon":false,"./icons/exclamation-square-fill":false,"./icons/exclamation-square":false,"./icons/exclamation-triangle-fill":false,"./icons/exclamation-triangle":false,"./icons/exclamation":false,"./icons/exclude":false,"./icons/explicit-fill":false,"./icons/explicit":false,"./icons/eye-fill":false,"./icons/eye-slash-fill":false,"./icons/eye-slash":false,"./icons/eye":false,"./icons/eyedropper":false,"./icons/eyeglasses":false,"./icons/facebook":false,"./icons/fan":false,"./icons/fast-forward-btn-fill":false,"./icons/fast-forward-btn":false,"./icons/fast-forward-circle-fill":false,"./icons/fast-forward-circle":false,"./icons/fast-forward-fill":false,"./icons/fast-forward":false,"./icons/file-arrow-down-fill":false,"./icons/file-arrow-down":false,"./icons/file-arrow-up-fill":false,"./icons/file-arrow-up":false,"./icons/file-bar-graph-fill":false,"./icons/file-bar-graph":false,"./icons/file-binary-fill":false,"./icons/file-binary":false,"./icons/file-break-fill":false,"./icons/file-break":false,"./icons/file-check-fill":false,"./icons/file-check":false,"./icons/file-code-fill":false,"./icons/file-code":false,"./icons/file-diff-fill":false,"./icons/file-diff":false,"./icons/file-earmark-arrow-down-fill":false,"./icons/file-earmark-arrow-down":false,"./icons/file-earmark-arrow-up-fill":false,"./icons/file-earmark-arrow-up":false,"./icons/file-earmark-bar-graph-fill":false,"./icons/file-earmark-bar-graph":false,"./icons/file-earmark-binary-fill":false,"./icons/file-earmark-binary":false,"./icons/file-earmark-break-fill":false,"./icons/file-earmark-break":false,"./icons/file-earmark-check-fill":false,"./icons/file-earmark-check":false,"./icons/file-earmark-code-fill":false,"./icons/file-earmark-code":false,"./icons/file-earmark-diff-fill":false,"./icons/file-earmark-diff":false,"./icons/file-earmark-easel-fill":false,"./icons/file-earmark-easel":false,"./icons/file-earmark-excel-fill":false,"./icons/file-earmark-excel":false,"./icons/file-earmark-fill":false,"./icons/file-earmark-font-fill":false,"./icons/file-earmark-font":false,"./icons/file-earmark-image-fill":false,"./icons/file-earmark-image":false,"./icons/file-earmark-lock-fill":false,"./icons/file-earmark-lock":false,"./icons/file-earmark-lock2-fill":false,"./icons/file-earmark-lock2":false,"./icons/file-earmark-medical-fill":false,"./icons/file-earmark-medical":false,"./icons/file-earmark-minus-fill":false,"./icons/file-earmark-minus":false,"./icons/file-earmark-music-fill":false,"./icons/file-earmark-music":false,"./icons/file-earmark-pdf-fill":false,"./icons/file-earmark-pdf":false,"./icons/file-earmark-person-fill":false,"./icons/file-earmark-person":false,"./icons/file-earmark-play-fill":false,"./icons/file-earmark-play":false,"./icons/file-earmark-plus-fill":false,"./icons/file-earmark-plus":false,"./icons/file-earmark-post-fill":false,"./icons/file-earmark-post":false,"./icons/file-earmark-ppt-fill":false,"./icons/file-earmark-ppt":false,"./icons/file-earmark-richtext-fill":false,"./icons/file-earmark-richtext":false,"./icons/file-earmark-ruled-fill":false,"./icons/file-earmark-ruled":false,"./icons/file-earmark-slides-fill":false,"./icons/file-earmark-slides":false,"./icons/file-earmark-spreadsheet-fill":false,"./icons/file-earmark-spreadsheet":false,"./icons/file-earmark-text-fill":false,"./icons/file-earmark-text":false,"./icons/file-earmark-word-fill":false,"./icons/file-earmark-word":false,"./icons/file-earmark-x-fill":false,"./icons/file-earmark-x":false,"./icons/file-earmark-zip-fill":false,"./icons/file-earmark-zip":false,"./icons/file-earmark":false,"./icons/file-easel-fill":false,"./icons/file-easel":false,"./icons/file-excel-fill":false,"./icons/file-excel":false,"./icons/file-fill":false,"./icons/file-font-fill":false,"./icons/file-font":false,"./icons/file-image-fill":false,"./icons/file-image":false,"./icons/file-lock-fill":false,"./icons/file-lock":false,"./icons/file-lock2-fill":false,"./icons/file-lock2":false,"./icons/file-medical-fill":false,"./icons/file-medical":false,"./icons/file-minus-fill":false,"./icons/file-minus":false,"./icons/file-music-fill":false,"./icons/file-music":false,"./icons/file-pdf-fill":false,"./icons/file-pdf":false,"./icons/file-person-fill":false,"./icons/file-person":false,"./icons/file-play-fill":false,"./icons/file-play":false,"./icons/file-plus-fill":false,"./icons/file-plus":false,"./icons/file-post-fill":false,"./icons/file-post":false,"./icons/file-ppt-fill":false,"./icons/file-ppt":false,"./icons/file-richtext-fill":false,"./icons/file-richtext":false,"./icons/file-ruled-fill":false,"./icons/file-ruled":false,"./icons/file-slides-fill":false,"./icons/file-slides":false,"./icons/file-spreadsheet-fill":false,"./icons/file-spreadsheet":false,"./icons/file-text-fill":false,"./icons/file-text":false,"./icons/file-word-fill":false,"./icons/file-word":false,"./icons/file-x-fill":false,"./icons/file-x":false,"./icons/file-zip-fill":false,"./icons/file-zip":false,"./icons/file":false,"./icons/files-alt":false,"./icons/files":false,"./icons/filetype-aac":false,"./icons/filetype-ai":false,"./icons/filetype-bmp":false,"./icons/filetype-cs":false,"./icons/filetype-css":false,"./icons/filetype-csv":false,"./icons/filetype-doc":false,"./icons/filetype-docx":false,"./icons/filetype-exe":false,"./icons/filetype-gif":false,"./icons/filetype-heic":false,"./icons/filetype-html":false,"./icons/filetype-java":false,"./icons/filetype-jpg":false,"./icons/filetype-js":false,"./icons/filetype-json":false,"./icons/filetype-jsx":false,"./icons/filetype-key":false,"./icons/filetype-m4p":false,"./icons/filetype-md":false,"./icons/filetype-mdx":false,"./icons/filetype-mov":false,"./icons/filetype-mp3":false,"./icons/filetype-mp4":false,"./icons/filetype-otf":false,"./icons/filetype-pdf":false,"./icons/filetype-php":false,"./icons/filetype-png":false,"./icons/filetype-ppt":false,"./icons/filetype-pptx":false,"./icons/filetype-psd":false,"./icons/filetype-py":false,"./icons/filetype-raw":false,"./icons/filetype-rb":false,"./icons/filetype-sass":false,"./icons/filetype-scss":false,"./icons/filetype-sh":false,"./icons/filetype-sql":false,"./icons/filetype-svg":false,"./icons/filetype-tiff":false,"./icons/filetype-tsx":false,"./icons/filetype-ttf":false,"./icons/filetype-txt":false,"./icons/filetype-wav":false,"./icons/filetype-woff":false,"./icons/filetype-xls":false,"./icons/filetype-xlsx":false,"./icons/filetype-xml":false,"./icons/filetype-yml":false,"./icons/film":false,"./icons/filter-circle-fill":false,"./icons/filter-circle":false,"./icons/filter-left":false,"./icons/filter-right":false,"./icons/filter-square-fill":false,"./icons/filter-square":false,"./icons/filter":false,"./icons/fingerprint":false,"./icons/fire":false,"./icons/flag-fill":false,"./icons/flag":false,"./icons/flower1":false,"./icons/flower2":false,"./icons/flower3":false,"./icons/folder-check":false,"./icons/folder-fill":false,"./icons/folder-minus":false,"./icons/folder-plus":false,"./icons/folder-symlink-fill":false,"./icons/folder-symlink":false,"./icons/folder-x":false,"./icons/folder":false,"./icons/folder2-open":false,"./icons/folder2":false,"./icons/fonts":false,"./icons/forward-fill":false,"./icons/forward":false,"./icons/front":false,"./icons/fuel-pump-diesel-fill":false,"./icons/fuel-pump-diesel":false,"./icons/fuel-pump-fill":false,"./icons/fuel-pump":false,"./icons/fullscreen-exit":false,"./icons/fullscreen":false,"./icons/funnel-fill":false,"./icons/funnel":false,"./icons/gear-fill":false,"./icons/gear-wide-connected":false,"./icons/gear-wide":false,"./icons/gear":false,"./icons/gem":false,"./icons/gender-ambiguous":false,"./icons/gender-female":false,"./icons/gender-male":false,"./icons/gender-trans":false,"./icons/geo-alt-fill":false,"./icons/geo-alt":false,"./icons/geo-fill":false,"./icons/geo":false,"./icons/gift-fill":false,"./icons/gift":false,"./icons/git":false,"./icons/github":false,"./icons/globe-americas":false,"./icons/globe-asia-australia":false,"./icons/globe-central-south-asia":false,"./icons/globe-europe-africa":false,"./icons/globe":false,"./icons/globe2":false,"./icons/google-play":false,"./icons/google":false,"./icons/gpu-card":false,"./icons/graph-down-arrow":false,"./icons/graph-down":false,"./icons/graph-up-arrow":false,"./icons/graph-up":false,"./icons/grid-1x2-fill":false,"./icons/grid-1x2":false,"./icons/grid-3x2-gap-fill":false,"./icons/grid-3x2-gap":false,"./icons/grid-3x2":false,"./icons/grid-3x3-gap-fill":false,"./icons/grid-3x3-gap":false,"./icons/grid-3x3":false,"./icons/grid-fill":false,"./icons/grid":false,"./icons/grip-horizontal":false,"./icons/grip-vertical":false,"./icons/h-circle-fill":false,"./icons/h-circle":false,"./icons/h-square-fill":false,"./icons/h-square":false,"./icons/hammer":false,"./icons/hand-index-fill":false,"./icons/hand-index-thumb-fill":false,"./icons/hand-index-thumb":false,"./icons/hand-index":false,"./icons/hand-thumbs-down-fill":false,"./icons/hand-thumbs-down":false,"./icons/hand-thumbs-up-fill":false,"./icons/hand-thumbs-up":false,"./icons/handbag-fill":false,"./icons/handbag":false,"./icons/hash":false,"./icons/hdd-fill":false,"./icons/hdd-network-fill":false,"./icons/hdd-network":false,"./icons/hdd-rack-fill":false,"./icons/hdd-rack":false,"./icons/hdd-stack-fill":false,"./icons/hdd-stack":false,"./icons/hdd":false,"./icons/hdmi-fill":false,"./icons/hdmi":false,"./icons/headphones":false,"./icons/headset-vr":false,"./icons/headset":false,"./icons/heart-arrow":false,"./icons/heart-fill":false,"./icons/heart-half":false,"./icons/heart-pulse-fill":false,"./icons/heart-pulse":false,"./icons/heart":false,"./icons/heartbreak-fill":false,"./icons/heartbreak":false,"./icons/hearts":false,"./icons/heptagon-fill":false,"./icons/heptagon-half":false,"./icons/heptagon":false,"./icons/hexagon-fill":false,"./icons/hexagon-half":false,"./icons/hexagon":false,"./icons/hospital-fill":false,"./icons/hospital":false,"./icons/hourglass-bottom":false,"./icons/hourglass-split":false,"./icons/hourglass-top":false,"./icons/hourglass":false,"./icons/house-add-fill":false,"./icons/house-add":false,"./icons/house-check-fill":false,"./icons/house-check":false,"./icons/house-dash-fill":false,"./icons/house-dash":false,"./icons/house-door-fill":false,"./icons/house-door":false,"./icons/house-down-fill":false,"./icons/house-down":false,"./icons/house-exclamation-fill":false,"./icons/house-exclamation":false,"./icons/house-fill":false,"./icons/house-gear-fill":false,"./icons/house-gear":false,"./icons/house-heart-fill":false,"./icons/house-heart":false,"./icons/house-lock-fill":false,"./icons/house-lock":false,"./icons/house-slash-fill":false,"./icons/house-slash":false,"./icons/house-up-fill":false,"./icons/house-up":false,"./icons/house-x-fill":false,"./icons/house-x":false,"./icons/house":false,"./icons/houses-fill":false,"./icons/houses":false,"./icons/hr":false,"./icons/hurricane":false,"./icons/hypnotize":false,"./icons/image-alt":false,"./icons/image-fill":false,"./icons/image":false,"./icons/images":false,"./icons/inbox-fill":false,"./icons/inbox":false,"./icons/inboxes-fill":false,"./icons/inboxes":false,"./icons/incognito":false,"./icons/indent":false,"./icons/infinity":false,"./icons/info-circle-fill":false,"./icons/info-circle":false,"./icons/info-lg":false,"./icons/info-square-fill":false,"./icons/info-square":false,"./icons/info":false,"./icons/input-cursor-text":false,"./icons/input-cursor":false,"./icons/instagram":false,"./icons/intersect":false,"./icons/journal-album":false,"./icons/journal-arrow-down":false,"./icons/journal-arrow-up":false,"./icons/journal-bookmark-fill":false,"./icons/journal-bookmark":false,"./icons/journal-check":false,"./icons/journal-code":false,"./icons/journal-medical":false,"./icons/journal-minus":false,"./icons/journal-plus":false,"./icons/journal-richtext":false,"./icons/journal-text":false,"./icons/journal-x":false,"./icons/journal":false,"./icons/journals":false,"./icons/joystick":false,"./icons/justify-left":false,"./icons/justify-right":false,"./icons/justify":false,"./icons/kanban-fill":false,"./icons/kanban":false,"./icons/key-fill":false,"./icons/key":false,"./icons/keyboard-fill":false,"./icons/keyboard":false,"./icons/ladder":false,"./icons/lamp-fill":false,"./icons/lamp":false,"./icons/laptop-fill":false,"./icons/laptop":false,"./icons/layer-backward":false,"./icons/layer-forward":false,"./icons/layers-fill":false,"./icons/layers-half":false,"./icons/layers":false,"./icons/layout-sidebar-inset-reverse":false,"./icons/layout-sidebar-inset":false,"./icons/layout-sidebar-reverse":false,"./icons/layout-sidebar":false,"./icons/layout-split":false,"./icons/layout-text-sidebar-reverse":false,"./icons/layout-text-sidebar":false,"./icons/layout-text-window-reverse":false,"./icons/layout-text-window":false,"./icons/layout-three-columns":false,"./icons/layout-wtf":false,"./icons/life-preserver":false,"./icons/lightbulb-fill":false,"./icons/lightbulb-off-fill":false,"./icons/lightbulb-off":false,"./icons/lightbulb":false,"./icons/lightning-charge-fill":false,"./icons/lightning-charge":false,"./icons/lightning-fill":false,"./icons/lightning":false,"./icons/line":false,"./icons/link-45deg":false,"./icons/link":false,"./icons/linkedin":false,"./icons/list-check":false,"./icons/list-columns-reverse":false,"./icons/list-columns":false,"./icons/list-nested":false,"./icons/list-ol":false,"./icons/list-stars":false,"./icons/list-task":false,"./icons/list-ul":false,"./icons/list":false,"./icons/lock-fill":false,"./icons/lock":false,"./icons/lungs-fill":false,"./icons/lungs":false,"./icons/magic":false,"./icons/magnet-fill":false,"./icons/magnet":false,"./icons/mailbox":false,"./icons/mailbox2":false,"./icons/map-fill":false,"./icons/map":false,"./icons/markdown-fill":false,"./icons/markdown":false,"./icons/mask":false,"./icons/mastodon":false,"./icons/medium":false,"./icons/megaphone-fill":false,"./icons/megaphone":false,"./icons/memory":false,"./icons/menu-app-fill":false,"./icons/menu-app":false,"./icons/menu-button-fill":false,"./icons/menu-button-wide-fill":false,"./icons/menu-button-wide":false,"./icons/menu-button":false,"./icons/menu-down":false,"./icons/menu-up":false,"./icons/messenger":false,"./icons/meta":false,"./icons/mic-fill":false,"./icons/mic-mute-fill":false,"./icons/mic-mute":false,"./icons/mic":false,"./icons/microsoft-teams":false,"./icons/microsoft":false,"./icons/minecart-loaded":false,"./icons/minecart":false,"./icons/modem-fill":false,"./icons/modem":false,"./icons/moisture":false,"./icons/moon-fill":false,"./icons/moon-stars-fill":false,"./icons/moon-stars":false,"./icons/moon":false,"./icons/mortarboard-fill":false,"./icons/mortarboard":false,"./icons/motherboard-fill":false,"./icons/motherboard":false,"./icons/mouse-fill":false,"./icons/mouse":false,"./icons/mouse2-fill":false,"./icons/mouse2":false,"./icons/mouse3-fill":false,"./icons/mouse3":false,"./icons/music-note-beamed":false,"./icons/music-note-list":false,"./icons/music-note":false,"./icons/music-player-fill":false,"./icons/music-player":false,"./icons/newspaper":false,"./icons/nintendo-switch":false,"./icons/node-minus-fill":false,"./icons/node-minus":false,"./icons/node-plus-fill":false,"./icons/node-plus":false,"./icons/nut-fill":false,"./icons/nut":false,"./icons/nvidia":false,"./icons/octagon-fill":false,"./icons/octagon-half":false,"./icons/octagon":false,"./icons/optical-audio-fill":false,"./icons/optical-audio":false,"./icons/option":false,"./icons/outlet":false,"./icons/p-circle-fill":false,"./icons/p-circle":false,"./icons/p-square-fill":false,"./icons/p-square":false,"./icons/paint-bucket":false,"./icons/palette-fill":false,"./icons/palette":false,"./icons/palette2":false,"./icons/paperclip":false,"./icons/paragraph":false,"./icons/pass-fill":false,"./icons/pass":false,"./icons/patch-check-fill":false,"./icons/patch-check":false,"./icons/patch-exclamation-fill":false,"./icons/patch-exclamation":false,"./icons/patch-minus-fill":false,"./icons/patch-minus":false,"./icons/patch-plus-fill":false,"./icons/patch-plus":false,"./icons/patch-question-fill":false,"./icons/patch-question":false,"./icons/pause-btn-fill":false,"./icons/pause-btn":false,"./icons/pause-circle-fill":false,"./icons/pause-circle":false,"./icons/pause-fill":false,"./icons/pause":false,"./icons/paypal":false,"./icons/pc-display-horizontal":false,"./icons/pc-display":false,"./icons/pc-horizontal":false,"./icons/pc":false,"./icons/pci-card":false,"./icons/peace-fill":false,"./icons/peace":false,"./icons/pen-fill":false,"./icons/pen":false,"./icons/pencil-fill":false,"./icons/pencil-square":false,"./icons/pencil":false,"./icons/pentagon-fill":false,"./icons/pentagon-half":false,"./icons/pentagon":false,"./icons/people-fill":false,"./icons/people":false,"./icons/percent":false,"./icons/person-add":false,"./icons/person-badge-fill":false,"./icons/person-badge":false,"./icons/person-bounding-box":false,"./icons/person-check-fill":false,"./icons/person-check":false,"./icons/person-circle":false,"./icons/person-dash-fill":false,"./icons/person-dash":false,"./icons/person-down":false,"./icons/person-exclamation":false,"./icons/person-fill-add":false,"./icons/person-fill-check":false,"./icons/person-fill-dash":false,"./icons/person-fill-down":false,"./icons/person-fill-exclamation":false,"./icons/person-fill-gear":false,"./icons/person-fill-lock":false,"./icons/person-fill-slash":false,"./icons/person-fill-up":false,"./icons/person-fill-x":false,"./icons/person-fill":false,"./icons/person-gear":false,"./icons/person-heart":false,"./icons/person-hearts":false,"./icons/person-lines-fill":false,"./icons/person-lock":false,"./icons/person-plus-fill":false,"./icons/person-plus":false,"./icons/person-rolodex":false,"./icons/person-slash":false,"./icons/person-square":"eTgsZ","./icons/person-up":false,"./icons/person-vcard-fill":false,"./icons/person-vcard":false,"./icons/person-video":false,"./icons/person-video2":false,"./icons/person-video3":false,"./icons/person-workspace":false,"./icons/person-x-fill":false,"./icons/person-x":false,"./icons/person":false,"./icons/phone-fill":false,"./icons/phone-flip":false,"./icons/phone-landscape-fill":false,"./icons/phone-landscape":false,"./icons/phone-vibrate-fill":false,"./icons/phone-vibrate":false,"./icons/phone":false,"./icons/pie-chart-fill":false,"./icons/pie-chart":false,"./icons/piggy-bank-fill":false,"./icons/piggy-bank":false,"./icons/pin-angle-fill":false,"./icons/pin-angle":false,"./icons/pin-fill":false,"./icons/pin-map-fill":false,"./icons/pin-map":false,"./icons/pin":false,"./icons/pinterest":false,"./icons/pip-fill":false,"./icons/pip":false,"./icons/play-btn-fill":false,"./icons/play-btn":false,"./icons/play-circle-fill":false,"./icons/play-circle":false,"./icons/play-fill":false,"./icons/play":false,"./icons/playstation":false,"./icons/plug-fill":false,"./icons/plug":false,"./icons/plugin":false,"./icons/plus-circle-dotted":false,"./icons/plus-circle-fill":false,"./icons/plus-circle":false,"./icons/plus-lg":false,"./icons/plus-slash-minus":false,"./icons/plus-square-dotted":false,"./icons/plus-square-fill":false,"./icons/plus-square":false,"./icons/plus":false,"./icons/postage-fill":false,"./icons/postage-heart-fill":false,"./icons/postage-heart":false,"./icons/postage":false,"./icons/postcard-fill":false,"./icons/postcard-heart-fill":false,"./icons/postcard-heart":false,"./icons/postcard":false,"./icons/power":false,"./icons/prescription":false,"./icons/prescription2":false,"./icons/printer-fill":false,"./icons/printer":false,"./icons/projector-fill":false,"./icons/projector":false,"./icons/puzzle-fill":false,"./icons/puzzle":false,"./icons/qr-code-scan":false,"./icons/qr-code":false,"./icons/question-circle-fill":false,"./icons/question-circle":false,"./icons/question-diamond-fill":false,"./icons/question-diamond":false,"./icons/question-lg":false,"./icons/question-octagon-fill":false,"./icons/question-octagon":false,"./icons/question-square-fill":false,"./icons/question-square":false,"./icons/question":false,"./icons/quora":false,"./icons/quote":false,"./icons/r-circle-fill":false,"./icons/r-circle":false,"./icons/r-square-fill":false,"./icons/r-square":false,"./icons/radioactive":false,"./icons/rainbow":false,"./icons/receipt-cutoff":false,"./icons/receipt":false,"./icons/reception-0":false,"./icons/reception-1":false,"./icons/reception-2":false,"./icons/reception-3":false,"./icons/reception-4":false,"./icons/record-btn-fill":false,"./icons/record-btn":false,"./icons/record-circle-fill":false,"./icons/record-circle":false,"./icons/record-fill":false,"./icons/record":false,"./icons/record2-fill":false,"./icons/record2":false,"./icons/recycle":false,"./icons/reddit":false,"./icons/regex":false,"./icons/repeat-1":false,"./icons/repeat":false,"./icons/reply-all-fill":false,"./icons/reply-all":false,"./icons/reply-fill":false,"./icons/reply":false,"./icons/rewind-btn-fill":false,"./icons/rewind-btn":false,"./icons/rewind-circle-fill":false,"./icons/rewind-circle":false,"./icons/rewind-fill":false,"./icons/rewind":false,"./icons/robot":false,"./icons/rocket-fill":false,"./icons/rocket-takeoff-fill":false,"./icons/rocket-takeoff":false,"./icons/rocket":false,"./icons/router-fill":false,"./icons/router":false,"./icons/rss-fill":false,"./icons/rss":false,"./icons/rulers":false,"./icons/safe-fill":false,"./icons/safe":false,"./icons/safe2-fill":false,"./icons/safe2":false,"./icons/save-fill":false,"./icons/save":false,"./icons/save2-fill":false,"./icons/save2":false,"./icons/scissors":false,"./icons/scooter":false,"./icons/screwdriver":false,"./icons/sd-card-fill":false,"./icons/sd-card":false,"./icons/search-heart-fill":false,"./icons/search-heart":false,"./icons/search":false,"./icons/segmented-nav":false,"./icons/send-check-fill":false,"./icons/send-check":false,"./icons/send-dash-fill":false,"./icons/send-dash":false,"./icons/send-exclamation-fill":false,"./icons/send-exclamation":false,"./icons/send-fill":false,"./icons/send-plus-fill":false,"./icons/send-plus":false,"./icons/send-slash-fill":false,"./icons/send-slash":false,"./icons/send-x-fill":false,"./icons/send-x":false,"./icons/send":false,"./icons/server":false,"./icons/share-fill":false,"./icons/share":false,"./icons/shield-check":false,"./icons/shield-exclamation":false,"./icons/shield-fill-check":false,"./icons/shield-fill-exclamation":false,"./icons/shield-fill-minus":false,"./icons/shield-fill-plus":false,"./icons/shield-fill-x":false,"./icons/shield-fill":false,"./icons/shield-lock-fill":false,"./icons/shield-lock":false,"./icons/shield-minus":false,"./icons/shield-plus":false,"./icons/shield-shaded":false,"./icons/shield-slash-fill":false,"./icons/shield-slash":false,"./icons/shield-x":false,"./icons/shield":false,"./icons/shift-fill":false,"./icons/shift":false,"./icons/shop-window":false,"./icons/shop":false,"./icons/shuffle":false,"./icons/sign-dead-end-fill":false,"./icons/sign-dead-end":false,"./icons/sign-do-not-enter-fill":false,"./icons/sign-do-not-enter":false,"./icons/sign-intersection-fill":false,"./icons/sign-intersection-side-fill":false,"./icons/sign-intersection-side":false,"./icons/sign-intersection-t-fill":false,"./icons/sign-intersection-t":false,"./icons/sign-intersection-y-fill":false,"./icons/sign-intersection-y":false,"./icons/sign-intersection":false,"./icons/sign-merge-left-fill":false,"./icons/sign-merge-left":false,"./icons/sign-merge-right-fill":false,"./icons/sign-merge-right":false,"./icons/sign-no-left-turn-fill":false,"./icons/sign-no-left-turn":false,"./icons/sign-no-parking-fill":false,"./icons/sign-no-parking":false,"./icons/sign-no-right-turn-fill":false,"./icons/sign-no-right-turn":false,"./icons/sign-railroad-fill":false,"./icons/sign-railroad":false,"./icons/sign-stop-fill":false,"./icons/sign-stop-lights-fill":false,"./icons/sign-stop-lights":false,"./icons/sign-stop":false,"./icons/sign-turn-left-fill":false,"./icons/sign-turn-left":false,"./icons/sign-turn-right-fill":false,"./icons/sign-turn-right":false,"./icons/sign-turn-slight-left-fill":false,"./icons/sign-turn-slight-left":false,"./icons/sign-turn-slight-right-fill":false,"./icons/sign-turn-slight-right":false,"./icons/sign-yield-fill":false,"./icons/sign-yield":false,"./icons/signal":false,"./icons/signpost-2-fill":false,"./icons/signpost-2":false,"./icons/signpost-fill":false,"./icons/signpost-split-fill":false,"./icons/signpost-split":false,"./icons/signpost":false,"./icons/sim-fill":false,"./icons/sim":false,"./icons/sina-weibo":false,"./icons/skip-backward-btn-fill":false,"./icons/skip-backward-btn":false,"./icons/skip-backward-circle-fill":false,"./icons/skip-backward-circle":false,"./icons/skip-backward-fill":false,"./icons/skip-backward":false,"./icons/skip-end-btn-fill":false,"./icons/skip-end-btn":false,"./icons/skip-end-circle-fill":false,"./icons/skip-end-circle":false,"./icons/skip-end-fill":false,"./icons/skip-end":false,"./icons/skip-forward-btn-fill":false,"./icons/skip-forward-btn":false,"./icons/skip-forward-circle-fill":false,"./icons/skip-forward-circle":false,"./icons/skip-forward-fill":false,"./icons/skip-forward":false,"./icons/skip-start-btn-fill":false,"./icons/skip-start-btn":false,"./icons/skip-start-circle-fill":false,"./icons/skip-start-circle":false,"./icons/skip-start-fill":false,"./icons/skip-start":false,"./icons/skype":false,"./icons/slack":false,"./icons/slash-circle-fill":false,"./icons/slash-circle":false,"./icons/slash-lg":false,"./icons/slash-square-fill":false,"./icons/slash-square":false,"./icons/slash":false,"./icons/sliders":false,"./icons/sliders2-vertical":false,"./icons/sliders2":false,"./icons/smartwatch":false,"./icons/snapchat":false,"./icons/snow":false,"./icons/snow2":false,"./icons/snow3":false,"./icons/sort-alpha-down-alt":false,"./icons/sort-alpha-down":false,"./icons/sort-alpha-up-alt":false,"./icons/sort-alpha-up":false,"./icons/sort-down-alt":false,"./icons/sort-down":false,"./icons/sort-numeric-down-alt":false,"./icons/sort-numeric-down":false,"./icons/sort-numeric-up-alt":false,"./icons/sort-numeric-up":false,"./icons/sort-up-alt":false,"./icons/sort-up":false,"./icons/soundwave":false,"./icons/speaker-fill":false,"./icons/speaker":false,"./icons/speedometer":false,"./icons/speedometer2":false,"./icons/spellcheck":false,"./icons/spotify":false,"./icons/square-fill":false,"./icons/square-half":false,"./icons/square":false,"./icons/stack-overflow":false,"./icons/stack":false,"./icons/star-fill":false,"./icons/star-half":false,"./icons/star":false,"./icons/stars":false,"./icons/steam":false,"./icons/stickies-fill":false,"./icons/stickies":false,"./icons/sticky-fill":false,"./icons/sticky":false,"./icons/stop-btn-fill":false,"./icons/stop-btn":false,"./icons/stop-circle-fill":false,"./icons/stop-circle":false,"./icons/stop-fill":false,"./icons/stop":false,"./icons/stoplights-fill":false,"./icons/stoplights":false,"./icons/stopwatch-fill":false,"./icons/stopwatch":false,"./icons/strava":false,"./icons/stripe":false,"./icons/subscript":false,"./icons/subtract":false,"./icons/suit-club-fill":false,"./icons/suit-club":false,"./icons/suit-diamond-fill":false,"./icons/suit-diamond":false,"./icons/suit-heart-fill":false,"./icons/suit-heart":false,"./icons/suit-spade-fill":false,"./icons/suit-spade":false,"./icons/sun-fill":false,"./icons/sun":false,"./icons/sunglasses":false,"./icons/sunrise-fill":false,"./icons/sunrise":false,"./icons/sunset-fill":false,"./icons/sunset":false,"./icons/superscript":false,"./icons/symmetry-horizontal":false,"./icons/symmetry-vertical":false,"./icons/table":false,"./icons/tablet-fill":false,"./icons/tablet-landscape-fill":false,"./icons/tablet-landscape":false,"./icons/tablet":false,"./icons/tag-fill":false,"./icons/tag":false,"./icons/tags-fill":false,"./icons/tags":false,"./icons/taxi-front-fill":false,"./icons/taxi-front":false,"./icons/telegram":false,"./icons/telephone-fill":false,"./icons/telephone-forward-fill":false,"./icons/telephone-forward":false,"./icons/telephone-inbound-fill":false,"./icons/telephone-inbound":false,"./icons/telephone-minus-fill":false,"./icons/telephone-minus":false,"./icons/telephone-outbound-fill":false,"./icons/telephone-outbound":false,"./icons/telephone-plus-fill":false,"./icons/telephone-plus":false,"./icons/telephone-x-fill":false,"./icons/telephone-x":false,"./icons/telephone":false,"./icons/tencent-qq":false,"./icons/terminal-dash":false,"./icons/terminal-fill":false,"./icons/terminal-plus":false,"./icons/terminal-split":false,"./icons/terminal-x":false,"./icons/terminal":false,"./icons/text-center":false,"./icons/text-indent-left":false,"./icons/text-indent-right":false,"./icons/text-left":false,"./icons/text-paragraph":false,"./icons/text-right":false,"./icons/text-wrap":false,"./icons/textarea-resize":false,"./icons/textarea-t":false,"./icons/textarea":false,"./icons/thermometer-half":false,"./icons/thermometer-high":false,"./icons/thermometer-low":false,"./icons/thermometer-snow":false,"./icons/thermometer-sun":false,"./icons/thermometer":false,"./icons/three-dots-vertical":false,"./icons/three-dots":false,"./icons/thunderbolt-fill":false,"./icons/thunderbolt":false,"./icons/ticket-detailed-fill":false,"./icons/ticket-detailed":false,"./icons/ticket-fill":false,"./icons/ticket-perforated-fill":false,"./icons/ticket-perforated":false,"./icons/ticket":false,"./icons/tiktok":false,"./icons/toggle-off":false,"./icons/toggle-on":false,"./icons/toggle2-off":false,"./icons/toggle2-on":false,"./icons/toggles":false,"./icons/toggles2":false,"./icons/tools":false,"./icons/tornado":false,"./icons/train-freight-front-fill":false,"./icons/train-freight-front":false,"./icons/train-front-fill":false,"./icons/train-front":false,"./icons/train-lightrail-front-fill":false,"./icons/train-lightrail-front":false,"./icons/translate":false,"./icons/trash-fill":false,"./icons/trash":false,"./icons/trash2-fill":false,"./icons/trash2":false,"./icons/trash3-fill":false,"./icons/trash3":false,"./icons/tree-fill":false,"./icons/tree":false,"./icons/trello":false,"./icons/triangle-fill":false,"./icons/triangle-half":false,"./icons/triangle":false,"./icons/trophy-fill":false,"./icons/trophy":false,"./icons/tropical-storm":false,"./icons/truck-flatbed":false,"./icons/truck-front-fill":false,"./icons/truck-front":false,"./icons/truck":false,"./icons/tsunami":false,"./icons/tv-fill":false,"./icons/tv":false,"./icons/twitch":false,"./icons/twitter":false,"./icons/type-bold":false,"./icons/type-h1":false,"./icons/type-h2":false,"./icons/type-h3":false,"./icons/type-italic":false,"./icons/type-strikethrough":false,"./icons/type-underline":false,"./icons/type":false,"./icons/ubuntu":false,"./icons/ui-checks-grid":false,"./icons/ui-checks":false,"./icons/ui-radios-grid":false,"./icons/ui-radios":false,"./icons/umbrella-fill":false,"./icons/umbrella":false,"./icons/unindent":false,"./icons/union":false,"./icons/unity":false,"./icons/universal-access-circle":false,"./icons/universal-access":false,"./icons/unlock-fill":false,"./icons/unlock":false,"./icons/upc-scan":false,"./icons/upc":false,"./icons/upload":false,"./icons/usb-c-fill":false,"./icons/usb-c":false,"./icons/usb-drive-fill":false,"./icons/usb-drive":false,"./icons/usb-fill":false,"./icons/usb-micro-fill":false,"./icons/usb-micro":false,"./icons/usb-mini-fill":false,"./icons/usb-mini":false,"./icons/usb-plug-fill":false,"./icons/usb-plug":false,"./icons/usb-symbol":false,"./icons/usb":false,"./icons/valentine":false,"./icons/valentine2":false,"./icons/vector-pen":false,"./icons/view-list":false,"./icons/view-stacked":false,"./icons/vimeo":false,"./icons/vinyl-fill":false,"./icons/vinyl":false,"./icons/virus":false,"./icons/virus2":false,"./icons/voicemail":false,"./icons/volume-down-fill":false,"./icons/volume-down":false,"./icons/volume-mute-fill":false,"./icons/volume-mute":false,"./icons/volume-off-fill":false,"./icons/volume-off":false,"./icons/volume-up-fill":false,"./icons/volume-up":false,"./icons/vr":false,"./icons/wallet-fill":false,"./icons/wallet":false,"./icons/wallet2":false,"./icons/watch":false,"./icons/water":false,"./icons/webcam-fill":false,"./icons/webcam":false,"./icons/wechat":false,"./icons/whatsapp":false,"./icons/wifi-1":false,"./icons/wifi-2":false,"./icons/wifi-off":false,"./icons/wifi":false,"./icons/wikipedia":false,"./icons/wind":false,"./icons/window-dash":false,"./icons/window-desktop":false,"./icons/window-dock":false,"./icons/window-fullscreen":false,"./icons/window-plus":false,"./icons/window-sidebar":false,"./icons/window-split":false,"./icons/window-stack":false,"./icons/window-x":false,"./icons/window":false,"./icons/windows":false,"./icons/wordpress":false,"./icons/wrench-adjustable-circle-fill":false,"./icons/wrench-adjustable-circle":false,"./icons/wrench-adjustable":false,"./icons/wrench":false,"./icons/x-circle-fill":false,"./icons/x-circle":false,"./icons/x-diamond-fill":false,"./icons/x-diamond":false,"./icons/x-lg":false,"./icons/x-octagon-fill":false,"./icons/x-octagon":false,"./icons/x-square-fill":false,"./icons/x-square":false,"./icons/x":false,"./icons/xbox":false,"./icons/yelp":false,"./icons/yin-yang":false,"./icons/youtube":false,"./icons/zoom-in":false,"./icons/zoom-out":false,"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8P4TF":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _propTypes = require("prop-types");
+var _propTypesDefault = parcelHelpers.interopDefault(_propTypes);
+var _excluded = [
+    "color",
+    "size",
+    "title"
+];
+function _extends() {
+    _extends = Object.assign || function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = source[key];
+        }
+        return target;
+    };
+    return _extends.apply(this, arguments);
+}
+function _objectWithoutProperties(source, excluded) {
+    if (source == null) return {};
+    var target = _objectWithoutPropertiesLoose(source, excluded);
+    var key, i;
+    if (Object.getOwnPropertySymbols) {
+        var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
+        for(i = 0; i < sourceSymbolKeys.length; i++){
+            key = sourceSymbolKeys[i];
+            if (excluded.indexOf(key) >= 0) continue;
+            if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
+            target[key] = source[key];
+        }
+    }
+    return target;
+}
+function _objectWithoutPropertiesLoose(source, excluded) {
+    if (source == null) return {};
+    var target = {};
+    var sourceKeys = Object.keys(source);
+    var key, i;
+    for(i = 0; i < sourceKeys.length; i++){
+        key = sourceKeys[i];
+        if (excluded.indexOf(key) >= 0) continue;
+        target[key] = source[key];
+    }
+    return target;
+}
+var BookmarkHeartFill = /*#__PURE__*/ (0, _react.forwardRef)(function(_ref, ref) {
+    var color = _ref.color, size = _ref.size, title = _ref.title, rest = _objectWithoutProperties(_ref, _excluded);
+    return /*#__PURE__*/ (0, _reactDefault.default).createElement("svg", _extends({
+        ref: ref,
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 16 16",
+        width: size,
+        height: size,
+        fill: color
+    }, rest), title ? /*#__PURE__*/ (0, _reactDefault.default).createElement("title", null, title) : null, /*#__PURE__*/ (0, _reactDefault.default).createElement("path", {
+        d: "M2 15.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v13.5zM8 4.41c1.387-1.425 4.854 1.07 0 4.277C3.146 5.48 6.613 2.986 8 4.412z"
+    }));
+});
+BookmarkHeartFill.propTypes = {
+    color: (0, _propTypesDefault.default).string,
+    size: (0, _propTypesDefault.default).oneOfType([
+        (0, _propTypesDefault.default).string,
+        (0, _propTypesDefault.default).number
+    ]),
+    title: (0, _propTypesDefault.default).string
+};
+BookmarkHeartFill.defaultProps = {
+    color: "currentColor",
+    size: "1em",
+    title: null
+};
+exports.default = BookmarkHeartFill;
+
+},{"react":"21dqq","prop-types":"7wKI2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7rGlC":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _propTypes = require("prop-types");
+var _propTypesDefault = parcelHelpers.interopDefault(_propTypes);
+var _excluded = [
+    "color",
+    "size",
+    "title"
+];
+function _extends() {
+    _extends = Object.assign || function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = source[key];
+        }
+        return target;
+    };
+    return _extends.apply(this, arguments);
+}
+function _objectWithoutProperties(source, excluded) {
+    if (source == null) return {};
+    var target = _objectWithoutPropertiesLoose(source, excluded);
+    var key, i;
+    if (Object.getOwnPropertySymbols) {
+        var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
+        for(i = 0; i < sourceSymbolKeys.length; i++){
+            key = sourceSymbolKeys[i];
+            if (excluded.indexOf(key) >= 0) continue;
+            if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
+            target[key] = source[key];
+        }
+    }
+    return target;
+}
+function _objectWithoutPropertiesLoose(source, excluded) {
+    if (source == null) return {};
+    var target = {};
+    var sourceKeys = Object.keys(source);
+    var key, i;
+    for(i = 0; i < sourceKeys.length; i++){
+        key = sourceKeys[i];
+        if (excluded.indexOf(key) >= 0) continue;
+        target[key] = source[key];
+    }
+    return target;
+}
+var BookmarkHeart = /*#__PURE__*/ (0, _react.forwardRef)(function(_ref, ref) {
+    var color = _ref.color, size = _ref.size, title = _ref.title, rest = _objectWithoutProperties(_ref, _excluded);
+    return /*#__PURE__*/ (0, _reactDefault.default).createElement("svg", _extends({
+        ref: ref,
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 16 16",
+        width: size,
+        height: size,
+        fill: color
+    }, rest), title ? /*#__PURE__*/ (0, _reactDefault.default).createElement("title", null, title) : null, /*#__PURE__*/ (0, _reactDefault.default).createElement("path", {
+        fillRule: "evenodd",
+        d: "M8 4.41c1.387-1.425 4.854 1.07 0 4.277C3.146 5.48 6.613 2.986 8 4.412z"
+    }), /*#__PURE__*/ (0, _reactDefault.default).createElement("path", {
+        d: "M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"
+    }));
+});
+BookmarkHeart.propTypes = {
+    color: (0, _propTypesDefault.default).string,
+    size: (0, _propTypesDefault.default).oneOfType([
+        (0, _propTypesDefault.default).string,
+        (0, _propTypesDefault.default).number
+    ]),
+    title: (0, _propTypesDefault.default).string
+};
+BookmarkHeart.defaultProps = {
+    color: "currentColor",
+    size: "1em",
+    title: null
+};
+exports.default = BookmarkHeart;
+
+},{"react":"21dqq","prop-types":"7wKI2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eTgsZ":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _propTypes = require("prop-types");
+var _propTypesDefault = parcelHelpers.interopDefault(_propTypes);
+var _excluded = [
+    "color",
+    "size",
+    "title"
+];
+function _extends() {
+    _extends = Object.assign || function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = source[key];
+        }
+        return target;
+    };
+    return _extends.apply(this, arguments);
+}
+function _objectWithoutProperties(source, excluded) {
+    if (source == null) return {};
+    var target = _objectWithoutPropertiesLoose(source, excluded);
+    var key, i;
+    if (Object.getOwnPropertySymbols) {
+        var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
+        for(i = 0; i < sourceSymbolKeys.length; i++){
+            key = sourceSymbolKeys[i];
+            if (excluded.indexOf(key) >= 0) continue;
+            if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
+            target[key] = source[key];
+        }
+    }
+    return target;
+}
+function _objectWithoutPropertiesLoose(source, excluded) {
+    if (source == null) return {};
+    var target = {};
+    var sourceKeys = Object.keys(source);
+    var key, i;
+    for(i = 0; i < sourceKeys.length; i++){
+        key = sourceKeys[i];
+        if (excluded.indexOf(key) >= 0) continue;
+        target[key] = source[key];
+    }
+    return target;
+}
+var PersonSquare = /*#__PURE__*/ (0, _react.forwardRef)(function(_ref, ref) {
+    var color = _ref.color, size = _ref.size, title = _ref.title, rest = _objectWithoutProperties(_ref, _excluded);
+    return /*#__PURE__*/ (0, _reactDefault.default).createElement("svg", _extends({
+        ref: ref,
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 16 16",
+        width: size,
+        height: size,
+        fill: color
+    }, rest), title ? /*#__PURE__*/ (0, _reactDefault.default).createElement("title", null, title) : null, /*#__PURE__*/ (0, _reactDefault.default).createElement("path", {
+        d: "M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
+    }), /*#__PURE__*/ (0, _reactDefault.default).createElement("path", {
+        d: "M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm12 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1v-1c0-1-1-4-6-4s-6 3-6 4v1a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12z"
+    }));
+});
+PersonSquare.propTypes = {
+    color: (0, _propTypesDefault.default).string,
+    size: (0, _propTypesDefault.default).oneOfType([
+        (0, _propTypesDefault.default).string,
+        (0, _propTypesDefault.default).number
+    ]),
+    title: (0, _propTypesDefault.default).string
+};
+PersonSquare.defaultProps = {
+    color: "currentColor",
+    size: "1em",
+    title: null
+};
+exports.default = PersonSquare;
+
+},{"react":"21dqq","prop-types":"7wKI2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ggaUx":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$e9f6 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -41247,155 +47335,235 @@ parcelHelpers.export(exports, "MovieView", ()=>MovieView);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _reactRouter = require("react-router");
 var _reactRouterDom = require("react-router-dom");
-var _movieViewScss = require("./movie-view.scss");
-var _button = require("react-bootstrap/Button");
-var _buttonDefault = parcelHelpers.interopDefault(_button);
-var _propTypes = require("prop-types");
-var _propTypesDefault = parcelHelpers.interopDefault(_propTypes);
+var _reactBootstrap = require("react-bootstrap");
+var _movieCard = require("../movie-card/movie-card");
 var _s = $RefreshSig$();
-const MovieView = ({ movies, onFavoriteToggle })=>{
+const MovieView = ({ movies, removeFav, addFav })=>{
     _s();
     const { movieId } = (0, _reactRouter.useParams)();
-    const decodedMovieId = decodeURIComponent(movieId);
-    const movie = movies.find((b)=>b._id === decodedMovieId);
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+    const movie = movies.find((movie)=>movie._id === movieId);
+    // Similar Movies
+    const selectedMovie = movies.find((movie)=>movie._id === movieId);
+    const similarMovies = movies.filter((movie)=>{
+        return movie._id !== movieId && movie.Genre.Name === selectedMovie.Genre.Name;
+    });
+    // User
+    const user = JSON.parse(localStorage.getItem("user"));
+    //const FavoriteMovies = {user.FavoriteMovies}; //parsing error? how to get user in?
+    // Debug
+    console.log(user);
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
         children: [
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("img", {
-                    className: "w-100",
-                    src: movie.image,
-                    alt: movie.Title
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
+                className: "my-5 justify-content-md-center",
+                children: [
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                        md: 7,
+                        className: "col-12",
+                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("img", {
+                            src: movie.ImagePath,
+                            alt: "movie cover",
+                            className: "mx-auto w-100"
+                        }, void 0, false, {
+                            fileName: "src/components/movie-view/movie-view.jsx",
+                            lineNumber: 30,
+                            columnNumber: 21
+                        }, undefined)
+                    }, void 0, false, {
+                        fileName: "src/components/movie-view/movie-view.jsx",
+                        lineNumber: 29,
+                        columnNumber: 17
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                        md: 5,
+                        className: "col-12",
+                        children: [
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                className: "my-1",
+                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                    className: "h1",
+                                    children: movie.Title
+                                }, void 0, false, {
+                                    fileName: "src/components/movie-view/movie-view.jsx",
+                                    lineNumber: 34,
+                                    columnNumber: 25
+                                }, undefined)
+                            }, void 0, false, {
+                                fileName: "src/components/movie-view/movie-view.jsx",
+                                lineNumber: 33,
+                                columnNumber: 21
+                            }, undefined),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                className: "my-1",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                        className: "h6",
+                                        children: "Description: "
+                                    }, void 0, false, {
+                                        fileName: "src/components/movie-view/movie-view.jsx",
+                                        lineNumber: 37,
+                                        columnNumber: 25
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                        children: movie.Description
+                                    }, void 0, false, {
+                                        fileName: "src/components/movie-view/movie-view.jsx",
+                                        lineNumber: 38,
+                                        columnNumber: 25
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
+                                fileName: "src/components/movie-view/movie-view.jsx",
+                                lineNumber: 36,
+                                columnNumber: 21
+                            }, undefined),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                className: "my-1",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                        className: "h6",
+                                        children: "Director: "
+                                    }, void 0, false, {
+                                        fileName: "src/components/movie-view/movie-view.jsx",
+                                        lineNumber: 41,
+                                        columnNumber: 25
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                        children: movie.Director.Name
+                                    }, void 0, false, {
+                                        fileName: "src/components/movie-view/movie-view.jsx",
+                                        lineNumber: 42,
+                                        columnNumber: 25
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
+                                fileName: "src/components/movie-view/movie-view.jsx",
+                                lineNumber: 40,
+                                columnNumber: 21
+                            }, undefined),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                className: "my-1",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                        className: "h6",
+                                        children: "Genre: "
+                                    }, void 0, false, {
+                                        fileName: "src/components/movie-view/movie-view.jsx",
+                                        lineNumber: 45,
+                                        columnNumber: 25
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                        children: movie.Genre.Name
+                                    }, void 0, false, {
+                                        fileName: "src/components/movie-view/movie-view.jsx",
+                                        lineNumber: 46,
+                                        columnNumber: 25
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
+                                fileName: "src/components/movie-view/movie-view.jsx",
+                                lineNumber: 44,
+                                columnNumber: 21
+                            }, undefined),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                children: user && user.FavoriteMovies.includes(movie._id) ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                                    className: "my-2 me-2",
+                                    onClick: ()=>removeFav(movie._id),
+                                    children: "Remove from Favorites"
+                                }, void 0, false, {
+                                    fileName: "src/components/movie-view/movie-view.jsx",
+                                    lineNumber: 50,
+                                    columnNumber: 21
+                                }, undefined) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                                    className: "my-2 me-2",
+                                    onClick: ()=>addFav(movie._id),
+                                    children: "Add to Favorites"
+                                }, void 0, false, {
+                                    fileName: "src/components/movie-view/movie-view.jsx",
+                                    lineNumber: 54,
+                                    columnNumber: 21
+                                }, undefined)
+                            }, void 0, false, {
+                                fileName: "src/components/movie-view/movie-view.jsx",
+                                lineNumber: 48,
+                                columnNumber: 21
+                            }, undefined),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Link), {
+                                to: `/`,
+                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                                    className: "my-2",
+                                    children: "Back"
+                                }, void 0, false, {
+                                    fileName: "src/components/movie-view/movie-view.jsx",
+                                    lineNumber: 60,
+                                    columnNumber: 25
+                                }, undefined)
+                            }, void 0, false, {
+                                fileName: "src/components/movie-view/movie-view.jsx",
+                                lineNumber: 59,
+                                columnNumber: 21
+                            }, undefined)
+                        ]
+                    }, void 0, true, {
+                        fileName: "src/components/movie-view/movie-view.jsx",
+                        lineNumber: 32,
+                        columnNumber: 17
+                    }, undefined)
+                ]
+            }, void 0, true, {
+                fileName: "src/components/movie-view/movie-view.jsx",
+                lineNumber: 28,
+                columnNumber: 13
+            }, undefined),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h2", {
+                children: "Similar Movies"
+            }, void 0, false, {
+                fileName: "src/components/movie-view/movie-view.jsx",
+                lineNumber: 64,
+                columnNumber: 13
+            }, undefined),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
+                className: "justify-content-center",
+                children: similarMovies.length !== 0 ? similarMovies.slice(0, 5).map((movie)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                        sm: 5,
+                        md: 4,
+                        lg: 3,
+                        xl: 2,
+                        className: "mx-2 my-3 col-6 similar-movies-img",
+                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieCard.MovieCard), {
+                            movie: movie,
+                            removeFav: removeFav,
+                            addFav: addFav,
+                            isFavorite: user.FavoriteMovies.includes(movie._id)
+                        }, void 0, false, {
+                            fileName: "src/components/movie-view/movie-view.jsx",
+                            lineNumber: 70,
+                            columnNumber: 25
+                        }, undefined)
+                    }, movie._id, false, {
+                        fileName: "src/components/movie-view/movie-view.jsx",
+                        lineNumber: 69,
+                        columnNumber: 21
+                    }, undefined)) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
+                        children: "There are no similar Movies"
+                    }, void 0, false, {
+                        fileName: "src/components/movie-view/movie-view.jsx",
+                        lineNumber: 79,
+                        columnNumber: 17
+                    }, undefined)
                 }, void 0, false, {
                     fileName: "src/components/movie-view/movie-view.jsx",
-                    lineNumber: 15,
-                    columnNumber: 9
+                    lineNumber: 78,
+                    columnNumber: 19
                 }, undefined)
             }, void 0, false, {
                 fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 14,
-                columnNumber: 7
-            }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                children: [
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                        children: "Title: "
-                    }, void 0, false, {
-                        fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 18,
-                        columnNumber: 9
-                    }, undefined),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                        children: movie.Title
-                    }, void 0, false, {
-                        fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 19,
-                        columnNumber: 9
-                    }, undefined)
-                ]
-            }, void 0, true, {
-                fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 17,
-                columnNumber: 7
-            }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                children: [
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                        children: "Genre: "
-                    }, void 0, false, {
-                        fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 22,
-                        columnNumber: 9
-                    }, undefined),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                        children: movie.Genre
-                    }, void 0, false, {
-                        fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 23,
-                        columnNumber: 9
-                    }, undefined)
-                ]
-            }, void 0, true, {
-                fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 21,
-                columnNumber: 7
-            }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                children: [
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                        children: "Director: "
-                    }, void 0, false, {
-                        fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 26,
-                        columnNumber: 9
-                    }, undefined),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                        children: movie.Director
-                    }, void 0, false, {
-                        fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 27,
-                        columnNumber: 9
-                    }, undefined)
-                ]
-            }, void 0, true, {
-                fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 25,
-                columnNumber: 7
-            }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                children: [
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                        children: "Description: "
-                    }, void 0, false, {
-                        fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 30,
-                        columnNumber: 9
-                    }, undefined),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                        children: movie.Description
-                    }, void 0, false, {
-                        fileName: "src/components/movie-view/movie-view.jsx",
-                        lineNumber: 31,
-                        columnNumber: 9
-                    }, undefined)
-                ]
-            }, void 0, true, {
-                fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 29,
-                columnNumber: 7
-            }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Link), {
-                to: `/`,
-                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                    className: "back-button",
-                    children: "Back"
-                }, void 0, false, {
-                    fileName: "src/components/movie-view/movie-view.jsx",
-                    lineNumber: 34,
-                    columnNumber: 9
-                }, undefined)
-            }, void 0, false, {
-                fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 33,
-                columnNumber: 7
-            }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _buttonDefault.default), {
-                variant: "outline-primary",
-                style: {
-                    cursor: "pointer"
-                },
-                onClick: ()=>onFavoriteToggle(movie._id),
-                children: movie.isFavorite ? "Remove from Favorites" : "Add to Favorites"
-            }, void 0, false, {
-                fileName: "src/components/movie-view/movie-view.jsx",
-                lineNumber: 36,
-                columnNumber: 7
+                lineNumber: 65,
+                columnNumber: 13
             }, undefined)
         ]
-    }, void 0, true, {
-        fileName: "src/components/movie-view/movie-view.jsx",
-        lineNumber: 13,
-        columnNumber: 5
-    }, undefined);
+    }, void 0, true);
 };
 _s(MovieView, "e2L2DPdRH1AShA7yIOCsYRlzvlI=", false, function() {
     return [
@@ -41403,10 +47571,6 @@ _s(MovieView, "e2L2DPdRH1AShA7yIOCsYRlzvlI=", false, function() {
     ];
 });
 _c = MovieView;
-MovieView.propTypes = {
-    movies: (0, _propTypesDefault.default).array.isRequired,
-    onFavoriteToggle: (0, _propTypesDefault.default).func.isRequired
-};
 var _c;
 $RefreshReg$(_c, "MovieView");
 
@@ -41415,7 +47579,7 @@ $RefreshReg$(_c, "MovieView");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react-router":"dbWyW","react-router-dom":"9xmpe","./movie-view.scss":"jnlR5","react-bootstrap/Button":"aPzUt","prop-types":"7wKI2"}],"jnlR5":[function() {},{}],"9YtA0":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react-router":"dbWyW","react-router-dom":"9xmpe","react-bootstrap":"3AD9A","../movie-card/movie-card":"bwuIu"}],"9YtA0":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$9fee = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -41541,7 +47705,7 @@ $RefreshReg$(_c, "LoginView");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react-bootstrap/Button":"aPzUt","react-bootstrap/Form":"iBZ80"}],"4OGiN":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-bootstrap/Button":"aPzUt","react-bootstrap/Form":"iBZ80","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"4OGiN":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$73d1 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -41719,7 +47883,7 @@ $RefreshReg$(_c, "SignupView");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react-bootstrap/Button":"aPzUt","react-bootstrap/Form":"iBZ80"}],"bsPVM":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-bootstrap/Button":"aPzUt","react-bootstrap/Form":"iBZ80","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"bsPVM":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$abf5 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -41741,7 +47905,7 @@ const NavigationBar = ({ user, onLoggedOut })=>{
                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Navbar).Brand, {
                     as: (0, _reactRouterDom.Link),
                     to: "/",
-                    children: "Movies App"
+                    children: "MyMovies"
                 }, void 0, false, {
                     fileName: "src/components/navigation-bar/navigation-bar.jsx",
                     lineNumber: 9,
@@ -41854,95 +48018,333 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ProfileView", ()=>ProfileView);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactRouterDom = require("react-router-dom");
 var _reactBootstrap = require("react-bootstrap");
-var _userInfo = require("./user-info");
-var _userInfoDefault = parcelHelpers.interopDefault(_userInfo);
-var _updateUser = require("./update-user");
-var _updateUserDefault = parcelHelpers.interopDefault(_updateUser);
-var _favoriteMoviesView = require("./favorite-movies-view");
-var _favoriteMoviesViewDefault = parcelHelpers.interopDefault(_favoriteMoviesView);
-var _profileViewScss = require("./profile-view.scss");
-const ProfileView = ({ user, setUser, favoriteMovieList })=>{
+var _movieCard = require("../movie-card/movie-card");
+var _reactBootstrapIcons = require("react-bootstrap-icons");
+var _moment = require("moment");
+var _momentDefault = parcelHelpers.interopDefault(_moment);
+var _s = $RefreshSig$();
+const ProfileView = ({ user, movies, setUser, removeFav, addFav })=>{
+    _s();
+    const [username, setUsername] = (0, _react.useState)(user.Username);
+    const [email, setEmail] = (0, _react.useState)(user.Email);
+    const [birthday, setBirthday] = (0, _react.useState)(user.Birthday);
+    // Navigate
+    const navigate = (0, _reactRouterDom.useNavigate)();
+    // Return list of favorite Movies
+    const favoriteMovieList = movies.filter((m)=>user.FavoriteMovies.includes(m._id));
+    // Token
+    const token = localStorage.getItem("token");
+    // Update user info
+    const handleUpdate = (event)=>{
+        // this prevents the default behavior of the form which is to reload the entire page
+        event.preventDefault();
+        const user = JSON.parse(localStorage.getItem("user"));
+        const data = {
+            Username: username,
+            Email: email,
+            Birthday: birthday
+        };
+        fetch(`https://movies-api-sqg3.onrender.com/users/update/${user.Username}`, {
+            method: "PUT",
+            body: JSON.stringify(data),
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            }
+        }).then(async (response)=>{
+            console.log(response);
+            if (response.ok) {
+                const updatedUser = await response.json();
+                localStorage.setItem("user", JSON.stringify(updatedUser));
+                setUser(updatedUser);
+                alert("Update was successful");
+            } else alert("Update failed");
+        }).catch((error)=>{
+            console.error("Error: ", error);
+        });
+    };
+    // Delete User
+    const handleDelete = ()=>{
+        fetch(`https://movies-api-sqg3.onrender.com/users/remove/${user.Username}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then((response)=>{
+            if (response.ok) {
+                setUser(null);
+                alert("User has been deleted");
+                localStorage.clear();
+                navigate("/"); // go back to home page
+            } else alert("Something went wrong.");
+        });
+    };
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Container), {
+        className: "my-5",
         children: [
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
-                        xs: 12,
-                        sm: 4,
+                        md: 4,
+                        className: "text-center text-md-start ms-3",
                         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card), {
                             children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Body, {
-                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _userInfoDefault.default), {
-                                    name: user.Username,
-                                    email: user.Email
-                                }, void 0, false, {
-                                    fileName: "src/components/profile-view/profile-view.jsx",
-                                    lineNumber: 15,
-                                    columnNumber: 15
-                                }, undefined)
-                            }, void 0, false, {
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Title, {
+                                        children: "My Profile"
+                                    }, void 0, false, {
+                                        fileName: "src/components/profile-view/profile-view.jsx",
+                                        lineNumber: 85,
+                                        columnNumber: 29
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrapIcons.PersonSquare), {
+                                        variant: "top",
+                                        color: "orange",
+                                        className: "my-4",
+                                        size: 180
+                                    }, void 0, false, {
+                                        fileName: "src/components/profile-view/profile-view.jsx",
+                                        lineNumber: 86,
+                                        columnNumber: 29
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Text, {
+                                        children: [
+                                            "Username:",
+                                            user.Username
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/profile-view.jsx",
+                                        lineNumber: 87,
+                                        columnNumber: 29
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Text, {
+                                        children: [
+                                            "Email: ",
+                                            user.Email
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/profile-view.jsx",
+                                        lineNumber: 88,
+                                        columnNumber: 29
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Text, {
+                                        children: [
+                                            "Birthday: ",
+                                            (0, _momentDefault.default)(user.Birthday).utc().format("YYYY-MM-DD")
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/profile-view/profile-view.jsx",
+                                        lineNumber: 89,
+                                        columnNumber: 29
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
                                 fileName: "src/components/profile-view/profile-view.jsx",
-                                lineNumber: 14,
-                                columnNumber: 13
+                                lineNumber: 84,
+                                columnNumber: 25
                             }, undefined)
                         }, void 0, false, {
                             fileName: "src/components/profile-view/profile-view.jsx",
-                            lineNumber: 13,
-                            columnNumber: 11
+                            lineNumber: 83,
+                            columnNumber: 21
                         }, undefined)
                     }, void 0, false, {
                         fileName: "src/components/profile-view/profile-view.jsx",
-                        lineNumber: 12,
-                        columnNumber: 9
+                        lineNumber: 82,
+                        columnNumber: 17
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
-                        xs: 12,
-                        sm: 8,
-                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card), {
-                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Body, {
-                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _updateUserDefault.default), {
-                                    user: user,
-                                    setUser: setUser
+                        md: 7,
+                        className: "mt-5",
+                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form), {
+                            onSubmit: handleUpdate,
+                            children: [
+                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Group, {
+                                    controlId: "formUsername",
+                                    children: [
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Label, {
+                                            children: "Username:"
+                                        }, void 0, false, {
+                                            fileName: "src/components/profile-view/profile-view.jsx",
+                                            lineNumber: 96,
+                                            columnNumber: 29
+                                        }, undefined),
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                            className: "mb-3",
+                                            type: "text",
+                                            value: username,
+                                            onChange: (e)=>setUsername(e.target.value),
+                                            minLength: "5"
+                                        }, void 0, false, {
+                                            fileName: "src/components/profile-view/profile-view.jsx",
+                                            lineNumber: 97,
+                                            columnNumber: 29
+                                        }, undefined)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "src/components/profile-view/profile-view.jsx",
+                                    lineNumber: 95,
+                                    columnNumber: 25
+                                }, undefined),
+                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Group, {
+                                    controlId: "formEmail",
+                                    children: [
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Label, {
+                                            children: "Email:"
+                                        }, void 0, false, {
+                                            fileName: "src/components/profile-view/profile-view.jsx",
+                                            lineNumber: 106,
+                                            columnNumber: 29
+                                        }, undefined),
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                            className: "mb-3",
+                                            type: "email",
+                                            value: email,
+                                            onChange: (e)=>setEmail(e.target.value)
+                                        }, void 0, false, {
+                                            fileName: "src/components/profile-view/profile-view.jsx",
+                                            lineNumber: 107,
+                                            columnNumber: 29
+                                        }, undefined)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "src/components/profile-view/profile-view.jsx",
+                                    lineNumber: 105,
+                                    columnNumber: 25
+                                }, undefined),
+                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Group, {
+                                    controlId: "formBirthday",
+                                    children: [
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Label, {
+                                            children: "Birthday:"
+                                        }, void 0, false, {
+                                            fileName: "src/components/profile-view/profile-view.jsx",
+                                            lineNumber: 115,
+                                            columnNumber: 29
+                                        }, undefined),
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Control, {
+                                            className: "mb-2",
+                                            type: "date",
+                                            value: birthday,
+                                            onChange: (e)=>setBirthday(e.target.value)
+                                        }, void 0, false, {
+                                            fileName: "src/components/profile-view/profile-view.jsx",
+                                            lineNumber: 116,
+                                            columnNumber: 29
+                                        }, undefined)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "src/components/profile-view/profile-view.jsx",
+                                    lineNumber: 114,
+                                    columnNumber: 25
+                                }, undefined),
+                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                                    type: "submit",
+                                    onClick: handleUpdate,
+                                    className: "mt-3 me-2",
+                                    children: "Update"
                                 }, void 0, false, {
                                     fileName: "src/components/profile-view/profile-view.jsx",
-                                    lineNumber: 22,
-                                    columnNumber: 15
+                                    lineNumber: 123,
+                                    columnNumber: 25
+                                }, undefined),
+                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
+                                    onClick: handleDelete,
+                                    className: "mt-3 bg-danger border-danger text-white",
+                                    children: "Delete User"
+                                }, void 0, false, {
+                                    fileName: "src/components/profile-view/profile-view.jsx",
+                                    lineNumber: 124,
+                                    columnNumber: 25
                                 }, undefined)
-                            }, void 0, false, {
-                                fileName: "src/components/profile-view/profile-view.jsx",
-                                lineNumber: 21,
-                                columnNumber: 13
-                            }, undefined)
-                        }, void 0, false, {
+                            ]
+                        }, void 0, true, {
                             fileName: "src/components/profile-view/profile-view.jsx",
-                            lineNumber: 20,
-                            columnNumber: 11
+                            lineNumber: 94,
+                            columnNumber: 21
                         }, undefined)
                     }, void 0, false, {
                         fileName: "src/components/profile-view/profile-view.jsx",
-                        lineNumber: 19,
-                        columnNumber: 9
+                        lineNumber: 93,
+                        columnNumber: 17
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/profile-view/profile-view.jsx",
-                lineNumber: 11,
-                columnNumber: 7
+                lineNumber: 81,
+                columnNumber: 13
             }, undefined),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _favoriteMoviesViewDefault.default), {
-                favoriteMovieList: favoriteMovieList
-            }, void 0, false, {
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
+                children: [
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h2", {
+                        className: "mt-5 text-center text-md-start",
+                        children: "Favorite Movies"
+                    }, void 0, false, {
+                        fileName: "src/components/profile-view/profile-view.jsx",
+                        lineNumber: 129,
+                        columnNumber: 17
+                    }, undefined),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
+                        className: "justify-content-center",
+                        children: favoriteMovieList?.length !== 0 ? favoriteMovieList?.map((movie)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                                sm: 7,
+                                md: 5,
+                                lg: 3,
+                                xl: 2,
+                                className: "mx-2 mt-2 mb-5 col-6 similar-movies-img",
+                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _movieCard.MovieCard), {
+                                    movie: movie,
+                                    removeFav: removeFav,
+                                    addFav: addFav,
+                                    isFavorite: user.FavoriteMovies.includes(movie._id)
+                                }, void 0, false, {
+                                    fileName: "src/components/profile-view/profile-view.jsx",
+                                    lineNumber: 135,
+                                    columnNumber: 29
+                                }, undefined)
+                            }, movie._id, false, {
+                                fileName: "src/components/profile-view/profile-view.jsx",
+                                lineNumber: 134,
+                                columnNumber: 25
+                            }, undefined)) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
+                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
+                                children: "There are no favorites Movies"
+                            }, void 0, false, {
+                                fileName: "src/components/profile-view/profile-view.jsx",
+                                lineNumber: 144,
+                                columnNumber: 21
+                            }, undefined)
+                        }, void 0, false, {
+                            fileName: "src/components/profile-view/profile-view.jsx",
+                            lineNumber: 143,
+                            columnNumber: 23
+                        }, undefined)
+                    }, void 0, false, {
+                        fileName: "src/components/profile-view/profile-view.jsx",
+                        lineNumber: 130,
+                        columnNumber: 17
+                    }, undefined)
+                ]
+            }, void 0, true, {
                 fileName: "src/components/profile-view/profile-view.jsx",
-                lineNumber: 27,
-                columnNumber: 7
+                lineNumber: 128,
+                columnNumber: 13
             }, undefined)
         ]
     }, void 0, true, {
         fileName: "src/components/profile-view/profile-view.jsx",
-        lineNumber: 10,
-        columnNumber: 5
+        lineNumber: 80,
+        columnNumber: 9
     }, undefined);
 };
+_s(ProfileView, "uwhfEsjShWR87nejg+t5pOrY5CA=", false, function() {
+    return [
+        (0, _reactRouterDom.useNavigate)
+    ];
+});
 _c = ProfileView;
 var _c;
 $RefreshReg$(_c, "ProfileView");
@@ -41952,4754 +48354,3761 @@ $RefreshReg$(_c, "ProfileView");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","./user-info":"66eot","./update-user":"2SBwg","./favorite-movies-view":"cxlUu","./profile-view.scss":"eyKYH"}],"66eot":[function(require,module,exports) {
-var $parcel$ReactRefreshHelpers$1330 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-var prevRefreshReg = window.$RefreshReg$;
-var prevRefreshSig = window.$RefreshSig$;
-$parcel$ReactRefreshHelpers$1330.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-var _react = require("react");
-var _reactDefault = parcelHelpers.interopDefault(_react);
-function UserInfo({ email, name }) {
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
-        children: [
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h4", {
-                children: "Personal Information"
-            }, void 0, false, {
-                fileName: "src/components/profile-view/user-info.jsx",
-                lineNumber: 6,
-                columnNumber: 5
-            }, this),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
-                children: [
-                    "User: ",
-                    name
-                ]
-            }, void 0, true, {
-                fileName: "src/components/profile-view/user-info.jsx",
-                lineNumber: 7,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
-                children: [
-                    "Email: ",
-                    email
-                ]
-            }, void 0, true, {
-                fileName: "src/components/profile-view/user-info.jsx",
-                lineNumber: 8,
-                columnNumber: 7
-            }, this)
-        ]
-    }, void 0, true);
-}
-_c = UserInfo;
-exports.default = UserInfo;
-var _c;
-$RefreshReg$(_c, "UserInfo");
-
-  $parcel$ReactRefreshHelpers$1330.postlude(module);
-} finally {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"2SBwg":[function(require,module,exports) {
-var $parcel$ReactRefreshHelpers$95d1 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-var prevRefreshReg = window.$RefreshReg$;
-var prevRefreshSig = window.$RefreshSig$;
-$parcel$ReactRefreshHelpers$95d1.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-var _react = require("react");
-var _reactBootstrap = require("react-bootstrap");
-var _form = require("react-bootstrap/Form");
-var _formDefault = parcelHelpers.interopDefault(_form);
-var _reactRouterDom = require("react-router-dom");
-var _s = $RefreshSig$();
-function UserUpdate({ user, onUserUpdate, onDeregister }) {
-    _s();
-    const [newUsername, setNewUsername] = (0, _react.useState)(user.Username);
-    const [newPassword, setNewPassword] = (0, _react.useState)("");
-    const [newEmail, setNewEmail] = (0, _react.useState)(user.Email);
-    const [newDOB, setNewDOB] = (0, _react.useState)(user.Birthday);
-    const handleUpdate = ()=>{
-        const updatedUser = {
-            Username: newUsername,
-            Password: newPassword,
-            Email: newEmail,
-            Birthday: newDOB
-        };
-        onUserUpdate(updatedUser);
-    };
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
-        children: [
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default), {
-                children: [
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h2", {
-                        children: "User Profile"
-                    }, void 0, false, {
-                        fileName: "src/components/profile-view/update-user.jsx",
-                        lineNumber: 25,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Group, {
-                        controlId: "formUsername",
-                        children: [
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Label, {
-                                children: "Username:"
-                            }, void 0, false, {
-                                fileName: "src/components/profile-view/update-user.jsx",
-                                lineNumber: 27,
-                                columnNumber: 9
-                            }, this),
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Control, {
-                                type: "text",
-                                value: newUsername,
-                                onChange: (e)=>setNewUsername(e.target.value),
-                                required: true
-                            }, void 0, false, {
-                                fileName: "src/components/profile-view/update-user.jsx",
-                                lineNumber: 28,
-                                columnNumber: 9
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "src/components/profile-view/update-user.jsx",
-                        lineNumber: 26,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Group, {
-                        controlId: "formPassword",
-                        children: [
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Label, {
-                                children: "New Password:"
-                            }, void 0, false, {
-                                fileName: "src/components/profile-view/update-user.jsx",
-                                lineNumber: 36,
-                                columnNumber: 9
-                            }, this),
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Control, {
-                                type: "password",
-                                value: newPassword,
-                                onChange: (e)=>setNewPassword(e.target.value)
-                            }, void 0, false, {
-                                fileName: "src/components/profile-view/update-user.jsx",
-                                lineNumber: 37,
-                                columnNumber: 9
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "src/components/profile-view/update-user.jsx",
-                        lineNumber: 35,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Group, {
-                        controlId: "formEmail",
-                        children: [
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Label, {
-                                children: "Email:"
-                            }, void 0, false, {
-                                fileName: "src/components/profile-view/update-user.jsx",
-                                lineNumber: 44,
-                                columnNumber: 9
-                            }, this),
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Control, {
-                                type: "email",
-                                value: newEmail,
-                                onChange: (e)=>setNewEmail(e.target.value),
-                                required: true
-                            }, void 0, false, {
-                                fileName: "src/components/profile-view/update-user.jsx",
-                                lineNumber: 45,
-                                columnNumber: 9
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "src/components/profile-view/update-user.jsx",
-                        lineNumber: 43,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Group, {
-                        controlId: "formDOB",
-                        children: [
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Label, {
-                                children: "Date of Birth:"
-                            }, void 0, false, {
-                                fileName: "src/components/profile-view/update-user.jsx",
-                                lineNumber: 53,
-                                columnNumber: 9
-                            }, this),
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _formDefault.default).Control, {
-                                type: "date",
-                                value: newDOB,
-                                onChange: (e)=>setNewDOB(e.target.value),
-                                required: true
-                            }, void 0, false, {
-                                fileName: "src/components/profile-view/update-user.jsx",
-                                lineNumber: 54,
-                                columnNumber: 9
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "src/components/profile-view/update-user.jsx",
-                        lineNumber: 52,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Link), {
-                        to: "/profile/favorites",
-                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
-                            variant: "primary",
-                            children: "View Favorite Movies"
-                        }, void 0, false, {
-                            fileName: "src/components/profile-view/update-user.jsx",
-                            lineNumber: 62,
-                            columnNumber: 9
-                        }, this)
-                    }, void 0, false, {
-                        fileName: "src/components/profile-view/update-user.jsx",
-                        lineNumber: 61,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
-                        variant: "primary",
-                        onClick: handleUpdate,
-                        children: "Update Profile"
-                    }, void 0, false, {
-                        fileName: "src/components/profile-view/update-user.jsx",
-                        lineNumber: 64,
-                        columnNumber: 9
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "src/components/profile-view/update-user.jsx",
-                lineNumber: 24,
-                columnNumber: 9
-            }, this),
-            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
-                variant: "danger",
-                onClick: onDeregister,
-                children: "Deregister"
-            }, void 0, false, {
-                fileName: "src/components/profile-view/update-user.jsx",
-                lineNumber: 68,
-                columnNumber: 9
-            }, this)
-        ]
-    }, void 0, true);
-}
-_s(UserUpdate, "zN6WSQB7NCjFWJElkki/e2Wqqt0=");
-_c = UserUpdate;
-exports.default = UserUpdate;
-var _c;
-$RefreshReg$(_c, "UserUpdate");
-
-  $parcel$ReactRefreshHelpers$95d1.postlude(module);
-} finally {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-bootstrap":"3AD9A","react-bootstrap/Form":"iBZ80","react-router-dom":"9xmpe","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"cxlUu":[function(require,module,exports) {
-var $parcel$ReactRefreshHelpers$ea69 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-var prevRefreshReg = window.$RefreshReg$;
-var prevRefreshSig = window.$RefreshSig$;
-$parcel$ReactRefreshHelpers$ea69.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-var _reactBootstrap = require("react-bootstrap");
-var _reactRouterDom = require("react-router-dom");
-var _axios = require("axios");
-var _axiosDefault = parcelHelpers.interopDefault(_axios);
-var _profileViewScss = require("./profile-view.scss");
-const ProfileFavoritesView = ({ favoriteMovieList })=>{
-    const removeFav = (id)=>{
-        let token = localStorage.getItem("token");
-        let url = `https://movies-api-sqg3.onrender.com/users/update/${localStorage.getItem("user")}/movies/${id}`;
-        (0, _axiosDefault.default).delete(url, {
-            headers: {
-                Authorization: `Bearer ${token}`
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-router-dom":"9xmpe","react-bootstrap":"3AD9A","../movie-card/movie-card":"bwuIu","react-bootstrap-icons":"c9Gza","moment":"jwcsj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"jwcsj":[function(require,module,exports) {
+//! moment.js
+//! version : 2.30.1
+//! authors : Tim Wood, Iskren Chernev, Moment.js contributors
+//! license : MIT
+//! momentjs.com
+(function(global, factory) {
+    module.exports = factory();
+})(this, function() {
+    "use strict";
+    var hookCallback;
+    function hooks() {
+        return hookCallback.apply(null, arguments);
+    }
+    // This is done to register the method called with moment()
+    // without creating circular dependencies.
+    function setHookCallback(callback) {
+        hookCallback = callback;
+    }
+    function isArray(input) {
+        return input instanceof Array || Object.prototype.toString.call(input) === "[object Array]";
+    }
+    function isObject(input) {
+        // IE8 will treat undefined and null as object if it wasn't for
+        // input != null
+        return input != null && Object.prototype.toString.call(input) === "[object Object]";
+    }
+    function hasOwnProp(a, b) {
+        return Object.prototype.hasOwnProperty.call(a, b);
+    }
+    function isObjectEmpty(obj) {
+        if (Object.getOwnPropertyNames) return Object.getOwnPropertyNames(obj).length === 0;
+        else {
+            var k;
+            for(k in obj){
+                if (hasOwnProp(obj, k)) return false;
             }
-        });
-    };
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card), {
-        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Card).Body, {
-            children: [
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
-                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
-                        xs: 12,
-                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h4", {
-                            children: "Favorite Movies"
-                        }, void 0, false, {
-                            fileName: "src/components/profile-view/favorite-movies-view.jsx",
-                            lineNumber: 20,
-                            columnNumber: 11
-                        }, undefined)
-                    }, void 0, false, {
-                        fileName: "src/components/profile-view/favorite-movies-view.jsx",
-                        lineNumber: 19,
-                        columnNumber: 11
-                    }, undefined)
-                }, void 0, false, {
-                    fileName: "src/components/profile-view/favorite-movies-view.jsx",
-                    lineNumber: 18,
-                    columnNumber: 9
-                }, undefined),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
-                    children: favoriteMovieList && favoriteMovieList.map(({ ImagePath, Title, _id })=>{
-                        return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Col), {
-                            xs: 12,
-                            md: 6,
-                            lg: 3,
-                            className: "fav-movie",
-                            children: [
-                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Figure), {
-                                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Link), {
-                                        to: `/movies/${_id}`,
-                                        children: [
-                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Figure).Image, {
-                                                src: ImagePath,
-                                                alt: Title
-                                            }, void 0, false, {
-                                                fileName: "src/components/profile-view/favorite-movies-view.jsx",
-                                                lineNumber: 29,
-                                                columnNumber: 21
-                                            }, undefined),
-                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Figure).Caption, {
-                                                children: [
-                                                    " ",
-                                                    Title,
-                                                    " "
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "src/components/profile-view/favorite-movies-view.jsx",
-                                                lineNumber: 30,
-                                                columnNumber: 21
-                                            }, undefined)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "src/components/profile-view/favorite-movies-view.jsx",
-                                        lineNumber: 28,
-                                        columnNumber: 19
-                                    }, undefined)
-                                }, void 0, false, {
-                                    fileName: "src/components/profile-view/favorite-movies-view.jsx",
-                                    lineNumber: 27,
-                                    columnNumber: 17
-                                }, undefined),
-                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Button), {
-                                    variant: "secondary",
-                                    onClick: ()=>removeFav(_id),
-                                    children: "Remove"
-                                }, void 0, false, {
-                                    fileName: "src/components/profile-view/favorite-movies-view.jsx",
-                                    lineNumber: 33,
-                                    columnNumber: 17
-                                }, undefined)
-                            ]
-                        }, _id, true, {
-                            fileName: "src/components/profile-view/favorite-movies-view.jsx",
-                            lineNumber: 26,
-                            columnNumber: 15
-                        }, undefined);
-                    })
-                }, void 0, false, {
-                    fileName: "src/components/profile-view/favorite-movies-view.jsx",
-                    lineNumber: 23,
-                    columnNumber: 11
-                }, undefined)
-            ]
-        }, void 0, true, {
-            fileName: "src/components/profile-view/favorite-movies-view.jsx",
-            lineNumber: 17,
-            columnNumber: 7
-        }, undefined)
-    }, void 0, false, {
-        fileName: "src/components/profile-view/favorite-movies-view.jsx",
-        lineNumber: 16,
-        columnNumber: 5
-    }, undefined);
-};
-_c = ProfileFavoritesView;
-exports.default = ProfileFavoritesView;
-var _c;
-$RefreshReg$(_c, "ProfileFavoritesView");
-
-  $parcel$ReactRefreshHelpers$ea69.postlude(module);
-} finally {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"iTorj","react-bootstrap":"3AD9A","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react-router-dom":"9xmpe","axios":"1Bn4t","./profile-view.scss":"eyKYH"}],"1Bn4t":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>(0, _axiosJsDefault.default));
-parcelHelpers.export(exports, "Axios", ()=>Axios);
-parcelHelpers.export(exports, "AxiosError", ()=>AxiosError);
-parcelHelpers.export(exports, "CanceledError", ()=>CanceledError);
-parcelHelpers.export(exports, "isCancel", ()=>isCancel);
-parcelHelpers.export(exports, "CancelToken", ()=>CancelToken);
-parcelHelpers.export(exports, "VERSION", ()=>VERSION);
-parcelHelpers.export(exports, "all", ()=>all);
-parcelHelpers.export(exports, "Cancel", ()=>Cancel);
-parcelHelpers.export(exports, "isAxiosError", ()=>isAxiosError);
-parcelHelpers.export(exports, "spread", ()=>spread);
-parcelHelpers.export(exports, "toFormData", ()=>toFormData);
-parcelHelpers.export(exports, "AxiosHeaders", ()=>AxiosHeaders);
-parcelHelpers.export(exports, "HttpStatusCode", ()=>HttpStatusCode);
-parcelHelpers.export(exports, "formToJSON", ()=>formToJSON);
-parcelHelpers.export(exports, "getAdapter", ()=>getAdapter);
-parcelHelpers.export(exports, "mergeConfig", ()=>mergeConfig);
-var _axiosJs = require("./lib/axios.js");
-var _axiosJsDefault = parcelHelpers.interopDefault(_axiosJs);
-// This module is intended to unwrap Axios default export as named.
-// Keep top-level export same with static properties
-// so that it can keep same with es module or cjs
-const { Axios, AxiosError, CanceledError, isCancel, CancelToken, VERSION, all, Cancel, isAxiosError, spread, toFormData, AxiosHeaders, HttpStatusCode, formToJSON, getAdapter, mergeConfig } = (0, _axiosJsDefault.default);
-
-},{"./lib/axios.js":"eSst0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eSst0":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("./utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _bindJs = require("./helpers/bind.js");
-var _bindJsDefault = parcelHelpers.interopDefault(_bindJs);
-var _axiosJs = require("./core/Axios.js");
-var _axiosJsDefault = parcelHelpers.interopDefault(_axiosJs);
-var _mergeConfigJs = require("./core/mergeConfig.js");
-var _mergeConfigJsDefault = parcelHelpers.interopDefault(_mergeConfigJs);
-var _indexJs = require("./defaults/index.js");
-var _indexJsDefault = parcelHelpers.interopDefault(_indexJs);
-var _formDataToJSONJs = require("./helpers/formDataToJSON.js");
-var _formDataToJSONJsDefault = parcelHelpers.interopDefault(_formDataToJSONJs);
-var _canceledErrorJs = require("./cancel/CanceledError.js");
-var _canceledErrorJsDefault = parcelHelpers.interopDefault(_canceledErrorJs);
-var _cancelTokenJs = require("./cancel/CancelToken.js");
-var _cancelTokenJsDefault = parcelHelpers.interopDefault(_cancelTokenJs);
-var _isCancelJs = require("./cancel/isCancel.js");
-var _isCancelJsDefault = parcelHelpers.interopDefault(_isCancelJs);
-var _dataJs = require("./env/data.js");
-var _toFormDataJs = require("./helpers/toFormData.js");
-var _toFormDataJsDefault = parcelHelpers.interopDefault(_toFormDataJs);
-var _axiosErrorJs = require("./core/AxiosError.js");
-var _axiosErrorJsDefault = parcelHelpers.interopDefault(_axiosErrorJs);
-var _spreadJs = require("./helpers/spread.js");
-var _spreadJsDefault = parcelHelpers.interopDefault(_spreadJs);
-var _isAxiosErrorJs = require("./helpers/isAxiosError.js");
-var _isAxiosErrorJsDefault = parcelHelpers.interopDefault(_isAxiosErrorJs);
-var _axiosHeadersJs = require("./core/AxiosHeaders.js");
-var _axiosHeadersJsDefault = parcelHelpers.interopDefault(_axiosHeadersJs);
-var _adaptersJs = require("./adapters/adapters.js");
-var _adaptersJsDefault = parcelHelpers.interopDefault(_adaptersJs);
-var _httpStatusCodeJs = require("./helpers/HttpStatusCode.js");
-var _httpStatusCodeJsDefault = parcelHelpers.interopDefault(_httpStatusCodeJs);
-"use strict";
-/**
- * Create an instance of Axios
- *
- * @param {Object} defaultConfig The default config for the instance
- *
- * @returns {Axios} A new instance of Axios
- */ function createInstance(defaultConfig) {
-    const context = new (0, _axiosJsDefault.default)(defaultConfig);
-    const instance = (0, _bindJsDefault.default)((0, _axiosJsDefault.default).prototype.request, context);
-    // Copy axios.prototype to instance
-    (0, _utilsJsDefault.default).extend(instance, (0, _axiosJsDefault.default).prototype, context, {
-        allOwnKeys: true
-    });
-    // Copy context to instance
-    (0, _utilsJsDefault.default).extend(instance, context, null, {
-        allOwnKeys: true
-    });
-    // Factory for creating new instances
-    instance.create = function create(instanceConfig) {
-        return createInstance((0, _mergeConfigJsDefault.default)(defaultConfig, instanceConfig));
-    };
-    return instance;
-}
-// Create the default instance to be exported
-const axios = createInstance((0, _indexJsDefault.default));
-// Expose Axios class to allow class inheritance
-axios.Axios = (0, _axiosJsDefault.default);
-// Expose Cancel & CancelToken
-axios.CanceledError = (0, _canceledErrorJsDefault.default);
-axios.CancelToken = (0, _cancelTokenJsDefault.default);
-axios.isCancel = (0, _isCancelJsDefault.default);
-axios.VERSION = (0, _dataJs.VERSION);
-axios.toFormData = (0, _toFormDataJsDefault.default);
-// Expose AxiosError class
-axios.AxiosError = (0, _axiosErrorJsDefault.default);
-// alias for CanceledError for backward compatibility
-axios.Cancel = axios.CanceledError;
-// Expose all/spread
-axios.all = function all(promises) {
-    return Promise.all(promises);
-};
-axios.spread = (0, _spreadJsDefault.default);
-// Expose isAxiosError
-axios.isAxiosError = (0, _isAxiosErrorJsDefault.default);
-// Expose mergeConfig
-axios.mergeConfig = (0, _mergeConfigJsDefault.default);
-axios.AxiosHeaders = (0, _axiosHeadersJsDefault.default);
-axios.formToJSON = (thing)=>(0, _formDataToJSONJsDefault.default)((0, _utilsJsDefault.default).isHTMLForm(thing) ? new FormData(thing) : thing);
-axios.getAdapter = (0, _adaptersJsDefault.default).getAdapter;
-axios.HttpStatusCode = (0, _httpStatusCodeJsDefault.default);
-axios.default = axios;
-// this module should only have a default export
-exports.default = axios;
-
-},{"./utils.js":"k4bLS","./helpers/bind.js":"8lhQ4","./core/Axios.js":"24VCG","./core/mergeConfig.js":"1s43p","./defaults/index.js":"4OxOl","./helpers/formDataToJSON.js":"7lCGj","./cancel/CanceledError.js":"brm73","./cancel/CancelToken.js":"lVwzz","./cancel/isCancel.js":"dqDry","./env/data.js":"lo7Yk","./helpers/toFormData.js":"bQGt0","./core/AxiosError.js":"3ENKs","./helpers/spread.js":"3a07o","./helpers/isAxiosError.js":"h2Ai5","./core/AxiosHeaders.js":"fYuyb","./adapters/adapters.js":"fYQVc","./helpers/HttpStatusCode.js":"hhjX6","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"k4bLS":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _bindJs = require("./helpers/bind.js");
-var _bindJsDefault = parcelHelpers.interopDefault(_bindJs);
-var global = arguments[3];
-"use strict";
-// utils is a library of generic helper functions non-specific to axios
-const { toString } = Object.prototype;
-const { getPrototypeOf } = Object;
-const kindOf = ((cache)=>(thing)=>{
-        const str = toString.call(thing);
-        return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
-    })(Object.create(null));
-const kindOfTest = (type)=>{
-    type = type.toLowerCase();
-    return (thing)=>kindOf(thing) === type;
-};
-const typeOfTest = (type)=>(thing)=>typeof thing === type;
-/**
- * Determine if a value is an Array
- *
- * @param {Object} val The value to test
- *
- * @returns {boolean} True if value is an Array, otherwise false
- */ const { isArray } = Array;
-/**
- * Determine if a value is undefined
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if the value is undefined, otherwise false
- */ const isUndefined = typeOfTest("undefined");
-/**
- * Determine if a value is a Buffer
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a Buffer, otherwise false
- */ function isBuffer(val) {
-    return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor) && isFunction(val.constructor.isBuffer) && val.constructor.isBuffer(val);
-}
-/**
- * Determine if a value is an ArrayBuffer
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is an ArrayBuffer, otherwise false
- */ const isArrayBuffer = kindOfTest("ArrayBuffer");
-/**
- * Determine if a value is a view on an ArrayBuffer
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a view on an ArrayBuffer, otherwise false
- */ function isArrayBufferView(val) {
-    let result;
-    if (typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView) result = ArrayBuffer.isView(val);
-    else result = val && val.buffer && isArrayBuffer(val.buffer);
-    return result;
-}
-/**
- * Determine if a value is a String
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a String, otherwise false
- */ const isString = typeOfTest("string");
-/**
- * Determine if a value is a Function
- *
- * @param {*} val The value to test
- * @returns {boolean} True if value is a Function, otherwise false
- */ const isFunction = typeOfTest("function");
-/**
- * Determine if a value is a Number
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a Number, otherwise false
- */ const isNumber = typeOfTest("number");
-/**
- * Determine if a value is an Object
- *
- * @param {*} thing The value to test
- *
- * @returns {boolean} True if value is an Object, otherwise false
- */ const isObject = (thing)=>thing !== null && typeof thing === "object";
-/**
- * Determine if a value is a Boolean
- *
- * @param {*} thing The value to test
- * @returns {boolean} True if value is a Boolean, otherwise false
- */ const isBoolean = (thing)=>thing === true || thing === false;
-/**
- * Determine if a value is a plain Object
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a plain Object, otherwise false
- */ const isPlainObject = (val)=>{
-    if (kindOf(val) !== "object") return false;
-    const prototype = getPrototypeOf(val);
-    return (prototype === null || prototype === Object.prototype || Object.getPrototypeOf(prototype) === null) && !(Symbol.toStringTag in val) && !(Symbol.iterator in val);
-};
-/**
- * Determine if a value is a Date
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a Date, otherwise false
- */ const isDate = kindOfTest("Date");
-/**
- * Determine if a value is a File
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a File, otherwise false
- */ const isFile = kindOfTest("File");
-/**
- * Determine if a value is a Blob
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a Blob, otherwise false
- */ const isBlob = kindOfTest("Blob");
-/**
- * Determine if a value is a FileList
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a File, otherwise false
- */ const isFileList = kindOfTest("FileList");
-/**
- * Determine if a value is a Stream
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a Stream, otherwise false
- */ const isStream = (val)=>isObject(val) && isFunction(val.pipe);
-/**
- * Determine if a value is a FormData
- *
- * @param {*} thing The value to test
- *
- * @returns {boolean} True if value is an FormData, otherwise false
- */ const isFormData = (thing)=>{
-    let kind;
-    return thing && (typeof FormData === "function" && thing instanceof FormData || isFunction(thing.append) && ((kind = kindOf(thing)) === "formdata" || // detect form-data instance
-    kind === "object" && isFunction(thing.toString) && thing.toString() === "[object FormData]"));
-};
-/**
- * Determine if a value is a URLSearchParams object
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a URLSearchParams object, otherwise false
- */ const isURLSearchParams = kindOfTest("URLSearchParams");
-/**
- * Trim excess whitespace off the beginning and end of a string
- *
- * @param {String} str The String to trim
- *
- * @returns {String} The String freed of excess whitespace
- */ const trim = (str)=>str.trim ? str.trim() : str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
-/**
- * Iterate over an Array or an Object invoking a function for each item.
- *
- * If `obj` is an Array callback will be called passing
- * the value, index, and complete array for each item.
- *
- * If 'obj' is an Object callback will be called passing
- * the value, key, and complete object for each property.
- *
- * @param {Object|Array} obj The object to iterate
- * @param {Function} fn The callback to invoke for each item
- *
- * @param {Boolean} [allOwnKeys = false]
- * @returns {any}
- */ function forEach(obj, fn, { allOwnKeys = false } = {}) {
-    // Don't bother if no value provided
-    if (obj === null || typeof obj === "undefined") return;
-    let i;
-    let l;
-    // Force an array if not already something iterable
-    if (typeof obj !== "object") /*eslint no-param-reassign:0*/ obj = [
-        obj
-    ];
-    if (isArray(obj)) // Iterate over array values
-    for(i = 0, l = obj.length; i < l; i++)fn.call(null, obj[i], i, obj);
-    else {
-        // Iterate over object keys
-        const keys = allOwnKeys ? Object.getOwnPropertyNames(obj) : Object.keys(obj);
-        const len = keys.length;
-        let key;
+            return true;
+        }
+    }
+    function isUndefined(input) {
+        return input === void 0;
+    }
+    function isNumber(input) {
+        return typeof input === "number" || Object.prototype.toString.call(input) === "[object Number]";
+    }
+    function isDate(input) {
+        return input instanceof Date || Object.prototype.toString.call(input) === "[object Date]";
+    }
+    function map(arr, fn) {
+        var res = [], i, arrLen = arr.length;
+        for(i = 0; i < arrLen; ++i)res.push(fn(arr[i], i));
+        return res;
+    }
+    function extend(a, b) {
+        for(var i in b)if (hasOwnProp(b, i)) a[i] = b[i];
+        if (hasOwnProp(b, "toString")) a.toString = b.toString;
+        if (hasOwnProp(b, "valueOf")) a.valueOf = b.valueOf;
+        return a;
+    }
+    function createUTC(input, format, locale, strict) {
+        return createLocalOrUTC(input, format, locale, strict, true).utc();
+    }
+    function defaultParsingFlags() {
+        // We need to deep clone this object.
+        return {
+            empty: false,
+            unusedTokens: [],
+            unusedInput: [],
+            overflow: -2,
+            charsLeftOver: 0,
+            nullInput: false,
+            invalidEra: null,
+            invalidMonth: null,
+            invalidFormat: false,
+            userInvalidated: false,
+            iso: false,
+            parsedDateParts: [],
+            era: null,
+            meridiem: null,
+            rfc2822: false,
+            weekdayMismatch: false
+        };
+    }
+    function getParsingFlags(m) {
+        if (m._pf == null) m._pf = defaultParsingFlags();
+        return m._pf;
+    }
+    var some;
+    if (Array.prototype.some) some = Array.prototype.some;
+    else some = function(fun) {
+        var t = Object(this), len = t.length >>> 0, i;
         for(i = 0; i < len; i++){
-            key = keys[i];
-            fn.call(null, obj[key], key, obj);
+            if (i in t && fun.call(this, t[i], i, t)) return true;
+        }
+        return false;
+    };
+    function isValid(m) {
+        var flags = null, parsedParts = false, isNowValid = m._d && !isNaN(m._d.getTime());
+        if (isNowValid) {
+            flags = getParsingFlags(m);
+            parsedParts = some.call(flags.parsedDateParts, function(i) {
+                return i != null;
+            });
+            isNowValid = flags.overflow < 0 && !flags.empty && !flags.invalidEra && !flags.invalidMonth && !flags.invalidWeekday && !flags.weekdayMismatch && !flags.nullInput && !flags.invalidFormat && !flags.userInvalidated && (!flags.meridiem || flags.meridiem && parsedParts);
+            if (m._strict) isNowValid = isNowValid && flags.charsLeftOver === 0 && flags.unusedTokens.length === 0 && flags.bigHour === undefined;
+        }
+        if (Object.isFrozen == null || !Object.isFrozen(m)) m._isValid = isNowValid;
+        else return isNowValid;
+        return m._isValid;
+    }
+    function createInvalid(flags) {
+        var m = createUTC(NaN);
+        if (flags != null) extend(getParsingFlags(m), flags);
+        else getParsingFlags(m).userInvalidated = true;
+        return m;
+    }
+    // Plugins that add properties should also add the key here (null value),
+    // so we can properly clone ourselves.
+    var momentProperties = hooks.momentProperties = [], updateInProgress = false;
+    function copyConfig(to, from) {
+        var i, prop, val, momentPropertiesLen = momentProperties.length;
+        if (!isUndefined(from._isAMomentObject)) to._isAMomentObject = from._isAMomentObject;
+        if (!isUndefined(from._i)) to._i = from._i;
+        if (!isUndefined(from._f)) to._f = from._f;
+        if (!isUndefined(from._l)) to._l = from._l;
+        if (!isUndefined(from._strict)) to._strict = from._strict;
+        if (!isUndefined(from._tzm)) to._tzm = from._tzm;
+        if (!isUndefined(from._isUTC)) to._isUTC = from._isUTC;
+        if (!isUndefined(from._offset)) to._offset = from._offset;
+        if (!isUndefined(from._pf)) to._pf = getParsingFlags(from);
+        if (!isUndefined(from._locale)) to._locale = from._locale;
+        if (momentPropertiesLen > 0) for(i = 0; i < momentPropertiesLen; i++){
+            prop = momentProperties[i];
+            val = from[prop];
+            if (!isUndefined(val)) to[prop] = val;
+        }
+        return to;
+    }
+    // Moment prototype object
+    function Moment(config) {
+        copyConfig(this, config);
+        this._d = new Date(config._d != null ? config._d.getTime() : NaN);
+        if (!this.isValid()) this._d = new Date(NaN);
+        // Prevent infinite loop in case updateOffset creates new moment
+        // objects.
+        if (updateInProgress === false) {
+            updateInProgress = true;
+            hooks.updateOffset(this);
+            updateInProgress = false;
         }
     }
-}
-function findKey(obj, key) {
-    key = key.toLowerCase();
-    const keys = Object.keys(obj);
-    let i = keys.length;
-    let _key;
-    while(i-- > 0){
-        _key = keys[i];
-        if (key === _key.toLowerCase()) return _key;
+    function isMoment(obj) {
+        return obj instanceof Moment || obj != null && obj._isAMomentObject != null;
     }
-    return null;
-}
-const _global = (()=>{
-    /*eslint no-undef:0*/ if (typeof globalThis !== "undefined") return globalThis;
-    return typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : global;
-})();
-const isContextDefined = (context)=>!isUndefined(context) && context !== _global;
-/**
- * Accepts varargs expecting each argument to be an object, then
- * immutably merges the properties of each object and returns result.
- *
- * When multiple objects contain the same key the later object in
- * the arguments list will take precedence.
- *
- * Example:
- *
- * ```js
- * var result = merge({foo: 123}, {foo: 456});
- * console.log(result.foo); // outputs 456
- * ```
- *
- * @param {Object} obj1 Object to merge
- *
- * @returns {Object} Result of all merge properties
- */ function merge() {
-    const { caseless } = isContextDefined(this) && this || {};
-    const result = {};
-    const assignValue = (val, key)=>{
-        const targetKey = caseless && findKey(result, key) || key;
-        if (isPlainObject(result[targetKey]) && isPlainObject(val)) result[targetKey] = merge(result[targetKey], val);
-        else if (isPlainObject(val)) result[targetKey] = merge({}, val);
-        else if (isArray(val)) result[targetKey] = val.slice();
-        else result[targetKey] = val;
-    };
-    for(let i = 0, l = arguments.length; i < l; i++)arguments[i] && forEach(arguments[i], assignValue);
-    return result;
-}
-/**
- * Extends object a by mutably adding to it the properties of object b.
- *
- * @param {Object} a The object to be extended
- * @param {Object} b The object to copy properties from
- * @param {Object} thisArg The object to bind function to
- *
- * @param {Boolean} [allOwnKeys]
- * @returns {Object} The resulting value of object a
- */ const extend = (a, b, thisArg, { allOwnKeys } = {})=>{
-    forEach(b, (val, key)=>{
-        if (thisArg && isFunction(val)) a[key] = (0, _bindJsDefault.default)(val, thisArg);
-        else a[key] = val;
-    }, {
-        allOwnKeys
-    });
-    return a;
-};
-/**
- * Remove byte order marker. This catches EF BB BF (the UTF-8 BOM)
- *
- * @param {string} content with BOM
- *
- * @returns {string} content value without BOM
- */ const stripBOM = (content)=>{
-    if (content.charCodeAt(0) === 0xFEFF) content = content.slice(1);
-    return content;
-};
-/**
- * Inherit the prototype methods from one constructor into another
- * @param {function} constructor
- * @param {function} superConstructor
- * @param {object} [props]
- * @param {object} [descriptors]
- *
- * @returns {void}
- */ const inherits = (constructor, superConstructor, props, descriptors)=>{
-    constructor.prototype = Object.create(superConstructor.prototype, descriptors);
-    constructor.prototype.constructor = constructor;
-    Object.defineProperty(constructor, "super", {
-        value: superConstructor.prototype
-    });
-    props && Object.assign(constructor.prototype, props);
-};
-/**
- * Resolve object with deep prototype chain to a flat object
- * @param {Object} sourceObj source object
- * @param {Object} [destObj]
- * @param {Function|Boolean} [filter]
- * @param {Function} [propFilter]
- *
- * @returns {Object}
- */ const toFlatObject = (sourceObj, destObj, filter, propFilter)=>{
-    let props;
-    let i;
-    let prop;
-    const merged = {};
-    destObj = destObj || {};
-    // eslint-disable-next-line no-eq-null,eqeqeq
-    if (sourceObj == null) return destObj;
-    do {
-        props = Object.getOwnPropertyNames(sourceObj);
-        i = props.length;
-        while(i-- > 0){
-            prop = props[i];
-            if ((!propFilter || propFilter(prop, sourceObj, destObj)) && !merged[prop]) {
-                destObj[prop] = sourceObj[prop];
-                merged[prop] = true;
+    function warn(msg) {
+        if (hooks.suppressDeprecationWarnings === false && typeof console !== "undefined" && console.warn) console.warn("Deprecation warning: " + msg);
+    }
+    function deprecate(msg, fn) {
+        var firstTime = true;
+        return extend(function() {
+            if (hooks.deprecationHandler != null) hooks.deprecationHandler(null, msg);
+            if (firstTime) {
+                var args = [], arg, i, key, argLen = arguments.length;
+                for(i = 0; i < argLen; i++){
+                    arg = "";
+                    if (typeof arguments[i] === "object") {
+                        arg += "\n[" + i + "] ";
+                        for(key in arguments[0])if (hasOwnProp(arguments[0], key)) arg += key + ": " + arguments[0][key] + ", ";
+                        arg = arg.slice(0, -2); // Remove trailing comma and space
+                    } else arg = arguments[i];
+                    args.push(arg);
+                }
+                warn(msg + "\nArguments: " + Array.prototype.slice.call(args).join("") + "\n" + new Error().stack);
+                firstTime = false;
             }
-        }
-        sourceObj = filter !== false && getPrototypeOf(sourceObj);
-    }while (sourceObj && (!filter || filter(sourceObj, destObj)) && sourceObj !== Object.prototype);
-    return destObj;
-};
-/**
- * Determines whether a string ends with the characters of a specified string
- *
- * @param {String} str
- * @param {String} searchString
- * @param {Number} [position= 0]
- *
- * @returns {boolean}
- */ const endsWith = (str, searchString, position)=>{
-    str = String(str);
-    if (position === undefined || position > str.length) position = str.length;
-    position -= searchString.length;
-    const lastIndex = str.indexOf(searchString, position);
-    return lastIndex !== -1 && lastIndex === position;
-};
-/**
- * Returns new array from array like object or null if failed
- *
- * @param {*} [thing]
- *
- * @returns {?Array}
- */ const toArray = (thing)=>{
-    if (!thing) return null;
-    if (isArray(thing)) return thing;
-    let i = thing.length;
-    if (!isNumber(i)) return null;
-    const arr = new Array(i);
-    while(i-- > 0)arr[i] = thing[i];
-    return arr;
-};
-/**
- * Checking if the Uint8Array exists and if it does, it returns a function that checks if the
- * thing passed in is an instance of Uint8Array
- *
- * @param {TypedArray}
- *
- * @returns {Array}
- */ // eslint-disable-next-line func-names
-const isTypedArray = ((TypedArray)=>{
-    // eslint-disable-next-line func-names
-    return (thing)=>{
-        return TypedArray && thing instanceof TypedArray;
-    };
-})(typeof Uint8Array !== "undefined" && getPrototypeOf(Uint8Array));
-/**
- * For each entry in the object, call the function with the key and value.
- *
- * @param {Object<any, any>} obj - The object to iterate over.
- * @param {Function} fn - The function to call for each entry.
- *
- * @returns {void}
- */ const forEachEntry = (obj, fn)=>{
-    const generator = obj && obj[Symbol.iterator];
-    const iterator = generator.call(obj);
-    let result;
-    while((result = iterator.next()) && !result.done){
-        const pair = result.value;
-        fn.call(obj, pair[0], pair[1]);
+            return fn.apply(this, arguments);
+        }, fn);
     }
-};
-/**
- * It takes a regular expression and a string, and returns an array of all the matches
- *
- * @param {string} regExp - The regular expression to match against.
- * @param {string} str - The string to search.
- *
- * @returns {Array<boolean>}
- */ const matchAll = (regExp, str)=>{
-    let matches;
-    const arr = [];
-    while((matches = regExp.exec(str)) !== null)arr.push(matches);
-    return arr;
-};
-/* Checking if the kindOfTest function returns true when passed an HTMLFormElement. */ const isHTMLForm = kindOfTest("HTMLFormElement");
-const toCamelCase = (str)=>{
-    return str.toLowerCase().replace(/[-_\s]([a-z\d])(\w*)/g, function replacer(m, p1, p2) {
-        return p1.toUpperCase() + p2;
-    });
-};
-/* Creating a function that will check if an object has a property. */ const hasOwnProperty = (({ hasOwnProperty })=>(obj, prop)=>hasOwnProperty.call(obj, prop))(Object.prototype);
-/**
- * Determine if a value is a RegExp object
- *
- * @param {*} val The value to test
- *
- * @returns {boolean} True if value is a RegExp object, otherwise false
- */ const isRegExp = kindOfTest("RegExp");
-const reduceDescriptors = (obj, reducer)=>{
-    const descriptors = Object.getOwnPropertyDescriptors(obj);
-    const reducedDescriptors = {};
-    forEach(descriptors, (descriptor, name)=>{
-        let ret;
-        if ((ret = reducer(descriptor, name, obj)) !== false) reducedDescriptors[name] = ret || descriptor;
-    });
-    Object.defineProperties(obj, reducedDescriptors);
-};
-/**
- * Makes all methods read-only
- * @param {Object} obj
- */ const freezeMethods = (obj)=>{
-    reduceDescriptors(obj, (descriptor, name)=>{
-        // skip restricted props in strict mode
-        if (isFunction(obj) && [
-            "arguments",
-            "caller",
-            "callee"
-        ].indexOf(name) !== -1) return false;
-        const value = obj[name];
-        if (!isFunction(value)) return;
-        descriptor.enumerable = false;
-        if ("writable" in descriptor) {
-            descriptor.writable = false;
-            return;
+    var deprecations = {};
+    function deprecateSimple(name, msg) {
+        if (hooks.deprecationHandler != null) hooks.deprecationHandler(name, msg);
+        if (!deprecations[name]) {
+            warn(msg);
+            deprecations[name] = true;
         }
-        if (!descriptor.set) descriptor.set = ()=>{
-            throw Error("Can not rewrite read-only method '" + name + "'");
+    }
+    hooks.suppressDeprecationWarnings = false;
+    hooks.deprecationHandler = null;
+    function isFunction(input) {
+        return typeof Function !== "undefined" && input instanceof Function || Object.prototype.toString.call(input) === "[object Function]";
+    }
+    function set(config) {
+        var prop, i;
+        for(i in config)if (hasOwnProp(config, i)) {
+            prop = config[i];
+            if (isFunction(prop)) this[i] = prop;
+            else this["_" + i] = prop;
+        }
+        this._config = config;
+        // Lenient ordinal parsing accepts just a number in addition to
+        // number + (possibly) stuff coming from _dayOfMonthOrdinalParse.
+        // TODO: Remove "ordinalParse" fallback in next major release.
+        this._dayOfMonthOrdinalParseLenient = new RegExp((this._dayOfMonthOrdinalParse.source || this._ordinalParse.source) + "|" + /\d{1,2}/.source);
+    }
+    function mergeConfigs(parentConfig, childConfig) {
+        var res = extend({}, parentConfig), prop;
+        for(prop in childConfig)if (hasOwnProp(childConfig, prop)) {
+            if (isObject(parentConfig[prop]) && isObject(childConfig[prop])) {
+                res[prop] = {};
+                extend(res[prop], parentConfig[prop]);
+                extend(res[prop], childConfig[prop]);
+            } else if (childConfig[prop] != null) res[prop] = childConfig[prop];
+            else delete res[prop];
+        }
+        for(prop in parentConfig)if (hasOwnProp(parentConfig, prop) && !hasOwnProp(childConfig, prop) && isObject(parentConfig[prop])) // make sure changes to properties don't modify parent config
+        res[prop] = extend({}, res[prop]);
+        return res;
+    }
+    function Locale(config) {
+        if (config != null) this.set(config);
+    }
+    var keys;
+    if (Object.keys) keys = Object.keys;
+    else keys = function(obj) {
+        var i, res = [];
+        for(i in obj)if (hasOwnProp(obj, i)) res.push(i);
+        return res;
+    };
+    var defaultCalendar = {
+        sameDay: "[Today at] LT",
+        nextDay: "[Tomorrow at] LT",
+        nextWeek: "dddd [at] LT",
+        lastDay: "[Yesterday at] LT",
+        lastWeek: "[Last] dddd [at] LT",
+        sameElse: "L"
+    };
+    function calendar(key, mom, now) {
+        var output = this._calendar[key] || this._calendar["sameElse"];
+        return isFunction(output) ? output.call(mom, now) : output;
+    }
+    function zeroFill(number, targetLength, forceSign) {
+        var absNumber = "" + Math.abs(number), zerosToFill = targetLength - absNumber.length, sign = number >= 0;
+        return (sign ? forceSign ? "+" : "" : "-") + Math.pow(10, Math.max(0, zerosToFill)).toString().substr(1) + absNumber;
+    }
+    var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|N{1,5}|YYYYYY|YYYYY|YYYY|YY|y{2,4}|yo?|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g, localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g, formatFunctions = {}, formatTokenFunctions = {};
+    // token:    'M'
+    // padded:   ['MM', 2]
+    // ordinal:  'Mo'
+    // callback: function () { this.month() + 1 }
+    function addFormatToken(token, padded, ordinal, callback) {
+        var func = callback;
+        if (typeof callback === "string") func = function() {
+            return this[callback]();
         };
-    });
-};
-const toObjectSet = (arrayOrString, delimiter)=>{
-    const obj = {};
-    const define = (arr)=>{
-        arr.forEach((value)=>{
-            obj[value] = true;
-        });
-    };
-    isArray(arrayOrString) ? define(arrayOrString) : define(String(arrayOrString).split(delimiter));
-    return obj;
-};
-const noop = ()=>{};
-const toFiniteNumber = (value, defaultValue)=>{
-    value = +value;
-    return Number.isFinite(value) ? value : defaultValue;
-};
-const ALPHA = "abcdefghijklmnopqrstuvwxyz";
-const DIGIT = "0123456789";
-const ALPHABET = {
-    DIGIT,
-    ALPHA,
-    ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
-};
-const generateString = (size = 16, alphabet = ALPHABET.ALPHA_DIGIT)=>{
-    let str = "";
-    const { length } = alphabet;
-    while(size--)str += alphabet[Math.random() * length | 0];
-    return str;
-};
-/**
- * If the thing is a FormData object, return true, otherwise return false.
- *
- * @param {unknown} thing - The thing to check.
- *
- * @returns {boolean}
- */ function isSpecCompliantForm(thing) {
-    return !!(thing && isFunction(thing.append) && thing[Symbol.toStringTag] === "FormData" && thing[Symbol.iterator]);
-}
-const toJSONObject = (obj)=>{
-    const stack = new Array(10);
-    const visit = (source, i)=>{
-        if (isObject(source)) {
-            if (stack.indexOf(source) >= 0) return;
-            if (!("toJSON" in source)) {
-                stack[i] = source;
-                const target = isArray(source) ? [] : {};
-                forEach(source, (value, key)=>{
-                    const reducedValue = visit(value, i + 1);
-                    !isUndefined(reducedValue) && (target[key] = reducedValue);
-                });
-                stack[i] = undefined;
-                return target;
-            }
-        }
-        return source;
-    };
-    return visit(obj, 0);
-};
-const isAsyncFn = kindOfTest("AsyncFunction");
-const isThenable = (thing)=>thing && (isObject(thing) || isFunction(thing)) && isFunction(thing.then) && isFunction(thing.catch);
-exports.default = {
-    isArray,
-    isArrayBuffer,
-    isBuffer,
-    isFormData,
-    isArrayBufferView,
-    isString,
-    isNumber,
-    isBoolean,
-    isObject,
-    isPlainObject,
-    isUndefined,
-    isDate,
-    isFile,
-    isBlob,
-    isRegExp,
-    isFunction,
-    isStream,
-    isURLSearchParams,
-    isTypedArray,
-    isFileList,
-    forEach,
-    merge,
-    extend,
-    trim,
-    stripBOM,
-    inherits,
-    toFlatObject,
-    kindOf,
-    kindOfTest,
-    endsWith,
-    toArray,
-    forEachEntry,
-    matchAll,
-    isHTMLForm,
-    hasOwnProperty,
-    hasOwnProp: hasOwnProperty,
-    reduceDescriptors,
-    freezeMethods,
-    toObjectSet,
-    toCamelCase,
-    noop,
-    toFiniteNumber,
-    findKey,
-    global: _global,
-    isContextDefined,
-    ALPHABET,
-    generateString,
-    isSpecCompliantForm,
-    toJSONObject,
-    isAsyncFn,
-    isThenable
-};
-
-},{"./helpers/bind.js":"8lhQ4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8lhQ4":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>bind);
-"use strict";
-function bind(fn, thisArg) {
-    return function wrap() {
-        return fn.apply(thisArg, arguments);
-    };
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"24VCG":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("./../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _buildURLJs = require("../helpers/buildURL.js");
-var _buildURLJsDefault = parcelHelpers.interopDefault(_buildURLJs);
-var _interceptorManagerJs = require("./InterceptorManager.js");
-var _interceptorManagerJsDefault = parcelHelpers.interopDefault(_interceptorManagerJs);
-var _dispatchRequestJs = require("./dispatchRequest.js");
-var _dispatchRequestJsDefault = parcelHelpers.interopDefault(_dispatchRequestJs);
-var _mergeConfigJs = require("./mergeConfig.js");
-var _mergeConfigJsDefault = parcelHelpers.interopDefault(_mergeConfigJs);
-var _buildFullPathJs = require("./buildFullPath.js");
-var _buildFullPathJsDefault = parcelHelpers.interopDefault(_buildFullPathJs);
-var _validatorJs = require("../helpers/validator.js");
-var _validatorJsDefault = parcelHelpers.interopDefault(_validatorJs);
-var _axiosHeadersJs = require("./AxiosHeaders.js");
-var _axiosHeadersJsDefault = parcelHelpers.interopDefault(_axiosHeadersJs);
-"use strict";
-const validators = (0, _validatorJsDefault.default).validators;
-/**
- * Create a new instance of Axios
- *
- * @param {Object} instanceConfig The default config for the instance
- *
- * @return {Axios} A new instance of Axios
- */ class Axios {
-    constructor(instanceConfig){
-        this.defaults = instanceConfig;
-        this.interceptors = {
-            request: new (0, _interceptorManagerJsDefault.default)(),
-            response: new (0, _interceptorManagerJsDefault.default)()
+        if (token) formatTokenFunctions[token] = func;
+        if (padded) formatTokenFunctions[padded[0]] = function() {
+            return zeroFill(func.apply(this, arguments), padded[1], padded[2]);
+        };
+        if (ordinal) formatTokenFunctions[ordinal] = function() {
+            return this.localeData().ordinal(func.apply(this, arguments), token);
         };
     }
-    /**
-   * Dispatch a request
-   *
-   * @param {String|Object} configOrUrl The config specific for this request (merged with this.defaults)
-   * @param {?Object} config
-   *
-   * @returns {Promise} The Promise to be fulfilled
-   */ request(configOrUrl, config) {
-        /*eslint no-param-reassign:0*/ // Allow for axios('example/url'[, config]) a la fetch API
-        if (typeof configOrUrl === "string") {
-            config = config || {};
-            config.url = configOrUrl;
-        } else config = configOrUrl || {};
-        config = (0, _mergeConfigJsDefault.default)(this.defaults, config);
-        const { transitional, paramsSerializer, headers } = config;
-        if (transitional !== undefined) (0, _validatorJsDefault.default).assertOptions(transitional, {
-            silentJSONParsing: validators.transitional(validators.boolean),
-            forcedJSONParsing: validators.transitional(validators.boolean),
-            clarifyTimeoutError: validators.transitional(validators.boolean)
-        }, false);
-        if (paramsSerializer != null) {
-            if ((0, _utilsJsDefault.default).isFunction(paramsSerializer)) config.paramsSerializer = {
-                serialize: paramsSerializer
-            };
-            else (0, _validatorJsDefault.default).assertOptions(paramsSerializer, {
-                encode: validators.function,
-                serialize: validators.function
-            }, true);
-        }
-        // Set config.method
-        config.method = (config.method || this.defaults.method || "get").toLowerCase();
-        // Flatten headers
-        let contextHeaders = headers && (0, _utilsJsDefault.default).merge(headers.common, headers[config.method]);
-        headers && (0, _utilsJsDefault.default).forEach([
-            "delete",
-            "get",
-            "head",
-            "post",
-            "put",
-            "patch",
-            "common"
-        ], (method)=>{
-            delete headers[method];
-        });
-        config.headers = (0, _axiosHeadersJsDefault.default).concat(contextHeaders, headers);
-        // filter out skipped interceptors
-        const requestInterceptorChain = [];
-        let synchronousRequestInterceptors = true;
-        this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
-            if (typeof interceptor.runWhen === "function" && interceptor.runWhen(config) === false) return;
-            synchronousRequestInterceptors = synchronousRequestInterceptors && interceptor.synchronous;
-            requestInterceptorChain.unshift(interceptor.fulfilled, interceptor.rejected);
-        });
-        const responseInterceptorChain = [];
-        this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
-            responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
-        });
-        let promise;
-        let i = 0;
-        let len;
-        if (!synchronousRequestInterceptors) {
-            const chain = [
-                (0, _dispatchRequestJsDefault.default).bind(this),
-                undefined
-            ];
-            chain.unshift.apply(chain, requestInterceptorChain);
-            chain.push.apply(chain, responseInterceptorChain);
-            len = chain.length;
-            promise = Promise.resolve(config);
-            while(i < len)promise = promise.then(chain[i++], chain[i++]);
-            return promise;
-        }
-        len = requestInterceptorChain.length;
-        let newConfig = config;
-        i = 0;
-        while(i < len){
-            const onFulfilled = requestInterceptorChain[i++];
-            const onRejected = requestInterceptorChain[i++];
-            try {
-                newConfig = onFulfilled(newConfig);
-            } catch (error) {
-                onRejected.call(this, error);
-                break;
-            }
-        }
-        try {
-            promise = (0, _dispatchRequestJsDefault.default).call(this, newConfig);
-        } catch (error) {
-            return Promise.reject(error);
-        }
-        i = 0;
-        len = responseInterceptorChain.length;
-        while(i < len)promise = promise.then(responseInterceptorChain[i++], responseInterceptorChain[i++]);
-        return promise;
+    function removeFormattingTokens(input) {
+        if (input.match(/\[[\s\S]/)) return input.replace(/^\[|\]$/g, "");
+        return input.replace(/\\/g, "");
     }
-    getUri(config) {
-        config = (0, _mergeConfigJsDefault.default)(this.defaults, config);
-        const fullPath = (0, _buildFullPathJsDefault.default)(config.baseURL, config.url);
-        return (0, _buildURLJsDefault.default)(fullPath, config.params, config.paramsSerializer);
+    function makeFormatFunction(format) {
+        var array = format.match(formattingTokens), i, length;
+        for(i = 0, length = array.length; i < length; i++)if (formatTokenFunctions[array[i]]) array[i] = formatTokenFunctions[array[i]];
+        else array[i] = removeFormattingTokens(array[i]);
+        return function(mom) {
+            var output = "", i;
+            for(i = 0; i < length; i++)output += isFunction(array[i]) ? array[i].call(mom, format) : array[i];
+            return output;
+        };
     }
-}
-// Provide aliases for supported request methods
-(0, _utilsJsDefault.default).forEach([
-    "delete",
-    "get",
-    "head",
-    "options"
-], function forEachMethodNoData(method) {
-    /*eslint func-names:0*/ Axios.prototype[method] = function(url, config) {
-        return this.request((0, _mergeConfigJsDefault.default)(config || {}, {
-            method,
-            url,
-            data: (config || {}).data
+    // format date using native date object
+    function formatMoment(m, format) {
+        if (!m.isValid()) return m.localeData().invalidDate();
+        format = expandFormat(format, m.localeData());
+        formatFunctions[format] = formatFunctions[format] || makeFormatFunction(format);
+        return formatFunctions[format](m);
+    }
+    function expandFormat(format, locale) {
+        var i = 5;
+        function replaceLongDateFormatTokens(input) {
+            return locale.longDateFormat(input) || input;
+        }
+        localFormattingTokens.lastIndex = 0;
+        while(i >= 0 && localFormattingTokens.test(format)){
+            format = format.replace(localFormattingTokens, replaceLongDateFormatTokens);
+            localFormattingTokens.lastIndex = 0;
+            i -= 1;
+        }
+        return format;
+    }
+    var defaultLongDateFormat = {
+        LTS: "h:mm:ss A",
+        LT: "h:mm A",
+        L: "MM/DD/YYYY",
+        LL: "MMMM D, YYYY",
+        LLL: "MMMM D, YYYY h:mm A",
+        LLLL: "dddd, MMMM D, YYYY h:mm A"
+    };
+    function longDateFormat(key) {
+        var format = this._longDateFormat[key], formatUpper = this._longDateFormat[key.toUpperCase()];
+        if (format || !formatUpper) return format;
+        this._longDateFormat[key] = formatUpper.match(formattingTokens).map(function(tok) {
+            if (tok === "MMMM" || tok === "MM" || tok === "DD" || tok === "dddd") return tok.slice(1);
+            return tok;
+        }).join("");
+        return this._longDateFormat[key];
+    }
+    var defaultInvalidDate = "Invalid date";
+    function invalidDate() {
+        return this._invalidDate;
+    }
+    var defaultOrdinal = "%d", defaultDayOfMonthOrdinalParse = /\d{1,2}/;
+    function ordinal(number) {
+        return this._ordinal.replace("%d", number);
+    }
+    var defaultRelativeTime = {
+        future: "in %s",
+        past: "%s ago",
+        s: "a few seconds",
+        ss: "%d seconds",
+        m: "a minute",
+        mm: "%d minutes",
+        h: "an hour",
+        hh: "%d hours",
+        d: "a day",
+        dd: "%d days",
+        w: "a week",
+        ww: "%d weeks",
+        M: "a month",
+        MM: "%d months",
+        y: "a year",
+        yy: "%d years"
+    };
+    function relativeTime(number, withoutSuffix, string, isFuture) {
+        var output = this._relativeTime[string];
+        return isFunction(output) ? output(number, withoutSuffix, string, isFuture) : output.replace(/%d/i, number);
+    }
+    function pastFuture(diff, output) {
+        var format = this._relativeTime[diff > 0 ? "future" : "past"];
+        return isFunction(format) ? format(output) : format.replace(/%s/i, output);
+    }
+    var aliases = {
+        D: "date",
+        dates: "date",
+        date: "date",
+        d: "day",
+        days: "day",
+        day: "day",
+        e: "weekday",
+        weekdays: "weekday",
+        weekday: "weekday",
+        E: "isoWeekday",
+        isoweekdays: "isoWeekday",
+        isoweekday: "isoWeekday",
+        DDD: "dayOfYear",
+        dayofyears: "dayOfYear",
+        dayofyear: "dayOfYear",
+        h: "hour",
+        hours: "hour",
+        hour: "hour",
+        ms: "millisecond",
+        milliseconds: "millisecond",
+        millisecond: "millisecond",
+        m: "minute",
+        minutes: "minute",
+        minute: "minute",
+        M: "month",
+        months: "month",
+        month: "month",
+        Q: "quarter",
+        quarters: "quarter",
+        quarter: "quarter",
+        s: "second",
+        seconds: "second",
+        second: "second",
+        gg: "weekYear",
+        weekyears: "weekYear",
+        weekyear: "weekYear",
+        GG: "isoWeekYear",
+        isoweekyears: "isoWeekYear",
+        isoweekyear: "isoWeekYear",
+        w: "week",
+        weeks: "week",
+        week: "week",
+        W: "isoWeek",
+        isoweeks: "isoWeek",
+        isoweek: "isoWeek",
+        y: "year",
+        years: "year",
+        year: "year"
+    };
+    function normalizeUnits(units) {
+        return typeof units === "string" ? aliases[units] || aliases[units.toLowerCase()] : undefined;
+    }
+    function normalizeObjectUnits(inputObject) {
+        var normalizedInput = {}, normalizedProp, prop;
+        for(prop in inputObject)if (hasOwnProp(inputObject, prop)) {
+            normalizedProp = normalizeUnits(prop);
+            if (normalizedProp) normalizedInput[normalizedProp] = inputObject[prop];
+        }
+        return normalizedInput;
+    }
+    var priorities = {
+        date: 9,
+        day: 11,
+        weekday: 11,
+        isoWeekday: 11,
+        dayOfYear: 4,
+        hour: 13,
+        millisecond: 16,
+        minute: 14,
+        month: 8,
+        quarter: 7,
+        second: 15,
+        weekYear: 1,
+        isoWeekYear: 1,
+        week: 5,
+        isoWeek: 5,
+        year: 1
+    };
+    function getPrioritizedUnits(unitsObj) {
+        var units = [], u;
+        for(u in unitsObj)if (hasOwnProp(unitsObj, u)) units.push({
+            unit: u,
+            priority: priorities[u]
+        });
+        units.sort(function(a, b) {
+            return a.priority - b.priority;
+        });
+        return units;
+    }
+    var match1 = /\d/, match2 = /\d\d/, match3 = /\d{3}/, match4 = /\d{4}/, match6 = /[+-]?\d{6}/, match1to2 = /\d\d?/, match3to4 = /\d\d\d\d?/, match5to6 = /\d\d\d\d\d\d?/, match1to3 = /\d{1,3}/, match1to4 = /\d{1,4}/, match1to6 = /[+-]?\d{1,6}/, matchUnsigned = /\d+/, matchSigned = /[+-]?\d+/, matchOffset = /Z|[+-]\d\d:?\d\d/gi, matchShortOffset = /Z|[+-]\d\d(?::?\d\d)?/gi, matchTimestamp = /[+-]?\d+(\.\d{1,3})?/, // any word (or two) characters or numbers including two/three word month in arabic.
+    // includes scottish gaelic two word and hyphenated months
+    matchWord = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i, match1to2NoLeadingZero = /^[1-9]\d?/, match1to2HasZero = /^([1-9]\d|\d)/, regexes;
+    regexes = {};
+    function addRegexToken(token, regex, strictRegex) {
+        regexes[token] = isFunction(regex) ? regex : function(isStrict, localeData) {
+            return isStrict && strictRegex ? strictRegex : regex;
+        };
+    }
+    function getParseRegexForToken(token, config) {
+        if (!hasOwnProp(regexes, token)) return new RegExp(unescapeFormat(token));
+        return regexes[token](config._strict, config._locale);
+    }
+    // Code from http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
+    function unescapeFormat(s) {
+        return regexEscape(s.replace("\\", "").replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function(matched, p1, p2, p3, p4) {
+            return p1 || p2 || p3 || p4;
         }));
-    };
-});
-(0, _utilsJsDefault.default).forEach([
-    "post",
-    "put",
-    "patch"
-], function forEachMethodWithData(method) {
-    /*eslint func-names:0*/ function generateHTTPMethod(isForm) {
-        return function httpMethod(url, data, config) {
-            return this.request((0, _mergeConfigJsDefault.default)(config || {}, {
-                method,
-                headers: isForm ? {
-                    "Content-Type": "multipart/form-data"
-                } : {},
-                url,
-                data
-            }));
-        };
     }
-    Axios.prototype[method] = generateHTTPMethod();
-    Axios.prototype[method + "Form"] = generateHTTPMethod(true);
-});
-exports.default = Axios;
-
-},{"./../utils.js":"k4bLS","../helpers/buildURL.js":"eORZv","./InterceptorManager.js":"hyiSI","./dispatchRequest.js":"3m06o","./mergeConfig.js":"1s43p","./buildFullPath.js":"9LAKr","../helpers/validator.js":"gE0Xs","./AxiosHeaders.js":"fYuyb","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eORZv":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>buildURL);
-var _utilsJs = require("../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _axiosURLSearchParamsJs = require("../helpers/AxiosURLSearchParams.js");
-var _axiosURLSearchParamsJsDefault = parcelHelpers.interopDefault(_axiosURLSearchParamsJs);
-"use strict";
-/**
- * It replaces all instances of the characters `:`, `$`, `,`, `+`, `[`, and `]` with their
- * URI encoded counterparts
- *
- * @param {string} val The value to be encoded.
- *
- * @returns {string} The encoded value.
- */ function encode(val) {
-    return encodeURIComponent(val).replace(/%3A/gi, ":").replace(/%24/g, "$").replace(/%2C/gi, ",").replace(/%20/g, "+").replace(/%5B/gi, "[").replace(/%5D/gi, "]");
-}
-function buildURL(url, params, options) {
-    /*eslint no-param-reassign:0*/ if (!params) return url;
-    const _encode = options && options.encode || encode;
-    const serializeFn = options && options.serialize;
-    let serializedParams;
-    if (serializeFn) serializedParams = serializeFn(params, options);
-    else serializedParams = (0, _utilsJsDefault.default).isURLSearchParams(params) ? params.toString() : new (0, _axiosURLSearchParamsJsDefault.default)(params, options).toString(_encode);
-    if (serializedParams) {
-        const hashmarkIndex = url.indexOf("#");
-        if (hashmarkIndex !== -1) url = url.slice(0, hashmarkIndex);
-        url += (url.indexOf("?") === -1 ? "?" : "&") + serializedParams;
+    function regexEscape(s) {
+        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
     }
-    return url;
-}
-
-},{"../utils.js":"k4bLS","../helpers/AxiosURLSearchParams.js":"gRLON","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gRLON":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _toFormDataJs = require("./toFormData.js");
-var _toFormDataJsDefault = parcelHelpers.interopDefault(_toFormDataJs);
-"use strict";
-/**
- * It encodes a string by replacing all characters that are not in the unreserved set with
- * their percent-encoded equivalents
- *
- * @param {string} str - The string to encode.
- *
- * @returns {string} The encoded string.
- */ function encode(str) {
-    const charMap = {
-        "!": "%21",
-        "'": "%27",
-        "(": "%28",
-        ")": "%29",
-        "~": "%7E",
-        "%20": "+",
-        "%00": "\x00"
-    };
-    return encodeURIComponent(str).replace(/[!'()~]|%20|%00/g, function replacer(match) {
-        return charMap[match];
-    });
-}
-/**
- * It takes a params object and converts it to a FormData object
- *
- * @param {Object<string, any>} params - The parameters to be converted to a FormData object.
- * @param {Object<string, any>} options - The options object passed to the Axios constructor.
- *
- * @returns {void}
- */ function AxiosURLSearchParams(params, options) {
-    this._pairs = [];
-    params && (0, _toFormDataJsDefault.default)(params, this, options);
-}
-const prototype = AxiosURLSearchParams.prototype;
-prototype.append = function append(name, value) {
-    this._pairs.push([
-        name,
-        value
-    ]);
-};
-prototype.toString = function toString(encoder) {
-    const _encode = encoder ? function(value) {
-        return encoder.call(this, value, encode);
-    } : encode;
-    return this._pairs.map(function each(pair) {
-        return _encode(pair[0]) + "=" + _encode(pair[1]);
-    }, "").join("&");
-};
-exports.default = AxiosURLSearchParams;
-
-},{"./toFormData.js":"bQGt0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bQGt0":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _axiosErrorJs = require("../core/AxiosError.js");
-var _axiosErrorJsDefault = parcelHelpers.interopDefault(_axiosErrorJs);
-// temporary hotfix to avoid circular references until AxiosURLSearchParams is refactored
-var _formDataJs = require("../platform/node/classes/FormData.js");
-var _formDataJsDefault = parcelHelpers.interopDefault(_formDataJs);
-var Buffer = require("2aa018ba40b48f3b").Buffer;
-"use strict";
-/**
- * Determines if the given thing is a array or js object.
- *
- * @param {string} thing - The object or array to be visited.
- *
- * @returns {boolean}
- */ function isVisitable(thing) {
-    return (0, _utilsJsDefault.default).isPlainObject(thing) || (0, _utilsJsDefault.default).isArray(thing);
-}
-/**
- * It removes the brackets from the end of a string
- *
- * @param {string} key - The key of the parameter.
- *
- * @returns {string} the key without the brackets.
- */ function removeBrackets(key) {
-    return (0, _utilsJsDefault.default).endsWith(key, "[]") ? key.slice(0, -2) : key;
-}
-/**
- * It takes a path, a key, and a boolean, and returns a string
- *
- * @param {string} path - The path to the current key.
- * @param {string} key - The key of the current object being iterated over.
- * @param {string} dots - If true, the key will be rendered with dots instead of brackets.
- *
- * @returns {string} The path to the current key.
- */ function renderKey(path, key, dots) {
-    if (!path) return key;
-    return path.concat(key).map(function each(token, i) {
-        // eslint-disable-next-line no-param-reassign
-        token = removeBrackets(token);
-        return !dots && i ? "[" + token + "]" : token;
-    }).join(dots ? "." : "");
-}
-/**
- * If the array is an array and none of its elements are visitable, then it's a flat array.
- *
- * @param {Array<any>} arr - The array to check
- *
- * @returns {boolean}
- */ function isFlatArray(arr) {
-    return (0, _utilsJsDefault.default).isArray(arr) && !arr.some(isVisitable);
-}
-const predicates = (0, _utilsJsDefault.default).toFlatObject((0, _utilsJsDefault.default), {}, null, function filter(prop) {
-    return /^is[A-Z]/.test(prop);
-});
-/**
- * Convert a data object to FormData
- *
- * @param {Object} obj
- * @param {?Object} [formData]
- * @param {?Object} [options]
- * @param {Function} [options.visitor]
- * @param {Boolean} [options.metaTokens = true]
- * @param {Boolean} [options.dots = false]
- * @param {?Boolean} [options.indexes = false]
- *
- * @returns {Object}
- **/ /**
- * It converts an object into a FormData object
- *
- * @param {Object<any, any>} obj - The object to convert to form data.
- * @param {string} formData - The FormData object to append to.
- * @param {Object<string, any>} options
- *
- * @returns
- */ function toFormData(obj, formData, options) {
-    if (!(0, _utilsJsDefault.default).isObject(obj)) throw new TypeError("target must be an object");
-    // eslint-disable-next-line no-param-reassign
-    formData = formData || new ((0, _formDataJsDefault.default) || FormData)();
-    // eslint-disable-next-line no-param-reassign
-    options = (0, _utilsJsDefault.default).toFlatObject(options, {
-        metaTokens: true,
-        dots: false,
-        indexes: false
-    }, false, function defined(option, source) {
-        // eslint-disable-next-line no-eq-null,eqeqeq
-        return !(0, _utilsJsDefault.default).isUndefined(source[option]);
-    });
-    const metaTokens = options.metaTokens;
-    // eslint-disable-next-line no-use-before-define
-    const visitor = options.visitor || defaultVisitor;
-    const dots = options.dots;
-    const indexes = options.indexes;
-    const _Blob = options.Blob || typeof Blob !== "undefined" && Blob;
-    const useBlob = _Blob && (0, _utilsJsDefault.default).isSpecCompliantForm(formData);
-    if (!(0, _utilsJsDefault.default).isFunction(visitor)) throw new TypeError("visitor must be a function");
-    function convertValue(value) {
-        if (value === null) return "";
-        if ((0, _utilsJsDefault.default).isDate(value)) return value.toISOString();
-        if (!useBlob && (0, _utilsJsDefault.default).isBlob(value)) throw new (0, _axiosErrorJsDefault.default)("Blob is not supported. Use a Buffer instead.");
-        if ((0, _utilsJsDefault.default).isArrayBuffer(value) || (0, _utilsJsDefault.default).isTypedArray(value)) return useBlob && typeof Blob === "function" ? new Blob([
-            value
-        ]) : Buffer.from(value);
+    function absFloor(number) {
+        if (number < 0) // -0 -> 0
+        return Math.ceil(number) || 0;
+        else return Math.floor(number);
+    }
+    function toInt(argumentForCoercion) {
+        var coercedNumber = +argumentForCoercion, value = 0;
+        if (coercedNumber !== 0 && isFinite(coercedNumber)) value = absFloor(coercedNumber);
         return value;
     }
-    /**
-   * Default visitor.
-   *
-   * @param {*} value
-   * @param {String|Number} key
-   * @param {Array<String|Number>} path
-   * @this {FormData}
-   *
-   * @returns {boolean} return true to visit the each prop of the value recursively
-   */ function defaultVisitor(value, key, path) {
-        let arr = value;
-        if (value && !path && typeof value === "object") {
-            if ((0, _utilsJsDefault.default).endsWith(key, "{}")) {
-                // eslint-disable-next-line no-param-reassign
-                key = metaTokens ? key : key.slice(0, -2);
-                // eslint-disable-next-line no-param-reassign
-                value = JSON.stringify(value);
-            } else if ((0, _utilsJsDefault.default).isArray(value) && isFlatArray(value) || ((0, _utilsJsDefault.default).isFileList(value) || (0, _utilsJsDefault.default).endsWith(key, "[]")) && (arr = (0, _utilsJsDefault.default).toArray(value))) {
-                // eslint-disable-next-line no-param-reassign
-                key = removeBrackets(key);
-                arr.forEach(function each(el, index) {
-                    !((0, _utilsJsDefault.default).isUndefined(el) || el === null) && formData.append(// eslint-disable-next-line no-nested-ternary
-                    indexes === true ? renderKey([
-                        key
-                    ], index, dots) : indexes === null ? key : key + "[]", convertValue(el));
-                });
-                return false;
-            }
-        }
-        if (isVisitable(value)) return true;
-        formData.append(renderKey(path, key, dots), convertValue(value));
-        return false;
-    }
-    const stack = [];
-    const exposedHelpers = Object.assign(predicates, {
-        defaultVisitor,
-        convertValue,
-        isVisitable
-    });
-    function build(value, path) {
-        if ((0, _utilsJsDefault.default).isUndefined(value)) return;
-        if (stack.indexOf(value) !== -1) throw Error("Circular reference detected in " + path.join("."));
-        stack.push(value);
-        (0, _utilsJsDefault.default).forEach(value, function each(el, key) {
-            const result = !((0, _utilsJsDefault.default).isUndefined(el) || el === null) && visitor.call(formData, el, (0, _utilsJsDefault.default).isString(key) ? key.trim() : key, path, exposedHelpers);
-            if (result === true) build(el, path ? path.concat(key) : [
-                key
-            ]);
-        });
-        stack.pop();
-    }
-    if (!(0, _utilsJsDefault.default).isObject(obj)) throw new TypeError("data must be an object");
-    build(obj);
-    return formData;
-}
-exports.default = toFormData;
-
-},{"2aa018ba40b48f3b":"fCgem","../utils.js":"k4bLS","../core/AxiosError.js":"3ENKs","../platform/node/classes/FormData.js":"6IkIZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fCgem":[function(require,module,exports) {
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */ /* eslint-disable no-proto */ "use strict";
-const base64 = require("9c62938f1dccc73c");
-const ieee754 = require("aceacb6a4531a9d2");
-const customInspectSymbol = typeof Symbol === "function" && typeof Symbol["for"] === "function" // eslint-disable-line dot-notation
- ? Symbol["for"]("nodejs.util.inspect.custom") // eslint-disable-line dot-notation
- : null;
-exports.Buffer = Buffer;
-exports.SlowBuffer = SlowBuffer;
-exports.INSPECT_MAX_BYTES = 50;
-const K_MAX_LENGTH = 0x7fffffff;
-exports.kMaxLength = K_MAX_LENGTH;
-/**
- * If `Buffer.TYPED_ARRAY_SUPPORT`:
- *   === true    Use Uint8Array implementation (fastest)
- *   === false   Print warning and recommend using `buffer` v4.x which has an Object
- *               implementation (most compatible, even IE6)
- *
- * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
- * Opera 11.6+, iOS 4.2+.
- *
- * We report that the browser does not support typed arrays if the are not subclassable
- * using __proto__. Firefox 4-29 lacks support for adding new properties to `Uint8Array`
- * (See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438). IE 10 lacks support
- * for __proto__ and has a buggy typed array implementation.
- */ Buffer.TYPED_ARRAY_SUPPORT = typedArraySupport();
-if (!Buffer.TYPED_ARRAY_SUPPORT && typeof console !== "undefined" && typeof console.error === "function") console.error("This browser lacks typed array (Uint8Array) support which is required by `buffer` v5.x. Use `buffer` v4.x if you require old browser support.");
-function typedArraySupport() {
-    // Can typed array instances can be augmented?
-    try {
-        const arr = new Uint8Array(1);
-        const proto = {
-            foo: function() {
-                return 42;
-            }
+    var tokens = {};
+    function addParseToken(token, callback) {
+        var i, func = callback, tokenLen;
+        if (typeof token === "string") token = [
+            token
+        ];
+        if (isNumber(callback)) func = function(input, array) {
+            array[callback] = toInt(input);
         };
-        Object.setPrototypeOf(proto, Uint8Array.prototype);
-        Object.setPrototypeOf(arr, proto);
-        return arr.foo() === 42;
-    } catch (e) {
-        return false;
+        tokenLen = token.length;
+        for(i = 0; i < tokenLen; i++)tokens[token[i]] = func;
     }
-}
-Object.defineProperty(Buffer.prototype, "parent", {
-    enumerable: true,
-    get: function() {
-        if (!Buffer.isBuffer(this)) return undefined;
-        return this.buffer;
+    function addWeekParseToken(token, callback) {
+        addParseToken(token, function(input, array, config, token) {
+            config._w = config._w || {};
+            callback(input, config._w, config, token);
+        });
     }
-});
-Object.defineProperty(Buffer.prototype, "offset", {
-    enumerable: true,
-    get: function() {
-        if (!Buffer.isBuffer(this)) return undefined;
-        return this.byteOffset;
+    function addTimeToArrayFromToken(token, input, config) {
+        if (input != null && hasOwnProp(tokens, token)) tokens[token](input, config._a, config, token);
     }
-});
-function createBuffer(length) {
-    if (length > K_MAX_LENGTH) throw new RangeError('The value "' + length + '" is invalid for option "size"');
-    // Return an augmented `Uint8Array` instance
-    const buf = new Uint8Array(length);
-    Object.setPrototypeOf(buf, Buffer.prototype);
-    return buf;
-}
-/**
- * The Buffer constructor returns instances of `Uint8Array` that have their
- * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
- * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
- * and the `Uint8Array` methods. Square bracket notation works as expected -- it
- * returns a single octet.
- *
- * The `Uint8Array` prototype remains unmodified.
- */ function Buffer(arg, encodingOrOffset, length) {
-    // Common case.
-    if (typeof arg === "number") {
-        if (typeof encodingOrOffset === "string") throw new TypeError('The "string" argument must be of type string. Received type number');
-        return allocUnsafe(arg);
+    function isLeapYear(year) {
+        return year % 4 === 0 && year % 100 !== 0 || year % 400 === 0;
     }
-    return from(arg, encodingOrOffset, length);
-}
-Buffer.poolSize = 8192 // not used by this implementation
-;
-function from(value, encodingOrOffset, length) {
-    if (typeof value === "string") return fromString(value, encodingOrOffset);
-    if (ArrayBuffer.isView(value)) return fromArrayView(value);
-    if (value == null) throw new TypeError("The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " + typeof value);
-    if (isInstance(value, ArrayBuffer) || value && isInstance(value.buffer, ArrayBuffer)) return fromArrayBuffer(value, encodingOrOffset, length);
-    if (typeof SharedArrayBuffer !== "undefined" && (isInstance(value, SharedArrayBuffer) || value && isInstance(value.buffer, SharedArrayBuffer))) return fromArrayBuffer(value, encodingOrOffset, length);
-    if (typeof value === "number") throw new TypeError('The "value" argument must not be of type number. Received type number');
-    const valueOf = value.valueOf && value.valueOf();
-    if (valueOf != null && valueOf !== value) return Buffer.from(valueOf, encodingOrOffset, length);
-    const b = fromObject(value);
-    if (b) return b;
-    if (typeof Symbol !== "undefined" && Symbol.toPrimitive != null && typeof value[Symbol.toPrimitive] === "function") return Buffer.from(value[Symbol.toPrimitive]("string"), encodingOrOffset, length);
-    throw new TypeError("The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " + typeof value);
-}
-/**
- * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
- * if value is a number.
- * Buffer.from(str[, encoding])
- * Buffer.from(array)
- * Buffer.from(buffer)
- * Buffer.from(arrayBuffer[, byteOffset[, length]])
- **/ Buffer.from = function(value, encodingOrOffset, length) {
-    return from(value, encodingOrOffset, length);
-};
-// Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
-// https://github.com/feross/buffer/pull/148
-Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype);
-Object.setPrototypeOf(Buffer, Uint8Array);
-function assertSize(size) {
-    if (typeof size !== "number") throw new TypeError('"size" argument must be of type number');
-    else if (size < 0) throw new RangeError('The value "' + size + '" is invalid for option "size"');
-}
-function alloc(size, fill, encoding) {
-    assertSize(size);
-    if (size <= 0) return createBuffer(size);
-    if (fill !== undefined) // Only pay attention to encoding if it's a string. This
-    // prevents accidentally sending in a number that would
-    // be interpreted as a start offset.
-    return typeof encoding === "string" ? createBuffer(size).fill(fill, encoding) : createBuffer(size).fill(fill);
-    return createBuffer(size);
-}
-/**
- * Creates a new filled Buffer instance.
- * alloc(size[, fill[, encoding]])
- **/ Buffer.alloc = function(size, fill, encoding) {
-    return alloc(size, fill, encoding);
-};
-function allocUnsafe(size) {
-    assertSize(size);
-    return createBuffer(size < 0 ? 0 : checked(size) | 0);
-}
-/**
- * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
- * */ Buffer.allocUnsafe = function(size) {
-    return allocUnsafe(size);
-};
-/**
- * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
- */ Buffer.allocUnsafeSlow = function(size) {
-    return allocUnsafe(size);
-};
-function fromString(string, encoding) {
-    if (typeof encoding !== "string" || encoding === "") encoding = "utf8";
-    if (!Buffer.isEncoding(encoding)) throw new TypeError("Unknown encoding: " + encoding);
-    const length = byteLength(string, encoding) | 0;
-    let buf = createBuffer(length);
-    const actual = buf.write(string, encoding);
-    if (actual !== length) // Writing a hex string, for example, that contains invalid characters will
-    // cause everything after the first invalid character to be ignored. (e.g.
-    // 'abxxcd' will be treated as 'ab')
-    buf = buf.slice(0, actual);
-    return buf;
-}
-function fromArrayLike(array) {
-    const length = array.length < 0 ? 0 : checked(array.length) | 0;
-    const buf = createBuffer(length);
-    for(let i = 0; i < length; i += 1)buf[i] = array[i] & 255;
-    return buf;
-}
-function fromArrayView(arrayView) {
-    if (isInstance(arrayView, Uint8Array)) {
-        const copy = new Uint8Array(arrayView);
-        return fromArrayBuffer(copy.buffer, copy.byteOffset, copy.byteLength);
+    var YEAR = 0, MONTH = 1, DATE = 2, HOUR = 3, MINUTE = 4, SECOND = 5, MILLISECOND = 6, WEEK = 7, WEEKDAY = 8;
+    // FORMATTING
+    addFormatToken("Y", 0, 0, function() {
+        var y = this.year();
+        return y <= 9999 ? zeroFill(y, 4) : "+" + y;
+    });
+    addFormatToken(0, [
+        "YY",
+        2
+    ], 0, function() {
+        return this.year() % 100;
+    });
+    addFormatToken(0, [
+        "YYYY",
+        4
+    ], 0, "year");
+    addFormatToken(0, [
+        "YYYYY",
+        5
+    ], 0, "year");
+    addFormatToken(0, [
+        "YYYYYY",
+        6,
+        true
+    ], 0, "year");
+    // PARSING
+    addRegexToken("Y", matchSigned);
+    addRegexToken("YY", match1to2, match2);
+    addRegexToken("YYYY", match1to4, match4);
+    addRegexToken("YYYYY", match1to6, match6);
+    addRegexToken("YYYYYY", match1to6, match6);
+    addParseToken([
+        "YYYYY",
+        "YYYYYY"
+    ], YEAR);
+    addParseToken("YYYY", function(input, array) {
+        array[YEAR] = input.length === 2 ? hooks.parseTwoDigitYear(input) : toInt(input);
+    });
+    addParseToken("YY", function(input, array) {
+        array[YEAR] = hooks.parseTwoDigitYear(input);
+    });
+    addParseToken("Y", function(input, array) {
+        array[YEAR] = parseInt(input, 10);
+    });
+    // HELPERS
+    function daysInYear(year) {
+        return isLeapYear(year) ? 366 : 365;
     }
-    return fromArrayLike(arrayView);
-}
-function fromArrayBuffer(array, byteOffset, length) {
-    if (byteOffset < 0 || array.byteLength < byteOffset) throw new RangeError('"offset" is outside of buffer bounds');
-    if (array.byteLength < byteOffset + (length || 0)) throw new RangeError('"length" is outside of buffer bounds');
-    let buf;
-    if (byteOffset === undefined && length === undefined) buf = new Uint8Array(array);
-    else if (length === undefined) buf = new Uint8Array(array, byteOffset);
-    else buf = new Uint8Array(array, byteOffset, length);
-    // Return an augmented `Uint8Array` instance
-    Object.setPrototypeOf(buf, Buffer.prototype);
-    return buf;
-}
-function fromObject(obj) {
-    if (Buffer.isBuffer(obj)) {
-        const len = checked(obj.length) | 0;
-        const buf = createBuffer(len);
-        if (buf.length === 0) return buf;
-        obj.copy(buf, 0, 0, len);
-        return buf;
+    // HOOKS
+    hooks.parseTwoDigitYear = function(input) {
+        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
+    };
+    // MOMENTS
+    var getSetYear = makeGetSet("FullYear", true);
+    function getIsLeapYear() {
+        return isLeapYear(this.year());
     }
-    if (obj.length !== undefined) {
-        if (typeof obj.length !== "number" || numberIsNaN(obj.length)) return createBuffer(0);
-        return fromArrayLike(obj);
+    function makeGetSet(unit, keepTime) {
+        return function(value) {
+            if (value != null) {
+                set$1(this, unit, value);
+                hooks.updateOffset(this, keepTime);
+                return this;
+            } else return get(this, unit);
+        };
     }
-    if (obj.type === "Buffer" && Array.isArray(obj.data)) return fromArrayLike(obj.data);
-}
-function checked(length) {
-    // Note: cannot use `length < K_MAX_LENGTH` here because that fails when
-    // length is NaN (which is otherwise coerced to zero.)
-    if (length >= K_MAX_LENGTH) throw new RangeError("Attempt to allocate Buffer larger than maximum size: 0x" + K_MAX_LENGTH.toString(16) + " bytes");
-    return length | 0;
-}
-function SlowBuffer(length) {
-    if (+length != length) length = 0;
-    return Buffer.alloc(+length);
-}
-Buffer.isBuffer = function isBuffer(b) {
-    return b != null && b._isBuffer === true && b !== Buffer.prototype // so Buffer.isBuffer(Buffer.prototype) will be false
-    ;
-};
-Buffer.compare = function compare(a, b) {
-    if (isInstance(a, Uint8Array)) a = Buffer.from(a, a.offset, a.byteLength);
-    if (isInstance(b, Uint8Array)) b = Buffer.from(b, b.offset, b.byteLength);
-    if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) throw new TypeError('The "buf1", "buf2" arguments must be one of type Buffer or Uint8Array');
-    if (a === b) return 0;
-    let x = a.length;
-    let y = b.length;
-    for(let i = 0, len = Math.min(x, y); i < len; ++i)if (a[i] !== b[i]) {
-        x = a[i];
-        y = b[i];
-        break;
-    }
-    if (x < y) return -1;
-    if (y < x) return 1;
-    return 0;
-};
-Buffer.isEncoding = function isEncoding(encoding) {
-    switch(String(encoding).toLowerCase()){
-        case "hex":
-        case "utf8":
-        case "utf-8":
-        case "ascii":
-        case "latin1":
-        case "binary":
-        case "base64":
-        case "ucs2":
-        case "ucs-2":
-        case "utf16le":
-        case "utf-16le":
-            return true;
-        default:
-            return false;
-    }
-};
-Buffer.concat = function concat(list, length) {
-    if (!Array.isArray(list)) throw new TypeError('"list" argument must be an Array of Buffers');
-    if (list.length === 0) return Buffer.alloc(0);
-    let i;
-    if (length === undefined) {
-        length = 0;
-        for(i = 0; i < list.length; ++i)length += list[i].length;
-    }
-    const buffer = Buffer.allocUnsafe(length);
-    let pos = 0;
-    for(i = 0; i < list.length; ++i){
-        let buf = list[i];
-        if (isInstance(buf, Uint8Array)) {
-            if (pos + buf.length > buffer.length) {
-                if (!Buffer.isBuffer(buf)) buf = Buffer.from(buf);
-                buf.copy(buffer, pos);
-            } else Uint8Array.prototype.set.call(buffer, buf, pos);
-        } else if (!Buffer.isBuffer(buf)) throw new TypeError('"list" argument must be an Array of Buffers');
-        else buf.copy(buffer, pos);
-        pos += buf.length;
-    }
-    return buffer;
-};
-function byteLength(string, encoding) {
-    if (Buffer.isBuffer(string)) return string.length;
-    if (ArrayBuffer.isView(string) || isInstance(string, ArrayBuffer)) return string.byteLength;
-    if (typeof string !== "string") throw new TypeError('The "string" argument must be one of type string, Buffer, or ArrayBuffer. Received type ' + typeof string);
-    const len = string.length;
-    const mustMatch = arguments.length > 2 && arguments[2] === true;
-    if (!mustMatch && len === 0) return 0;
-    // Use a for loop to avoid recursion
-    let loweredCase = false;
-    for(;;)switch(encoding){
-        case "ascii":
-        case "latin1":
-        case "binary":
-            return len;
-        case "utf8":
-        case "utf-8":
-            return utf8ToBytes(string).length;
-        case "ucs2":
-        case "ucs-2":
-        case "utf16le":
-        case "utf-16le":
-            return len * 2;
-        case "hex":
-            return len >>> 1;
-        case "base64":
-            return base64ToBytes(string).length;
-        default:
-            if (loweredCase) return mustMatch ? -1 : utf8ToBytes(string).length // assume utf8
-            ;
-            encoding = ("" + encoding).toLowerCase();
-            loweredCase = true;
-    }
-}
-Buffer.byteLength = byteLength;
-function slowToString(encoding, start, end) {
-    let loweredCase = false;
-    // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
-    // property of a typed array.
-    // This behaves neither like String nor Uint8Array in that we set start/end
-    // to their upper/lower bounds if the value passed is out of range.
-    // undefined is handled specially as per ECMA-262 6th Edition,
-    // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
-    if (start === undefined || start < 0) start = 0;
-    // Return early if start > this.length. Done here to prevent potential uint32
-    // coercion fail below.
-    if (start > this.length) return "";
-    if (end === undefined || end > this.length) end = this.length;
-    if (end <= 0) return "";
-    // Force coercion to uint32. This will also coerce falsey/NaN values to 0.
-    end >>>= 0;
-    start >>>= 0;
-    if (end <= start) return "";
-    if (!encoding) encoding = "utf8";
-    while(true)switch(encoding){
-        case "hex":
-            return hexSlice(this, start, end);
-        case "utf8":
-        case "utf-8":
-            return utf8Slice(this, start, end);
-        case "ascii":
-            return asciiSlice(this, start, end);
-        case "latin1":
-        case "binary":
-            return latin1Slice(this, start, end);
-        case "base64":
-            return base64Slice(this, start, end);
-        case "ucs2":
-        case "ucs-2":
-        case "utf16le":
-        case "utf-16le":
-            return utf16leSlice(this, start, end);
-        default:
-            if (loweredCase) throw new TypeError("Unknown encoding: " + encoding);
-            encoding = (encoding + "").toLowerCase();
-            loweredCase = true;
-    }
-}
-// This property is used by `Buffer.isBuffer` (and the `is-buffer` npm package)
-// to detect a Buffer instance. It's not possible to use `instanceof Buffer`
-// reliably in a browserify context because there could be multiple different
-// copies of the 'buffer' package in use. This method works even for Buffer
-// instances that were created from another copy of the `buffer` package.
-// See: https://github.com/feross/buffer/issues/154
-Buffer.prototype._isBuffer = true;
-function swap(b, n, m) {
-    const i = b[n];
-    b[n] = b[m];
-    b[m] = i;
-}
-Buffer.prototype.swap16 = function swap16() {
-    const len = this.length;
-    if (len % 2 !== 0) throw new RangeError("Buffer size must be a multiple of 16-bits");
-    for(let i = 0; i < len; i += 2)swap(this, i, i + 1);
-    return this;
-};
-Buffer.prototype.swap32 = function swap32() {
-    const len = this.length;
-    if (len % 4 !== 0) throw new RangeError("Buffer size must be a multiple of 32-bits");
-    for(let i = 0; i < len; i += 4){
-        swap(this, i, i + 3);
-        swap(this, i + 1, i + 2);
-    }
-    return this;
-};
-Buffer.prototype.swap64 = function swap64() {
-    const len = this.length;
-    if (len % 8 !== 0) throw new RangeError("Buffer size must be a multiple of 64-bits");
-    for(let i = 0; i < len; i += 8){
-        swap(this, i, i + 7);
-        swap(this, i + 1, i + 6);
-        swap(this, i + 2, i + 5);
-        swap(this, i + 3, i + 4);
-    }
-    return this;
-};
-Buffer.prototype.toString = function toString() {
-    const length = this.length;
-    if (length === 0) return "";
-    if (arguments.length === 0) return utf8Slice(this, 0, length);
-    return slowToString.apply(this, arguments);
-};
-Buffer.prototype.toLocaleString = Buffer.prototype.toString;
-Buffer.prototype.equals = function equals(b) {
-    if (!Buffer.isBuffer(b)) throw new TypeError("Argument must be a Buffer");
-    if (this === b) return true;
-    return Buffer.compare(this, b) === 0;
-};
-Buffer.prototype.inspect = function inspect() {
-    let str = "";
-    const max = exports.INSPECT_MAX_BYTES;
-    str = this.toString("hex", 0, max).replace(/(.{2})/g, "$1 ").trim();
-    if (this.length > max) str += " ... ";
-    return "<Buffer " + str + ">";
-};
-if (customInspectSymbol) Buffer.prototype[customInspectSymbol] = Buffer.prototype.inspect;
-Buffer.prototype.compare = function compare(target, start, end, thisStart, thisEnd) {
-    if (isInstance(target, Uint8Array)) target = Buffer.from(target, target.offset, target.byteLength);
-    if (!Buffer.isBuffer(target)) throw new TypeError('The "target" argument must be one of type Buffer or Uint8Array. Received type ' + typeof target);
-    if (start === undefined) start = 0;
-    if (end === undefined) end = target ? target.length : 0;
-    if (thisStart === undefined) thisStart = 0;
-    if (thisEnd === undefined) thisEnd = this.length;
-    if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) throw new RangeError("out of range index");
-    if (thisStart >= thisEnd && start >= end) return 0;
-    if (thisStart >= thisEnd) return -1;
-    if (start >= end) return 1;
-    start >>>= 0;
-    end >>>= 0;
-    thisStart >>>= 0;
-    thisEnd >>>= 0;
-    if (this === target) return 0;
-    let x = thisEnd - thisStart;
-    let y = end - start;
-    const len = Math.min(x, y);
-    const thisCopy = this.slice(thisStart, thisEnd);
-    const targetCopy = target.slice(start, end);
-    for(let i = 0; i < len; ++i)if (thisCopy[i] !== targetCopy[i]) {
-        x = thisCopy[i];
-        y = targetCopy[i];
-        break;
-    }
-    if (x < y) return -1;
-    if (y < x) return 1;
-    return 0;
-};
-// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
-// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
-//
-// Arguments:
-// - buffer - a Buffer to search
-// - val - a string, Buffer, or number
-// - byteOffset - an index into `buffer`; will be clamped to an int32
-// - encoding - an optional encoding, relevant is val is a string
-// - dir - true for indexOf, false for lastIndexOf
-function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
-    // Empty buffer means no match
-    if (buffer.length === 0) return -1;
-    // Normalize byteOffset
-    if (typeof byteOffset === "string") {
-        encoding = byteOffset;
-        byteOffset = 0;
-    } else if (byteOffset > 0x7fffffff) byteOffset = 0x7fffffff;
-    else if (byteOffset < -2147483648) byteOffset = -2147483648;
-    byteOffset = +byteOffset // Coerce to Number.
-    ;
-    if (numberIsNaN(byteOffset)) // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
-    byteOffset = dir ? 0 : buffer.length - 1;
-    // Normalize byteOffset: negative offsets start from the end of the buffer
-    if (byteOffset < 0) byteOffset = buffer.length + byteOffset;
-    if (byteOffset >= buffer.length) {
-        if (dir) return -1;
-        else byteOffset = buffer.length - 1;
-    } else if (byteOffset < 0) {
-        if (dir) byteOffset = 0;
-        else return -1;
-    }
-    // Normalize val
-    if (typeof val === "string") val = Buffer.from(val, encoding);
-    // Finally, search either indexOf (if dir is true) or lastIndexOf
-    if (Buffer.isBuffer(val)) {
-        // Special case: looking for empty string/buffer always fails
-        if (val.length === 0) return -1;
-        return arrayIndexOf(buffer, val, byteOffset, encoding, dir);
-    } else if (typeof val === "number") {
-        val = val & 0xFF // Search for a byte value [0-255]
-        ;
-        if (typeof Uint8Array.prototype.indexOf === "function") {
-            if (dir) return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset);
-            else return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset);
-        }
-        return arrayIndexOf(buffer, [
-            val
-        ], byteOffset, encoding, dir);
-    }
-    throw new TypeError("val must be string, number or Buffer");
-}
-function arrayIndexOf(arr, val, byteOffset, encoding, dir) {
-    let indexSize = 1;
-    let arrLength = arr.length;
-    let valLength = val.length;
-    if (encoding !== undefined) {
-        encoding = String(encoding).toLowerCase();
-        if (encoding === "ucs2" || encoding === "ucs-2" || encoding === "utf16le" || encoding === "utf-16le") {
-            if (arr.length < 2 || val.length < 2) return -1;
-            indexSize = 2;
-            arrLength /= 2;
-            valLength /= 2;
-            byteOffset /= 2;
+    function get(mom, unit) {
+        if (!mom.isValid()) return NaN;
+        var d = mom._d, isUTC = mom._isUTC;
+        switch(unit){
+            case "Milliseconds":
+                return isUTC ? d.getUTCMilliseconds() : d.getMilliseconds();
+            case "Seconds":
+                return isUTC ? d.getUTCSeconds() : d.getSeconds();
+            case "Minutes":
+                return isUTC ? d.getUTCMinutes() : d.getMinutes();
+            case "Hours":
+                return isUTC ? d.getUTCHours() : d.getHours();
+            case "Date":
+                return isUTC ? d.getUTCDate() : d.getDate();
+            case "Day":
+                return isUTC ? d.getUTCDay() : d.getDay();
+            case "Month":
+                return isUTC ? d.getUTCMonth() : d.getMonth();
+            case "FullYear":
+                return isUTC ? d.getUTCFullYear() : d.getFullYear();
+            default:
+                return NaN; // Just in case
         }
     }
-    function read(buf, i) {
-        if (indexSize === 1) return buf[i];
-        else return buf.readUInt16BE(i * indexSize);
+    function set$1(mom, unit, value) {
+        var d, isUTC, year, month, date;
+        if (!mom.isValid() || isNaN(value)) return;
+        d = mom._d;
+        isUTC = mom._isUTC;
+        switch(unit){
+            case "Milliseconds":
+                return void (isUTC ? d.setUTCMilliseconds(value) : d.setMilliseconds(value));
+            case "Seconds":
+                return void (isUTC ? d.setUTCSeconds(value) : d.setSeconds(value));
+            case "Minutes":
+                return void (isUTC ? d.setUTCMinutes(value) : d.setMinutes(value));
+            case "Hours":
+                return void (isUTC ? d.setUTCHours(value) : d.setHours(value));
+            case "Date":
+                return void (isUTC ? d.setUTCDate(value) : d.setDate(value));
+            // case 'Day': // Not real
+            //    return void (isUTC ? d.setUTCDay(value) : d.setDay(value));
+            // case 'Month': // Not used because we need to pass two variables
+            //     return void (isUTC ? d.setUTCMonth(value) : d.setMonth(value));
+            case "FullYear":
+                break; // See below ...
+            default:
+                return; // Just in case
+        }
+        year = value;
+        month = mom.month();
+        date = mom.date();
+        date = date === 29 && month === 1 && !isLeapYear(year) ? 28 : date;
+        isUTC ? d.setUTCFullYear(year, month, date) : d.setFullYear(year, month, date);
     }
-    let i;
-    if (dir) {
-        let foundIndex = -1;
-        for(i = byteOffset; i < arrLength; i++)if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
-            if (foundIndex === -1) foundIndex = i;
-            if (i - foundIndex + 1 === valLength) return foundIndex * indexSize;
+    // MOMENTS
+    function stringGet(units) {
+        units = normalizeUnits(units);
+        if (isFunction(this[units])) return this[units]();
+        return this;
+    }
+    function stringSet(units, value) {
+        if (typeof units === "object") {
+            units = normalizeObjectUnits(units);
+            var prioritized = getPrioritizedUnits(units), i, prioritizedLen = prioritized.length;
+            for(i = 0; i < prioritizedLen; i++)this[prioritized[i].unit](units[prioritized[i].unit]);
         } else {
-            if (foundIndex !== -1) i -= i - foundIndex;
-            foundIndex = -1;
+            units = normalizeUnits(units);
+            if (isFunction(this[units])) return this[units](value);
         }
-    } else {
-        if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
-        for(i = byteOffset; i >= 0; i--){
-            let found = true;
-            for(let j = 0; j < valLength; j++)if (read(arr, i + j) !== read(val, j)) {
-                found = false;
+        return this;
+    }
+    function mod(n, x) {
+        return (n % x + x) % x;
+    }
+    var indexOf;
+    if (Array.prototype.indexOf) indexOf = Array.prototype.indexOf;
+    else indexOf = function(o) {
+        // I know
+        var i;
+        for(i = 0; i < this.length; ++i){
+            if (this[i] === o) return i;
+        }
+        return -1;
+    };
+    function daysInMonth(year, month) {
+        if (isNaN(year) || isNaN(month)) return NaN;
+        var modMonth = mod(month, 12);
+        year += (month - modMonth) / 12;
+        return modMonth === 1 ? isLeapYear(year) ? 29 : 28 : 31 - modMonth % 7 % 2;
+    }
+    // FORMATTING
+    addFormatToken("M", [
+        "MM",
+        2
+    ], "Mo", function() {
+        return this.month() + 1;
+    });
+    addFormatToken("MMM", 0, 0, function(format) {
+        return this.localeData().monthsShort(this, format);
+    });
+    addFormatToken("MMMM", 0, 0, function(format) {
+        return this.localeData().months(this, format);
+    });
+    // PARSING
+    addRegexToken("M", match1to2, match1to2NoLeadingZero);
+    addRegexToken("MM", match1to2, match2);
+    addRegexToken("MMM", function(isStrict, locale) {
+        return locale.monthsShortRegex(isStrict);
+    });
+    addRegexToken("MMMM", function(isStrict, locale) {
+        return locale.monthsRegex(isStrict);
+    });
+    addParseToken([
+        "M",
+        "MM"
+    ], function(input, array) {
+        array[MONTH] = toInt(input) - 1;
+    });
+    addParseToken([
+        "MMM",
+        "MMMM"
+    ], function(input, array, config, token) {
+        var month = config._locale.monthsParse(input, token, config._strict);
+        // if we didn't find a month name, mark the date as invalid.
+        if (month != null) array[MONTH] = month;
+        else getParsingFlags(config).invalidMonth = input;
+    });
+    // LOCALES
+    var defaultLocaleMonths = "January_February_March_April_May_June_July_August_September_October_November_December".split("_"), defaultLocaleMonthsShort = "Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec".split("_"), MONTHS_IN_FORMAT = /D[oD]?(\[[^\[\]]*\]|\s)+MMMM?/, defaultMonthsShortRegex = matchWord, defaultMonthsRegex = matchWord;
+    function localeMonths(m, format) {
+        if (!m) return isArray(this._months) ? this._months : this._months["standalone"];
+        return isArray(this._months) ? this._months[m.month()] : this._months[(this._months.isFormat || MONTHS_IN_FORMAT).test(format) ? "format" : "standalone"][m.month()];
+    }
+    function localeMonthsShort(m, format) {
+        if (!m) return isArray(this._monthsShort) ? this._monthsShort : this._monthsShort["standalone"];
+        return isArray(this._monthsShort) ? this._monthsShort[m.month()] : this._monthsShort[MONTHS_IN_FORMAT.test(format) ? "format" : "standalone"][m.month()];
+    }
+    function handleStrictParse(monthName, format, strict) {
+        var i, ii, mom, llc = monthName.toLocaleLowerCase();
+        if (!this._monthsParse) {
+            // this is not used
+            this._monthsParse = [];
+            this._longMonthsParse = [];
+            this._shortMonthsParse = [];
+            for(i = 0; i < 12; ++i){
+                mom = createUTC([
+                    2000,
+                    i
+                ]);
+                this._shortMonthsParse[i] = this.monthsShort(mom, "").toLocaleLowerCase();
+                this._longMonthsParse[i] = this.months(mom, "").toLocaleLowerCase();
+            }
+        }
+        if (strict) {
+            if (format === "MMM") {
+                ii = indexOf.call(this._shortMonthsParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._longMonthsParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        } else if (format === "MMM") {
+            ii = indexOf.call(this._shortMonthsParse, llc);
+            if (ii !== -1) return ii;
+            ii = indexOf.call(this._longMonthsParse, llc);
+            return ii !== -1 ? ii : null;
+        } else {
+            ii = indexOf.call(this._longMonthsParse, llc);
+            if (ii !== -1) return ii;
+            ii = indexOf.call(this._shortMonthsParse, llc);
+            return ii !== -1 ? ii : null;
+        }
+    }
+    function localeMonthsParse(monthName, format, strict) {
+        var i, mom, regex;
+        if (this._monthsParseExact) return handleStrictParse.call(this, monthName, format, strict);
+        if (!this._monthsParse) {
+            this._monthsParse = [];
+            this._longMonthsParse = [];
+            this._shortMonthsParse = [];
+        }
+        // TODO: add sorting
+        // Sorting makes sure if one month (or abbr) is a prefix of another
+        // see sorting in computeMonthsParse
+        for(i = 0; i < 12; i++){
+            // make the regex if we don't have it already
+            mom = createUTC([
+                2000,
+                i
+            ]);
+            if (strict && !this._longMonthsParse[i]) {
+                this._longMonthsParse[i] = new RegExp("^" + this.months(mom, "").replace(".", "") + "$", "i");
+                this._shortMonthsParse[i] = new RegExp("^" + this.monthsShort(mom, "").replace(".", "") + "$", "i");
+            }
+            if (!strict && !this._monthsParse[i]) {
+                regex = "^" + this.months(mom, "") + "|^" + this.monthsShort(mom, "");
+                this._monthsParse[i] = new RegExp(regex.replace(".", ""), "i");
+            }
+            // test the regex
+            if (strict && format === "MMMM" && this._longMonthsParse[i].test(monthName)) return i;
+            else if (strict && format === "MMM" && this._shortMonthsParse[i].test(monthName)) return i;
+            else if (!strict && this._monthsParse[i].test(monthName)) return i;
+        }
+    }
+    // MOMENTS
+    function setMonth(mom, value) {
+        if (!mom.isValid()) // No op
+        return mom;
+        if (typeof value === "string") {
+            if (/^\d+$/.test(value)) value = toInt(value);
+            else {
+                value = mom.localeData().monthsParse(value);
+                // TODO: Another silent failure?
+                if (!isNumber(value)) return mom;
+            }
+        }
+        var month = value, date = mom.date();
+        date = date < 29 ? date : Math.min(date, daysInMonth(mom.year(), month));
+        mom._isUTC ? mom._d.setUTCMonth(month, date) : mom._d.setMonth(month, date);
+        return mom;
+    }
+    function getSetMonth(value) {
+        if (value != null) {
+            setMonth(this, value);
+            hooks.updateOffset(this, true);
+            return this;
+        } else return get(this, "Month");
+    }
+    function getDaysInMonth() {
+        return daysInMonth(this.year(), this.month());
+    }
+    function monthsShortRegex(isStrict) {
+        if (this._monthsParseExact) {
+            if (!hasOwnProp(this, "_monthsRegex")) computeMonthsParse.call(this);
+            if (isStrict) return this._monthsShortStrictRegex;
+            else return this._monthsShortRegex;
+        } else {
+            if (!hasOwnProp(this, "_monthsShortRegex")) this._monthsShortRegex = defaultMonthsShortRegex;
+            return this._monthsShortStrictRegex && isStrict ? this._monthsShortStrictRegex : this._monthsShortRegex;
+        }
+    }
+    function monthsRegex(isStrict) {
+        if (this._monthsParseExact) {
+            if (!hasOwnProp(this, "_monthsRegex")) computeMonthsParse.call(this);
+            if (isStrict) return this._monthsStrictRegex;
+            else return this._monthsRegex;
+        } else {
+            if (!hasOwnProp(this, "_monthsRegex")) this._monthsRegex = defaultMonthsRegex;
+            return this._monthsStrictRegex && isStrict ? this._monthsStrictRegex : this._monthsRegex;
+        }
+    }
+    function computeMonthsParse() {
+        function cmpLenRev(a, b) {
+            return b.length - a.length;
+        }
+        var shortPieces = [], longPieces = [], mixedPieces = [], i, mom, shortP, longP;
+        for(i = 0; i < 12; i++){
+            // make the regex if we don't have it already
+            mom = createUTC([
+                2000,
+                i
+            ]);
+            shortP = regexEscape(this.monthsShort(mom, ""));
+            longP = regexEscape(this.months(mom, ""));
+            shortPieces.push(shortP);
+            longPieces.push(longP);
+            mixedPieces.push(longP);
+            mixedPieces.push(shortP);
+        }
+        // Sorting makes sure if one month (or abbr) is a prefix of another it
+        // will match the longer piece.
+        shortPieces.sort(cmpLenRev);
+        longPieces.sort(cmpLenRev);
+        mixedPieces.sort(cmpLenRev);
+        this._monthsRegex = new RegExp("^(" + mixedPieces.join("|") + ")", "i");
+        this._monthsShortRegex = this._monthsRegex;
+        this._monthsStrictRegex = new RegExp("^(" + longPieces.join("|") + ")", "i");
+        this._monthsShortStrictRegex = new RegExp("^(" + shortPieces.join("|") + ")", "i");
+    }
+    function createDate(y, m, d, h, M, s, ms) {
+        // can't just apply() to create a date:
+        // https://stackoverflow.com/q/181348
+        var date;
+        // the date constructor remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0) {
+            // preserve leap years using a full 400 year cycle, then reset
+            date = new Date(y + 400, m, d, h, M, s, ms);
+            if (isFinite(date.getFullYear())) date.setFullYear(y);
+        } else date = new Date(y, m, d, h, M, s, ms);
+        return date;
+    }
+    function createUTCDate(y) {
+        var date, args;
+        // the Date.UTC function remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0) {
+            args = Array.prototype.slice.call(arguments);
+            // preserve leap years using a full 400 year cycle, then reset
+            args[0] = y + 400;
+            date = new Date(Date.UTC.apply(null, args));
+            if (isFinite(date.getUTCFullYear())) date.setUTCFullYear(y);
+        } else date = new Date(Date.UTC.apply(null, arguments));
+        return date;
+    }
+    // start-of-first-week - start-of-year
+    function firstWeekOffset(year, dow, doy) {
+        var fwd = 7 + dow - doy, // first-week day local weekday -- which local weekday is fwd
+        fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
+        return -fwdlw + fwd - 1;
+    }
+    // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
+    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
+        var localWeekday = (7 + weekday - dow) % 7, weekOffset = firstWeekOffset(year, dow, doy), dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset, resYear, resDayOfYear;
+        if (dayOfYear <= 0) {
+            resYear = year - 1;
+            resDayOfYear = daysInYear(resYear) + dayOfYear;
+        } else if (dayOfYear > daysInYear(year)) {
+            resYear = year + 1;
+            resDayOfYear = dayOfYear - daysInYear(year);
+        } else {
+            resYear = year;
+            resDayOfYear = dayOfYear;
+        }
+        return {
+            year: resYear,
+            dayOfYear: resDayOfYear
+        };
+    }
+    function weekOfYear(mom, dow, doy) {
+        var weekOffset = firstWeekOffset(mom.year(), dow, doy), week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1, resWeek, resYear;
+        if (week < 1) {
+            resYear = mom.year() - 1;
+            resWeek = week + weeksInYear(resYear, dow, doy);
+        } else if (week > weeksInYear(mom.year(), dow, doy)) {
+            resWeek = week - weeksInYear(mom.year(), dow, doy);
+            resYear = mom.year() + 1;
+        } else {
+            resYear = mom.year();
+            resWeek = week;
+        }
+        return {
+            week: resWeek,
+            year: resYear
+        };
+    }
+    function weeksInYear(year, dow, doy) {
+        var weekOffset = firstWeekOffset(year, dow, doy), weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
+        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
+    }
+    // FORMATTING
+    addFormatToken("w", [
+        "ww",
+        2
+    ], "wo", "week");
+    addFormatToken("W", [
+        "WW",
+        2
+    ], "Wo", "isoWeek");
+    // PARSING
+    addRegexToken("w", match1to2, match1to2NoLeadingZero);
+    addRegexToken("ww", match1to2, match2);
+    addRegexToken("W", match1to2, match1to2NoLeadingZero);
+    addRegexToken("WW", match1to2, match2);
+    addWeekParseToken([
+        "w",
+        "ww",
+        "W",
+        "WW"
+    ], function(input, week, config, token) {
+        week[token.substr(0, 1)] = toInt(input);
+    });
+    // HELPERS
+    // LOCALES
+    function localeWeek(mom) {
+        return weekOfYear(mom, this._week.dow, this._week.doy).week;
+    }
+    var defaultLocaleWeek = {
+        dow: 0,
+        doy: 6
+    };
+    function localeFirstDayOfWeek() {
+        return this._week.dow;
+    }
+    function localeFirstDayOfYear() {
+        return this._week.doy;
+    }
+    // MOMENTS
+    function getSetWeek(input) {
+        var week = this.localeData().week(this);
+        return input == null ? week : this.add((input - week) * 7, "d");
+    }
+    function getSetISOWeek(input) {
+        var week = weekOfYear(this, 1, 4).week;
+        return input == null ? week : this.add((input - week) * 7, "d");
+    }
+    // FORMATTING
+    addFormatToken("d", 0, "do", "day");
+    addFormatToken("dd", 0, 0, function(format) {
+        return this.localeData().weekdaysMin(this, format);
+    });
+    addFormatToken("ddd", 0, 0, function(format) {
+        return this.localeData().weekdaysShort(this, format);
+    });
+    addFormatToken("dddd", 0, 0, function(format) {
+        return this.localeData().weekdays(this, format);
+    });
+    addFormatToken("e", 0, 0, "weekday");
+    addFormatToken("E", 0, 0, "isoWeekday");
+    // PARSING
+    addRegexToken("d", match1to2);
+    addRegexToken("e", match1to2);
+    addRegexToken("E", match1to2);
+    addRegexToken("dd", function(isStrict, locale) {
+        return locale.weekdaysMinRegex(isStrict);
+    });
+    addRegexToken("ddd", function(isStrict, locale) {
+        return locale.weekdaysShortRegex(isStrict);
+    });
+    addRegexToken("dddd", function(isStrict, locale) {
+        return locale.weekdaysRegex(isStrict);
+    });
+    addWeekParseToken([
+        "dd",
+        "ddd",
+        "dddd"
+    ], function(input, week, config, token) {
+        var weekday = config._locale.weekdaysParse(input, token, config._strict);
+        // if we didn't get a weekday name, mark the date as invalid
+        if (weekday != null) week.d = weekday;
+        else getParsingFlags(config).invalidWeekday = input;
+    });
+    addWeekParseToken([
+        "d",
+        "e",
+        "E"
+    ], function(input, week, config, token) {
+        week[token] = toInt(input);
+    });
+    // HELPERS
+    function parseWeekday(input, locale) {
+        if (typeof input !== "string") return input;
+        if (!isNaN(input)) return parseInt(input, 10);
+        input = locale.weekdaysParse(input);
+        if (typeof input === "number") return input;
+        return null;
+    }
+    function parseIsoWeekday(input, locale) {
+        if (typeof input === "string") return locale.weekdaysParse(input) % 7 || 7;
+        return isNaN(input) ? null : input;
+    }
+    // LOCALES
+    function shiftWeekdays(ws, n) {
+        return ws.slice(n, 7).concat(ws.slice(0, n));
+    }
+    var defaultLocaleWeekdays = "Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"), defaultLocaleWeekdaysShort = "Sun_Mon_Tue_Wed_Thu_Fri_Sat".split("_"), defaultLocaleWeekdaysMin = "Su_Mo_Tu_We_Th_Fr_Sa".split("_"), defaultWeekdaysRegex = matchWord, defaultWeekdaysShortRegex = matchWord, defaultWeekdaysMinRegex = matchWord;
+    function localeWeekdays(m, format) {
+        var weekdays = isArray(this._weekdays) ? this._weekdays : this._weekdays[m && m !== true && this._weekdays.isFormat.test(format) ? "format" : "standalone"];
+        return m === true ? shiftWeekdays(weekdays, this._week.dow) : m ? weekdays[m.day()] : weekdays;
+    }
+    function localeWeekdaysShort(m) {
+        return m === true ? shiftWeekdays(this._weekdaysShort, this._week.dow) : m ? this._weekdaysShort[m.day()] : this._weekdaysShort;
+    }
+    function localeWeekdaysMin(m) {
+        return m === true ? shiftWeekdays(this._weekdaysMin, this._week.dow) : m ? this._weekdaysMin[m.day()] : this._weekdaysMin;
+    }
+    function handleStrictParse$1(weekdayName, format, strict) {
+        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
+        if (!this._weekdaysParse) {
+            this._weekdaysParse = [];
+            this._shortWeekdaysParse = [];
+            this._minWeekdaysParse = [];
+            for(i = 0; i < 7; ++i){
+                mom = createUTC([
+                    2000,
+                    1
+                ]).day(i);
+                this._minWeekdaysParse[i] = this.weekdaysMin(mom, "").toLocaleLowerCase();
+                this._shortWeekdaysParse[i] = this.weekdaysShort(mom, "").toLocaleLowerCase();
+                this._weekdaysParse[i] = this.weekdays(mom, "").toLocaleLowerCase();
+            }
+        }
+        if (strict) {
+            if (format === "dddd") {
+                ii = indexOf.call(this._weekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else if (format === "ddd") {
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        } else {
+            if (format === "dddd") {
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) return ii;
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                if (ii !== -1) return ii;
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else if (format === "ddd") {
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                if (ii !== -1) return ii;
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) return ii;
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                if (ii !== -1) return ii;
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) return ii;
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        }
+    }
+    function localeWeekdaysParse(weekdayName, format, strict) {
+        var i, mom, regex;
+        if (this._weekdaysParseExact) return handleStrictParse$1.call(this, weekdayName, format, strict);
+        if (!this._weekdaysParse) {
+            this._weekdaysParse = [];
+            this._minWeekdaysParse = [];
+            this._shortWeekdaysParse = [];
+            this._fullWeekdaysParse = [];
+        }
+        for(i = 0; i < 7; i++){
+            // make the regex if we don't have it already
+            mom = createUTC([
+                2000,
+                1
+            ]).day(i);
+            if (strict && !this._fullWeekdaysParse[i]) {
+                this._fullWeekdaysParse[i] = new RegExp("^" + this.weekdays(mom, "").replace(".", "\\.?") + "$", "i");
+                this._shortWeekdaysParse[i] = new RegExp("^" + this.weekdaysShort(mom, "").replace(".", "\\.?") + "$", "i");
+                this._minWeekdaysParse[i] = new RegExp("^" + this.weekdaysMin(mom, "").replace(".", "\\.?") + "$", "i");
+            }
+            if (!this._weekdaysParse[i]) {
+                regex = "^" + this.weekdays(mom, "") + "|^" + this.weekdaysShort(mom, "") + "|^" + this.weekdaysMin(mom, "");
+                this._weekdaysParse[i] = new RegExp(regex.replace(".", ""), "i");
+            }
+            // test the regex
+            if (strict && format === "dddd" && this._fullWeekdaysParse[i].test(weekdayName)) return i;
+            else if (strict && format === "ddd" && this._shortWeekdaysParse[i].test(weekdayName)) return i;
+            else if (strict && format === "dd" && this._minWeekdaysParse[i].test(weekdayName)) return i;
+            else if (!strict && this._weekdaysParse[i].test(weekdayName)) return i;
+        }
+    }
+    // MOMENTS
+    function getSetDayOfWeek(input) {
+        if (!this.isValid()) return input != null ? this : NaN;
+        var day = get(this, "Day");
+        if (input != null) {
+            input = parseWeekday(input, this.localeData());
+            return this.add(input - day, "d");
+        } else return day;
+    }
+    function getSetLocaleDayOfWeek(input) {
+        if (!this.isValid()) return input != null ? this : NaN;
+        var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
+        return input == null ? weekday : this.add(input - weekday, "d");
+    }
+    function getSetISODayOfWeek(input) {
+        if (!this.isValid()) return input != null ? this : NaN;
+        // behaves the same as moment#day except
+        // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
+        // as a setter, sunday should belong to the previous week.
+        if (input != null) {
+            var weekday = parseIsoWeekday(input, this.localeData());
+            return this.day(this.day() % 7 ? weekday : weekday - 7);
+        } else return this.day() || 7;
+    }
+    function weekdaysRegex(isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, "_weekdaysRegex")) computeWeekdaysParse.call(this);
+            if (isStrict) return this._weekdaysStrictRegex;
+            else return this._weekdaysRegex;
+        } else {
+            if (!hasOwnProp(this, "_weekdaysRegex")) this._weekdaysRegex = defaultWeekdaysRegex;
+            return this._weekdaysStrictRegex && isStrict ? this._weekdaysStrictRegex : this._weekdaysRegex;
+        }
+    }
+    function weekdaysShortRegex(isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, "_weekdaysRegex")) computeWeekdaysParse.call(this);
+            if (isStrict) return this._weekdaysShortStrictRegex;
+            else return this._weekdaysShortRegex;
+        } else {
+            if (!hasOwnProp(this, "_weekdaysShortRegex")) this._weekdaysShortRegex = defaultWeekdaysShortRegex;
+            return this._weekdaysShortStrictRegex && isStrict ? this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
+        }
+    }
+    function weekdaysMinRegex(isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, "_weekdaysRegex")) computeWeekdaysParse.call(this);
+            if (isStrict) return this._weekdaysMinStrictRegex;
+            else return this._weekdaysMinRegex;
+        } else {
+            if (!hasOwnProp(this, "_weekdaysMinRegex")) this._weekdaysMinRegex = defaultWeekdaysMinRegex;
+            return this._weekdaysMinStrictRegex && isStrict ? this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
+        }
+    }
+    function computeWeekdaysParse() {
+        function cmpLenRev(a, b) {
+            return b.length - a.length;
+        }
+        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [], i, mom, minp, shortp, longp;
+        for(i = 0; i < 7; i++){
+            // make the regex if we don't have it already
+            mom = createUTC([
+                2000,
+                1
+            ]).day(i);
+            minp = regexEscape(this.weekdaysMin(mom, ""));
+            shortp = regexEscape(this.weekdaysShort(mom, ""));
+            longp = regexEscape(this.weekdays(mom, ""));
+            minPieces.push(minp);
+            shortPieces.push(shortp);
+            longPieces.push(longp);
+            mixedPieces.push(minp);
+            mixedPieces.push(shortp);
+            mixedPieces.push(longp);
+        }
+        // Sorting makes sure if one weekday (or abbr) is a prefix of another it
+        // will match the longer piece.
+        minPieces.sort(cmpLenRev);
+        shortPieces.sort(cmpLenRev);
+        longPieces.sort(cmpLenRev);
+        mixedPieces.sort(cmpLenRev);
+        this._weekdaysRegex = new RegExp("^(" + mixedPieces.join("|") + ")", "i");
+        this._weekdaysShortRegex = this._weekdaysRegex;
+        this._weekdaysMinRegex = this._weekdaysRegex;
+        this._weekdaysStrictRegex = new RegExp("^(" + longPieces.join("|") + ")", "i");
+        this._weekdaysShortStrictRegex = new RegExp("^(" + shortPieces.join("|") + ")", "i");
+        this._weekdaysMinStrictRegex = new RegExp("^(" + minPieces.join("|") + ")", "i");
+    }
+    // FORMATTING
+    function hFormat() {
+        return this.hours() % 12 || 12;
+    }
+    function kFormat() {
+        return this.hours() || 24;
+    }
+    addFormatToken("H", [
+        "HH",
+        2
+    ], 0, "hour");
+    addFormatToken("h", [
+        "hh",
+        2
+    ], 0, hFormat);
+    addFormatToken("k", [
+        "kk",
+        2
+    ], 0, kFormat);
+    addFormatToken("hmm", 0, 0, function() {
+        return "" + hFormat.apply(this) + zeroFill(this.minutes(), 2);
+    });
+    addFormatToken("hmmss", 0, 0, function() {
+        return "" + hFormat.apply(this) + zeroFill(this.minutes(), 2) + zeroFill(this.seconds(), 2);
+    });
+    addFormatToken("Hmm", 0, 0, function() {
+        return "" + this.hours() + zeroFill(this.minutes(), 2);
+    });
+    addFormatToken("Hmmss", 0, 0, function() {
+        return "" + this.hours() + zeroFill(this.minutes(), 2) + zeroFill(this.seconds(), 2);
+    });
+    function meridiem(token, lowercase) {
+        addFormatToken(token, 0, 0, function() {
+            return this.localeData().meridiem(this.hours(), this.minutes(), lowercase);
+        });
+    }
+    meridiem("a", true);
+    meridiem("A", false);
+    // PARSING
+    function matchMeridiem(isStrict, locale) {
+        return locale._meridiemParse;
+    }
+    addRegexToken("a", matchMeridiem);
+    addRegexToken("A", matchMeridiem);
+    addRegexToken("H", match1to2, match1to2HasZero);
+    addRegexToken("h", match1to2, match1to2NoLeadingZero);
+    addRegexToken("k", match1to2, match1to2NoLeadingZero);
+    addRegexToken("HH", match1to2, match2);
+    addRegexToken("hh", match1to2, match2);
+    addRegexToken("kk", match1to2, match2);
+    addRegexToken("hmm", match3to4);
+    addRegexToken("hmmss", match5to6);
+    addRegexToken("Hmm", match3to4);
+    addRegexToken("Hmmss", match5to6);
+    addParseToken([
+        "H",
+        "HH"
+    ], HOUR);
+    addParseToken([
+        "k",
+        "kk"
+    ], function(input, array, config) {
+        var kInput = toInt(input);
+        array[HOUR] = kInput === 24 ? 0 : kInput;
+    });
+    addParseToken([
+        "a",
+        "A"
+    ], function(input, array, config) {
+        config._isPm = config._locale.isPM(input);
+        config._meridiem = input;
+    });
+    addParseToken([
+        "h",
+        "hh"
+    ], function(input, array, config) {
+        array[HOUR] = toInt(input);
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken("hmm", function(input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken("hmmss", function(input, array, config) {
+        var pos1 = input.length - 4, pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken("Hmm", function(input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+    });
+    addParseToken("Hmmss", function(input, array, config) {
+        var pos1 = input.length - 4, pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
+    });
+    // LOCALES
+    function localeIsPM(input) {
+        // IE8 Quirks Mode & IE7 Standards Mode do not allow accessing strings like arrays
+        // Using charAt should be more compatible.
+        return (input + "").toLowerCase().charAt(0) === "p";
+    }
+    var defaultLocaleMeridiemParse = /[ap]\.?m?\.?/i, // Setting the hour should keep the time, because the user explicitly
+    // specified which hour they want. So trying to maintain the same hour (in
+    // a new timezone) makes sense. Adding/subtracting hours does not follow
+    // this rule.
+    getSetHour = makeGetSet("Hours", true);
+    function localeMeridiem(hours, minutes, isLower) {
+        if (hours > 11) return isLower ? "pm" : "PM";
+        else return isLower ? "am" : "AM";
+    }
+    var baseConfig = {
+        calendar: defaultCalendar,
+        longDateFormat: defaultLongDateFormat,
+        invalidDate: defaultInvalidDate,
+        ordinal: defaultOrdinal,
+        dayOfMonthOrdinalParse: defaultDayOfMonthOrdinalParse,
+        relativeTime: defaultRelativeTime,
+        months: defaultLocaleMonths,
+        monthsShort: defaultLocaleMonthsShort,
+        week: defaultLocaleWeek,
+        weekdays: defaultLocaleWeekdays,
+        weekdaysMin: defaultLocaleWeekdaysMin,
+        weekdaysShort: defaultLocaleWeekdaysShort,
+        meridiemParse: defaultLocaleMeridiemParse
+    };
+    // internal storage for locale config files
+    var locales = {}, localeFamilies = {}, globalLocale;
+    function commonPrefix(arr1, arr2) {
+        var i, minl = Math.min(arr1.length, arr2.length);
+        for(i = 0; i < minl; i += 1){
+            if (arr1[i] !== arr2[i]) return i;
+        }
+        return minl;
+    }
+    function normalizeLocale(key) {
+        return key ? key.toLowerCase().replace("_", "-") : key;
+    }
+    // pick the locale from the array
+    // try ['en-au', 'en-gb'] as 'en-au', 'en-gb', 'en', as in move through the list trying each
+    // substring from most specific to least, but move to the next array item if it's a more specific variant than the current root
+    function chooseLocale(names) {
+        var i = 0, j, next, locale, split;
+        while(i < names.length){
+            split = normalizeLocale(names[i]).split("-");
+            j = split.length;
+            next = normalizeLocale(names[i + 1]);
+            next = next ? next.split("-") : null;
+            while(j > 0){
+                locale = loadLocale(split.slice(0, j).join("-"));
+                if (locale) return locale;
+                if (next && next.length >= j && commonPrefix(split, next) >= j - 1) break;
+                j--;
+            }
+            i++;
+        }
+        return globalLocale;
+    }
+    function isLocaleNameSane(name) {
+        // Prevent names that look like filesystem paths, i.e contain '/' or '\'
+        // Ensure name is available and function returns boolean
+        return !!(name && name.match("^[^/\\\\]*$"));
+    }
+    function loadLocale(name) {
+        var oldLocale = null, aliasedRequire;
+        // TODO: Find a better way to register and load all the locales in Node
+        if (locales[name] === undefined && true && module && module.exports && isLocaleNameSane(name)) try {
+            oldLocale = globalLocale._abbr;
+            aliasedRequire = undefined;
+            aliasedRequire("./locale/" + name);
+            getSetGlobalLocale(oldLocale);
+        } catch (e) {
+            // mark as not found to avoid repeating expensive file require call causing high CPU
+            // when trying to find en-US, en_US, en-us for every format call
+            locales[name] = null; // null means not found
+        }
+        return locales[name];
+    }
+    // This function will load locale and then set the global locale.  If
+    // no arguments are passed in, it will simply return the current global
+    // locale key.
+    function getSetGlobalLocale(key, values) {
+        var data;
+        if (key) {
+            if (isUndefined(values)) data = getLocale(key);
+            else data = defineLocale(key, values);
+            if (data) // moment.duration._locale = moment._locale = data;
+            globalLocale = data;
+            else if (typeof console !== "undefined" && console.warn) //warn user if arguments are passed but the locale could not be set
+            console.warn("Locale " + key + " not found. Did you forget to load it?");
+        }
+        return globalLocale._abbr;
+    }
+    function defineLocale(name, config) {
+        if (config !== null) {
+            var locale, parentConfig = baseConfig;
+            config.abbr = name;
+            if (locales[name] != null) {
+                deprecateSimple("defineLocaleOverride", "use moment.updateLocale(localeName, config) to change an existing locale. moment.defineLocale(localeName, config) should only be used for creating a new locale See http://momentjs.com/guides/#/warnings/define-locale/ for more info.");
+                parentConfig = locales[name]._config;
+            } else if (config.parentLocale != null) {
+                if (locales[config.parentLocale] != null) parentConfig = locales[config.parentLocale]._config;
+                else {
+                    locale = loadLocale(config.parentLocale);
+                    if (locale != null) parentConfig = locale._config;
+                    else {
+                        if (!localeFamilies[config.parentLocale]) localeFamilies[config.parentLocale] = [];
+                        localeFamilies[config.parentLocale].push({
+                            name: name,
+                            config: config
+                        });
+                        return null;
+                    }
+                }
+            }
+            locales[name] = new Locale(mergeConfigs(parentConfig, config));
+            if (localeFamilies[name]) localeFamilies[name].forEach(function(x) {
+                defineLocale(x.name, x.config);
+            });
+            // backwards compat for now: also set the locale
+            // make sure we set the locale AFTER all child locales have been
+            // created, so we won't end up with the child locale set.
+            getSetGlobalLocale(name);
+            return locales[name];
+        } else {
+            // useful for testing
+            delete locales[name];
+            return null;
+        }
+    }
+    function updateLocale(name, config) {
+        if (config != null) {
+            var locale, tmpLocale, parentConfig = baseConfig;
+            if (locales[name] != null && locales[name].parentLocale != null) // Update existing child locale in-place to avoid memory-leaks
+            locales[name].set(mergeConfigs(locales[name]._config, config));
+            else {
+                // MERGE
+                tmpLocale = loadLocale(name);
+                if (tmpLocale != null) parentConfig = tmpLocale._config;
+                config = mergeConfigs(parentConfig, config);
+                if (tmpLocale == null) // updateLocale is called for creating a new locale
+                // Set abbr so it will have a name (getters return
+                // undefined otherwise).
+                config.abbr = name;
+                locale = new Locale(config);
+                locale.parentLocale = locales[name];
+                locales[name] = locale;
+            }
+            // backwards compat for now: also set the locale
+            getSetGlobalLocale(name);
+        } else // pass null for config to unupdate, useful for tests
+        if (locales[name] != null) {
+            if (locales[name].parentLocale != null) {
+                locales[name] = locales[name].parentLocale;
+                if (name === getSetGlobalLocale()) getSetGlobalLocale(name);
+            } else if (locales[name] != null) delete locales[name];
+        }
+        return locales[name];
+    }
+    // returns locale data
+    function getLocale(key) {
+        var locale;
+        if (key && key._locale && key._locale._abbr) key = key._locale._abbr;
+        if (!key) return globalLocale;
+        if (!isArray(key)) {
+            //short-circuit everything else
+            locale = loadLocale(key);
+            if (locale) return locale;
+            key = [
+                key
+            ];
+        }
+        return chooseLocale(key);
+    }
+    function listLocales() {
+        return keys(locales);
+    }
+    function checkOverflow(m) {
+        var overflow, a = m._a;
+        if (a && getParsingFlags(m).overflow === -2) {
+            overflow = a[MONTH] < 0 || a[MONTH] > 11 ? MONTH : a[DATE] < 1 || a[DATE] > daysInMonth(a[YEAR], a[MONTH]) ? DATE : a[HOUR] < 0 || a[HOUR] > 24 || a[HOUR] === 24 && (a[MINUTE] !== 0 || a[SECOND] !== 0 || a[MILLISECOND] !== 0) ? HOUR : a[MINUTE] < 0 || a[MINUTE] > 59 ? MINUTE : a[SECOND] < 0 || a[SECOND] > 59 ? SECOND : a[MILLISECOND] < 0 || a[MILLISECOND] > 999 ? MILLISECOND : -1;
+            if (getParsingFlags(m)._overflowDayOfYear && (overflow < YEAR || overflow > DATE)) overflow = DATE;
+            if (getParsingFlags(m)._overflowWeeks && overflow === -1) overflow = WEEK;
+            if (getParsingFlags(m)._overflowWeekday && overflow === -1) overflow = WEEKDAY;
+            getParsingFlags(m).overflow = overflow;
+        }
+        return m;
+    }
+    // iso 8601 regex
+    // 0000-00-00 0000-W00 or 0000-W00-0 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000 or +00)
+    var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([+-]\d\d(?::?\d\d)?|\s*Z)?)?$/, basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d|))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([+-]\d\d(?::?\d\d)?|\s*Z)?)?$/, tzRegex = /Z|[+-]\d\d(?::?\d\d)?/, isoDates = [
+        [
+            "YYYYYY-MM-DD",
+            /[+-]\d{6}-\d\d-\d\d/
+        ],
+        [
+            "YYYY-MM-DD",
+            /\d{4}-\d\d-\d\d/
+        ],
+        [
+            "GGGG-[W]WW-E",
+            /\d{4}-W\d\d-\d/
+        ],
+        [
+            "GGGG-[W]WW",
+            /\d{4}-W\d\d/,
+            false
+        ],
+        [
+            "YYYY-DDD",
+            /\d{4}-\d{3}/
+        ],
+        [
+            "YYYY-MM",
+            /\d{4}-\d\d/,
+            false
+        ],
+        [
+            "YYYYYYMMDD",
+            /[+-]\d{10}/
+        ],
+        [
+            "YYYYMMDD",
+            /\d{8}/
+        ],
+        [
+            "GGGG[W]WWE",
+            /\d{4}W\d{3}/
+        ],
+        [
+            "GGGG[W]WW",
+            /\d{4}W\d{2}/,
+            false
+        ],
+        [
+            "YYYYDDD",
+            /\d{7}/
+        ],
+        [
+            "YYYYMM",
+            /\d{6}/,
+            false
+        ],
+        [
+            "YYYY",
+            /\d{4}/,
+            false
+        ]
+    ], // iso time formats and regexes
+    isoTimes = [
+        [
+            "HH:mm:ss.SSSS",
+            /\d\d:\d\d:\d\d\.\d+/
+        ],
+        [
+            "HH:mm:ss,SSSS",
+            /\d\d:\d\d:\d\d,\d+/
+        ],
+        [
+            "HH:mm:ss",
+            /\d\d:\d\d:\d\d/
+        ],
+        [
+            "HH:mm",
+            /\d\d:\d\d/
+        ],
+        [
+            "HHmmss.SSSS",
+            /\d\d\d\d\d\d\.\d+/
+        ],
+        [
+            "HHmmss,SSSS",
+            /\d\d\d\d\d\d,\d+/
+        ],
+        [
+            "HHmmss",
+            /\d\d\d\d\d\d/
+        ],
+        [
+            "HHmm",
+            /\d\d\d\d/
+        ],
+        [
+            "HH",
+            /\d\d/
+        ]
+    ], aspNetJsonRegex = /^\/?Date\((-?\d+)/i, // RFC 2822 regex: For details see https://tools.ietf.org/html/rfc2822#section-3.3
+    rfc2822 = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/, obsOffsets = {
+        UT: 0,
+        GMT: 0,
+        EDT: -240,
+        EST: -300,
+        CDT: -300,
+        CST: -360,
+        MDT: -360,
+        MST: -420,
+        PDT: -420,
+        PST: -480
+    };
+    // date from iso format
+    function configFromISO(config) {
+        var i, l, string = config._i, match = extendedIsoRegex.exec(string) || basicIsoRegex.exec(string), allowTime, dateFormat, timeFormat, tzFormat, isoDatesLen = isoDates.length, isoTimesLen = isoTimes.length;
+        if (match) {
+            getParsingFlags(config).iso = true;
+            for(i = 0, l = isoDatesLen; i < l; i++)if (isoDates[i][1].exec(match[1])) {
+                dateFormat = isoDates[i][0];
+                allowTime = isoDates[i][2] !== false;
                 break;
             }
-            if (found) return i;
-        }
-    }
-    return -1;
-}
-Buffer.prototype.includes = function includes(val, byteOffset, encoding) {
-    return this.indexOf(val, byteOffset, encoding) !== -1;
-};
-Buffer.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
-    return bidirectionalIndexOf(this, val, byteOffset, encoding, true);
-};
-Buffer.prototype.lastIndexOf = function lastIndexOf(val, byteOffset, encoding) {
-    return bidirectionalIndexOf(this, val, byteOffset, encoding, false);
-};
-function hexWrite(buf, string, offset, length) {
-    offset = Number(offset) || 0;
-    const remaining = buf.length - offset;
-    if (!length) length = remaining;
-    else {
-        length = Number(length);
-        if (length > remaining) length = remaining;
-    }
-    const strLen = string.length;
-    if (length > strLen / 2) length = strLen / 2;
-    let i;
-    for(i = 0; i < length; ++i){
-        const parsed = parseInt(string.substr(i * 2, 2), 16);
-        if (numberIsNaN(parsed)) return i;
-        buf[offset + i] = parsed;
-    }
-    return i;
-}
-function utf8Write(buf, string, offset, length) {
-    return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length);
-}
-function asciiWrite(buf, string, offset, length) {
-    return blitBuffer(asciiToBytes(string), buf, offset, length);
-}
-function base64Write(buf, string, offset, length) {
-    return blitBuffer(base64ToBytes(string), buf, offset, length);
-}
-function ucs2Write(buf, string, offset, length) {
-    return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length);
-}
-Buffer.prototype.write = function write(string, offset, length, encoding) {
-    // Buffer#write(string)
-    if (offset === undefined) {
-        encoding = "utf8";
-        length = this.length;
-        offset = 0;
-    // Buffer#write(string, encoding)
-    } else if (length === undefined && typeof offset === "string") {
-        encoding = offset;
-        length = this.length;
-        offset = 0;
-    // Buffer#write(string, offset[, length][, encoding])
-    } else if (isFinite(offset)) {
-        offset = offset >>> 0;
-        if (isFinite(length)) {
-            length = length >>> 0;
-            if (encoding === undefined) encoding = "utf8";
-        } else {
-            encoding = length;
-            length = undefined;
-        }
-    } else throw new Error("Buffer.write(string, encoding, offset[, length]) is no longer supported");
-    const remaining = this.length - offset;
-    if (length === undefined || length > remaining) length = remaining;
-    if (string.length > 0 && (length < 0 || offset < 0) || offset > this.length) throw new RangeError("Attempt to write outside buffer bounds");
-    if (!encoding) encoding = "utf8";
-    let loweredCase = false;
-    for(;;)switch(encoding){
-        case "hex":
-            return hexWrite(this, string, offset, length);
-        case "utf8":
-        case "utf-8":
-            return utf8Write(this, string, offset, length);
-        case "ascii":
-        case "latin1":
-        case "binary":
-            return asciiWrite(this, string, offset, length);
-        case "base64":
-            // Warning: maxLength not taken into account in base64Write
-            return base64Write(this, string, offset, length);
-        case "ucs2":
-        case "ucs-2":
-        case "utf16le":
-        case "utf-16le":
-            return ucs2Write(this, string, offset, length);
-        default:
-            if (loweredCase) throw new TypeError("Unknown encoding: " + encoding);
-            encoding = ("" + encoding).toLowerCase();
-            loweredCase = true;
-    }
-};
-Buffer.prototype.toJSON = function toJSON() {
-    return {
-        type: "Buffer",
-        data: Array.prototype.slice.call(this._arr || this, 0)
-    };
-};
-function base64Slice(buf, start, end) {
-    if (start === 0 && end === buf.length) return base64.fromByteArray(buf);
-    else return base64.fromByteArray(buf.slice(start, end));
-}
-function utf8Slice(buf, start, end) {
-    end = Math.min(buf.length, end);
-    const res = [];
-    let i = start;
-    while(i < end){
-        const firstByte = buf[i];
-        let codePoint = null;
-        let bytesPerSequence = firstByte > 0xEF ? 4 : firstByte > 0xDF ? 3 : firstByte > 0xBF ? 2 : 1;
-        if (i + bytesPerSequence <= end) {
-            let secondByte, thirdByte, fourthByte, tempCodePoint;
-            switch(bytesPerSequence){
-                case 1:
-                    if (firstByte < 0x80) codePoint = firstByte;
-                    break;
-                case 2:
-                    secondByte = buf[i + 1];
-                    if ((secondByte & 0xC0) === 0x80) {
-                        tempCodePoint = (firstByte & 0x1F) << 0x6 | secondByte & 0x3F;
-                        if (tempCodePoint > 0x7F) codePoint = tempCodePoint;
-                    }
-                    break;
-                case 3:
-                    secondByte = buf[i + 1];
-                    thirdByte = buf[i + 2];
-                    if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
-                        tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | thirdByte & 0x3F;
-                        if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) codePoint = tempCodePoint;
-                    }
-                    break;
-                case 4:
-                    secondByte = buf[i + 1];
-                    thirdByte = buf[i + 2];
-                    fourthByte = buf[i + 3];
-                    if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
-                        tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | fourthByte & 0x3F;
-                        if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) codePoint = tempCodePoint;
-                    }
+            if (dateFormat == null) {
+                config._isValid = false;
+                return;
             }
-        }
-        if (codePoint === null) {
-            // we did not generate a valid codePoint so insert a
-            // replacement char (U+FFFD) and advance only 1 byte
-            codePoint = 0xFFFD;
-            bytesPerSequence = 1;
-        } else if (codePoint > 0xFFFF) {
-            // encode to utf16 (surrogate pair dance)
-            codePoint -= 0x10000;
-            res.push(codePoint >>> 10 & 0x3FF | 0xD800);
-            codePoint = 0xDC00 | codePoint & 0x3FF;
-        }
-        res.push(codePoint);
-        i += bytesPerSequence;
-    }
-    return decodeCodePointsArray(res);
-}
-// Based on http://stackoverflow.com/a/22747272/680742, the browser with
-// the lowest limit is Chrome, with 0x10000 args.
-// We go 1 magnitude less, for safety
-const MAX_ARGUMENTS_LENGTH = 0x1000;
-function decodeCodePointsArray(codePoints) {
-    const len = codePoints.length;
-    if (len <= MAX_ARGUMENTS_LENGTH) return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
-    ;
-    // Decode in chunks to avoid "call stack size exceeded".
-    let res = "";
-    let i = 0;
-    while(i < len)res += String.fromCharCode.apply(String, codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH));
-    return res;
-}
-function asciiSlice(buf, start, end) {
-    let ret = "";
-    end = Math.min(buf.length, end);
-    for(let i = start; i < end; ++i)ret += String.fromCharCode(buf[i] & 0x7F);
-    return ret;
-}
-function latin1Slice(buf, start, end) {
-    let ret = "";
-    end = Math.min(buf.length, end);
-    for(let i = start; i < end; ++i)ret += String.fromCharCode(buf[i]);
-    return ret;
-}
-function hexSlice(buf, start, end) {
-    const len = buf.length;
-    if (!start || start < 0) start = 0;
-    if (!end || end < 0 || end > len) end = len;
-    let out = "";
-    for(let i = start; i < end; ++i)out += hexSliceLookupTable[buf[i]];
-    return out;
-}
-function utf16leSlice(buf, start, end) {
-    const bytes = buf.slice(start, end);
-    let res = "";
-    // If bytes.length is odd, the last 8 bits must be ignored (same as node.js)
-    for(let i = 0; i < bytes.length - 1; i += 2)res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
-    return res;
-}
-Buffer.prototype.slice = function slice(start, end) {
-    const len = this.length;
-    start = ~~start;
-    end = end === undefined ? len : ~~end;
-    if (start < 0) {
-        start += len;
-        if (start < 0) start = 0;
-    } else if (start > len) start = len;
-    if (end < 0) {
-        end += len;
-        if (end < 0) end = 0;
-    } else if (end > len) end = len;
-    if (end < start) end = start;
-    const newBuf = this.subarray(start, end);
-    // Return an augmented `Uint8Array` instance
-    Object.setPrototypeOf(newBuf, Buffer.prototype);
-    return newBuf;
-};
-/*
- * Need to make sure that buffer isn't trying to write out of bounds.
- */ function checkOffset(offset, ext, length) {
-    if (offset % 1 !== 0 || offset < 0) throw new RangeError("offset is not uint");
-    if (offset + ext > length) throw new RangeError("Trying to access beyond buffer length");
-}
-Buffer.prototype.readUintLE = Buffer.prototype.readUIntLE = function readUIntLE(offset, byteLength, noAssert) {
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) checkOffset(offset, byteLength, this.length);
-    let val = this[offset];
-    let mul = 1;
-    let i = 0;
-    while(++i < byteLength && (mul *= 0x100))val += this[offset + i] * mul;
-    return val;
-};
-Buffer.prototype.readUintBE = Buffer.prototype.readUIntBE = function readUIntBE(offset, byteLength, noAssert) {
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) checkOffset(offset, byteLength, this.length);
-    let val = this[offset + --byteLength];
-    let mul = 1;
-    while(byteLength > 0 && (mul *= 0x100))val += this[offset + --byteLength] * mul;
-    return val;
-};
-Buffer.prototype.readUint8 = Buffer.prototype.readUInt8 = function readUInt8(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 1, this.length);
-    return this[offset];
-};
-Buffer.prototype.readUint16LE = Buffer.prototype.readUInt16LE = function readUInt16LE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 2, this.length);
-    return this[offset] | this[offset + 1] << 8;
-};
-Buffer.prototype.readUint16BE = Buffer.prototype.readUInt16BE = function readUInt16BE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 2, this.length);
-    return this[offset] << 8 | this[offset + 1];
-};
-Buffer.prototype.readUint32LE = Buffer.prototype.readUInt32LE = function readUInt32LE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 4, this.length);
-    return (this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16) + this[offset + 3] * 0x1000000;
-};
-Buffer.prototype.readUint32BE = Buffer.prototype.readUInt32BE = function readUInt32BE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 4, this.length);
-    return this[offset] * 0x1000000 + (this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3]);
-};
-Buffer.prototype.readBigUInt64LE = defineBigIntMethod(function readBigUInt64LE(offset) {
-    offset = offset >>> 0;
-    validateNumber(offset, "offset");
-    const first = this[offset];
-    const last = this[offset + 7];
-    if (first === undefined || last === undefined) boundsError(offset, this.length - 8);
-    const lo = first + this[++offset] * 256 + this[++offset] * 2 ** 16 + this[++offset] * 2 ** 24;
-    const hi = this[++offset] + this[++offset] * 256 + this[++offset] * 2 ** 16 + last * 2 ** 24;
-    return BigInt(lo) + (BigInt(hi) << BigInt(32));
-});
-Buffer.prototype.readBigUInt64BE = defineBigIntMethod(function readBigUInt64BE(offset) {
-    offset = offset >>> 0;
-    validateNumber(offset, "offset");
-    const first = this[offset];
-    const last = this[offset + 7];
-    if (first === undefined || last === undefined) boundsError(offset, this.length - 8);
-    const hi = first * 2 ** 24 + this[++offset] * 2 ** 16 + this[++offset] * 256 + this[++offset];
-    const lo = this[++offset] * 2 ** 24 + this[++offset] * 2 ** 16 + this[++offset] * 256 + last;
-    return (BigInt(hi) << BigInt(32)) + BigInt(lo);
-});
-Buffer.prototype.readIntLE = function readIntLE(offset, byteLength, noAssert) {
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) checkOffset(offset, byteLength, this.length);
-    let val = this[offset];
-    let mul = 1;
-    let i = 0;
-    while(++i < byteLength && (mul *= 0x100))val += this[offset + i] * mul;
-    mul *= 0x80;
-    if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-    return val;
-};
-Buffer.prototype.readIntBE = function readIntBE(offset, byteLength, noAssert) {
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) checkOffset(offset, byteLength, this.length);
-    let i = byteLength;
-    let mul = 1;
-    let val = this[offset + --i];
-    while(i > 0 && (mul *= 0x100))val += this[offset + --i] * mul;
-    mul *= 0x80;
-    if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-    return val;
-};
-Buffer.prototype.readInt8 = function readInt8(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 1, this.length);
-    if (!(this[offset] & 0x80)) return this[offset];
-    return (0xff - this[offset] + 1) * -1;
-};
-Buffer.prototype.readInt16LE = function readInt16LE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 2, this.length);
-    const val = this[offset] | this[offset + 1] << 8;
-    return val & 0x8000 ? val | 0xFFFF0000 : val;
-};
-Buffer.prototype.readInt16BE = function readInt16BE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 2, this.length);
-    const val = this[offset + 1] | this[offset] << 8;
-    return val & 0x8000 ? val | 0xFFFF0000 : val;
-};
-Buffer.prototype.readInt32LE = function readInt32LE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 4, this.length);
-    return this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16 | this[offset + 3] << 24;
-};
-Buffer.prototype.readInt32BE = function readInt32BE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 4, this.length);
-    return this[offset] << 24 | this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3];
-};
-Buffer.prototype.readBigInt64LE = defineBigIntMethod(function readBigInt64LE(offset) {
-    offset = offset >>> 0;
-    validateNumber(offset, "offset");
-    const first = this[offset];
-    const last = this[offset + 7];
-    if (first === undefined || last === undefined) boundsError(offset, this.length - 8);
-    const val = this[offset + 4] + this[offset + 5] * 256 + this[offset + 6] * 2 ** 16 + (last << 24 // Overflow
-    );
-    return (BigInt(val) << BigInt(32)) + BigInt(first + this[++offset] * 256 + this[++offset] * 2 ** 16 + this[++offset] * 2 ** 24);
-});
-Buffer.prototype.readBigInt64BE = defineBigIntMethod(function readBigInt64BE(offset) {
-    offset = offset >>> 0;
-    validateNumber(offset, "offset");
-    const first = this[offset];
-    const last = this[offset + 7];
-    if (first === undefined || last === undefined) boundsError(offset, this.length - 8);
-    const val = (first << 24) + // Overflow
-    this[++offset] * 2 ** 16 + this[++offset] * 256 + this[++offset];
-    return (BigInt(val) << BigInt(32)) + BigInt(this[++offset] * 2 ** 24 + this[++offset] * 2 ** 16 + this[++offset] * 256 + last);
-});
-Buffer.prototype.readFloatLE = function readFloatLE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 4, this.length);
-    return ieee754.read(this, offset, true, 23, 4);
-};
-Buffer.prototype.readFloatBE = function readFloatBE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 4, this.length);
-    return ieee754.read(this, offset, false, 23, 4);
-};
-Buffer.prototype.readDoubleLE = function readDoubleLE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 8, this.length);
-    return ieee754.read(this, offset, true, 52, 8);
-};
-Buffer.prototype.readDoubleBE = function readDoubleBE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) checkOffset(offset, 8, this.length);
-    return ieee754.read(this, offset, false, 52, 8);
-};
-function checkInt(buf, value, offset, ext, max, min) {
-    if (!Buffer.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance');
-    if (value > max || value < min) throw new RangeError('"value" argument is out of bounds');
-    if (offset + ext > buf.length) throw new RangeError("Index out of range");
-}
-Buffer.prototype.writeUintLE = Buffer.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) {
-        const maxBytes = Math.pow(2, 8 * byteLength) - 1;
-        checkInt(this, value, offset, byteLength, maxBytes, 0);
-    }
-    let mul = 1;
-    let i = 0;
-    this[offset] = value & 0xFF;
-    while(++i < byteLength && (mul *= 0x100))this[offset + i] = value / mul & 0xFF;
-    return offset + byteLength;
-};
-Buffer.prototype.writeUintBE = Buffer.prototype.writeUIntBE = function writeUIntBE(value, offset, byteLength, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) {
-        const maxBytes = Math.pow(2, 8 * byteLength) - 1;
-        checkInt(this, value, offset, byteLength, maxBytes, 0);
-    }
-    let i = byteLength - 1;
-    let mul = 1;
-    this[offset + i] = value & 0xFF;
-    while(--i >= 0 && (mul *= 0x100))this[offset + i] = value / mul & 0xFF;
-    return offset + byteLength;
-};
-Buffer.prototype.writeUint8 = Buffer.prototype.writeUInt8 = function writeUInt8(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0);
-    this[offset] = value & 0xff;
-    return offset + 1;
-};
-Buffer.prototype.writeUint16LE = Buffer.prototype.writeUInt16LE = function writeUInt16LE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0);
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-    return offset + 2;
-};
-Buffer.prototype.writeUint16BE = Buffer.prototype.writeUInt16BE = function writeUInt16BE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0);
-    this[offset] = value >>> 8;
-    this[offset + 1] = value & 0xff;
-    return offset + 2;
-};
-Buffer.prototype.writeUint32LE = Buffer.prototype.writeUInt32LE = function writeUInt32LE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0);
-    this[offset + 3] = value >>> 24;
-    this[offset + 2] = value >>> 16;
-    this[offset + 1] = value >>> 8;
-    this[offset] = value & 0xff;
-    return offset + 4;
-};
-Buffer.prototype.writeUint32BE = Buffer.prototype.writeUInt32BE = function writeUInt32BE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0);
-    this[offset] = value >>> 24;
-    this[offset + 1] = value >>> 16;
-    this[offset + 2] = value >>> 8;
-    this[offset + 3] = value & 0xff;
-    return offset + 4;
-};
-function wrtBigUInt64LE(buf, value, offset, min, max) {
-    checkIntBI(value, min, max, buf, offset, 7);
-    let lo = Number(value & BigInt(0xffffffff));
-    buf[offset++] = lo;
-    lo = lo >> 8;
-    buf[offset++] = lo;
-    lo = lo >> 8;
-    buf[offset++] = lo;
-    lo = lo >> 8;
-    buf[offset++] = lo;
-    let hi = Number(value >> BigInt(32) & BigInt(0xffffffff));
-    buf[offset++] = hi;
-    hi = hi >> 8;
-    buf[offset++] = hi;
-    hi = hi >> 8;
-    buf[offset++] = hi;
-    hi = hi >> 8;
-    buf[offset++] = hi;
-    return offset;
-}
-function wrtBigUInt64BE(buf, value, offset, min, max) {
-    checkIntBI(value, min, max, buf, offset, 7);
-    let lo = Number(value & BigInt(0xffffffff));
-    buf[offset + 7] = lo;
-    lo = lo >> 8;
-    buf[offset + 6] = lo;
-    lo = lo >> 8;
-    buf[offset + 5] = lo;
-    lo = lo >> 8;
-    buf[offset + 4] = lo;
-    let hi = Number(value >> BigInt(32) & BigInt(0xffffffff));
-    buf[offset + 3] = hi;
-    hi = hi >> 8;
-    buf[offset + 2] = hi;
-    hi = hi >> 8;
-    buf[offset + 1] = hi;
-    hi = hi >> 8;
-    buf[offset] = hi;
-    return offset + 8;
-}
-Buffer.prototype.writeBigUInt64LE = defineBigIntMethod(function writeBigUInt64LE(value, offset = 0) {
-    return wrtBigUInt64LE(this, value, offset, BigInt(0), BigInt("0xffffffffffffffff"));
-});
-Buffer.prototype.writeBigUInt64BE = defineBigIntMethod(function writeBigUInt64BE(value, offset = 0) {
-    return wrtBigUInt64BE(this, value, offset, BigInt(0), BigInt("0xffffffffffffffff"));
-});
-Buffer.prototype.writeIntLE = function writeIntLE(value, offset, byteLength, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) {
-        const limit = Math.pow(2, 8 * byteLength - 1);
-        checkInt(this, value, offset, byteLength, limit - 1, -limit);
-    }
-    let i = 0;
-    let mul = 1;
-    let sub = 0;
-    this[offset] = value & 0xFF;
-    while(++i < byteLength && (mul *= 0x100)){
-        if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) sub = 1;
-        this[offset + i] = (value / mul >> 0) - sub & 0xFF;
-    }
-    return offset + byteLength;
-};
-Buffer.prototype.writeIntBE = function writeIntBE(value, offset, byteLength, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) {
-        const limit = Math.pow(2, 8 * byteLength - 1);
-        checkInt(this, value, offset, byteLength, limit - 1, -limit);
-    }
-    let i = byteLength - 1;
-    let mul = 1;
-    let sub = 0;
-    this[offset + i] = value & 0xFF;
-    while(--i >= 0 && (mul *= 0x100)){
-        if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) sub = 1;
-        this[offset + i] = (value / mul >> 0) - sub & 0xFF;
-    }
-    return offset + byteLength;
-};
-Buffer.prototype.writeInt8 = function writeInt8(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -128);
-    if (value < 0) value = 0xff + value + 1;
-    this[offset] = value & 0xff;
-    return offset + 1;
-};
-Buffer.prototype.writeInt16LE = function writeInt16LE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -32768);
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-    return offset + 2;
-};
-Buffer.prototype.writeInt16BE = function writeInt16BE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -32768);
-    this[offset] = value >>> 8;
-    this[offset + 1] = value & 0xff;
-    return offset + 2;
-};
-Buffer.prototype.writeInt32LE = function writeInt32LE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -2147483648);
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-    this[offset + 2] = value >>> 16;
-    this[offset + 3] = value >>> 24;
-    return offset + 4;
-};
-Buffer.prototype.writeInt32BE = function writeInt32BE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -2147483648);
-    if (value < 0) value = 0xffffffff + value + 1;
-    this[offset] = value >>> 24;
-    this[offset + 1] = value >>> 16;
-    this[offset + 2] = value >>> 8;
-    this[offset + 3] = value & 0xff;
-    return offset + 4;
-};
-Buffer.prototype.writeBigInt64LE = defineBigIntMethod(function writeBigInt64LE(value, offset = 0) {
-    return wrtBigUInt64LE(this, value, offset, -BigInt("0x8000000000000000"), BigInt("0x7fffffffffffffff"));
-});
-Buffer.prototype.writeBigInt64BE = defineBigIntMethod(function writeBigInt64BE(value, offset = 0) {
-    return wrtBigUInt64BE(this, value, offset, -BigInt("0x8000000000000000"), BigInt("0x7fffffffffffffff"));
-});
-function checkIEEE754(buf, value, offset, ext, max, min) {
-    if (offset + ext > buf.length) throw new RangeError("Index out of range");
-    if (offset < 0) throw new RangeError("Index out of range");
-}
-function writeFloat(buf, value, offset, littleEndian, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -340282346638528860000000000000000000000);
-    ieee754.write(buf, value, offset, littleEndian, 23, 4);
-    return offset + 4;
-}
-Buffer.prototype.writeFloatLE = function writeFloatLE(value, offset, noAssert) {
-    return writeFloat(this, value, offset, true, noAssert);
-};
-Buffer.prototype.writeFloatBE = function writeFloatBE(value, offset, noAssert) {
-    return writeFloat(this, value, offset, false, noAssert);
-};
-function writeDouble(buf, value, offset, littleEndian, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
-    ieee754.write(buf, value, offset, littleEndian, 52, 8);
-    return offset + 8;
-}
-Buffer.prototype.writeDoubleLE = function writeDoubleLE(value, offset, noAssert) {
-    return writeDouble(this, value, offset, true, noAssert);
-};
-Buffer.prototype.writeDoubleBE = function writeDoubleBE(value, offset, noAssert) {
-    return writeDouble(this, value, offset, false, noAssert);
-};
-// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer.prototype.copy = function copy(target, targetStart, start, end) {
-    if (!Buffer.isBuffer(target)) throw new TypeError("argument should be a Buffer");
-    if (!start) start = 0;
-    if (!end && end !== 0) end = this.length;
-    if (targetStart >= target.length) targetStart = target.length;
-    if (!targetStart) targetStart = 0;
-    if (end > 0 && end < start) end = start;
-    // Copy 0 bytes; we're done
-    if (end === start) return 0;
-    if (target.length === 0 || this.length === 0) return 0;
-    // Fatal error conditions
-    if (targetStart < 0) throw new RangeError("targetStart out of bounds");
-    if (start < 0 || start >= this.length) throw new RangeError("Index out of range");
-    if (end < 0) throw new RangeError("sourceEnd out of bounds");
-    // Are we oob?
-    if (end > this.length) end = this.length;
-    if (target.length - targetStart < end - start) end = target.length - targetStart + start;
-    const len = end - start;
-    if (this === target && typeof Uint8Array.prototype.copyWithin === "function") // Use built-in when available, missing from IE11
-    this.copyWithin(targetStart, start, end);
-    else Uint8Array.prototype.set.call(target, this.subarray(start, end), targetStart);
-    return len;
-};
-// Usage:
-//    buffer.fill(number[, offset[, end]])
-//    buffer.fill(buffer[, offset[, end]])
-//    buffer.fill(string[, offset[, end]][, encoding])
-Buffer.prototype.fill = function fill(val, start, end, encoding) {
-    // Handle string cases:
-    if (typeof val === "string") {
-        if (typeof start === "string") {
-            encoding = start;
-            start = 0;
-            end = this.length;
-        } else if (typeof end === "string") {
-            encoding = end;
-            end = this.length;
-        }
-        if (encoding !== undefined && typeof encoding !== "string") throw new TypeError("encoding must be a string");
-        if (typeof encoding === "string" && !Buffer.isEncoding(encoding)) throw new TypeError("Unknown encoding: " + encoding);
-        if (val.length === 1) {
-            const code = val.charCodeAt(0);
-            if (encoding === "utf8" && code < 128 || encoding === "latin1") // Fast path: If `val` fits into a single byte, use that numeric value.
-            val = code;
-        }
-    } else if (typeof val === "number") val = val & 255;
-    else if (typeof val === "boolean") val = Number(val);
-    // Invalid ranges are not set to a default, so can range check early.
-    if (start < 0 || this.length < start || this.length < end) throw new RangeError("Out of range index");
-    if (end <= start) return this;
-    start = start >>> 0;
-    end = end === undefined ? this.length : end >>> 0;
-    if (!val) val = 0;
-    let i;
-    if (typeof val === "number") for(i = start; i < end; ++i)this[i] = val;
-    else {
-        const bytes = Buffer.isBuffer(val) ? val : Buffer.from(val, encoding);
-        const len = bytes.length;
-        if (len === 0) throw new TypeError('The value "' + val + '" is invalid for argument "value"');
-        for(i = 0; i < end - start; ++i)this[i + start] = bytes[i % len];
-    }
-    return this;
-};
-// CUSTOM ERRORS
-// =============
-// Simplified versions from Node, changed for Buffer-only usage
-const errors = {};
-function E(sym, getMessage, Base) {
-    errors[sym] = class NodeError extends Base {
-        constructor(){
-            super();
-            Object.defineProperty(this, "message", {
-                value: getMessage.apply(this, arguments),
-                writable: true,
-                configurable: true
-            });
-            // Add the error code to the name to include it in the stack trace.
-            this.name = `${this.name} [${sym}]`;
-            // Access the stack to generate the error message including the error code
-            // from the name.
-            this.stack // eslint-disable-line no-unused-expressions
-            ;
-            // Reset the name to the actual name.
-            delete this.name;
-        }
-        get code() {
-            return sym;
-        }
-        set code(value) {
-            Object.defineProperty(this, "code", {
-                configurable: true,
-                enumerable: true,
-                value,
-                writable: true
-            });
-        }
-        toString() {
-            return `${this.name} [${sym}]: ${this.message}`;
-        }
-    };
-}
-E("ERR_BUFFER_OUT_OF_BOUNDS", function(name) {
-    if (name) return `${name} is outside of buffer bounds`;
-    return "Attempt to access memory outside buffer bounds";
-}, RangeError);
-E("ERR_INVALID_ARG_TYPE", function(name, actual) {
-    return `The "${name}" argument must be of type number. Received type ${typeof actual}`;
-}, TypeError);
-E("ERR_OUT_OF_RANGE", function(str, range, input) {
-    let msg = `The value of "${str}" is out of range.`;
-    let received = input;
-    if (Number.isInteger(input) && Math.abs(input) > 2 ** 32) received = addNumericalSeparator(String(input));
-    else if (typeof input === "bigint") {
-        received = String(input);
-        if (input > BigInt(2) ** BigInt(32) || input < -(BigInt(2) ** BigInt(32))) received = addNumericalSeparator(received);
-        received += "n";
-    }
-    msg += ` It must be ${range}. Received ${received}`;
-    return msg;
-}, RangeError);
-function addNumericalSeparator(val) {
-    let res = "";
-    let i = val.length;
-    const start = val[0] === "-" ? 1 : 0;
-    for(; i >= start + 4; i -= 3)res = `_${val.slice(i - 3, i)}${res}`;
-    return `${val.slice(0, i)}${res}`;
-}
-// CHECK FUNCTIONS
-// ===============
-function checkBounds(buf, offset, byteLength) {
-    validateNumber(offset, "offset");
-    if (buf[offset] === undefined || buf[offset + byteLength] === undefined) boundsError(offset, buf.length - (byteLength + 1));
-}
-function checkIntBI(value, min, max, buf, offset, byteLength) {
-    if (value > max || value < min) {
-        const n = typeof min === "bigint" ? "n" : "";
-        let range;
-        if (byteLength > 3) {
-            if (min === 0 || min === BigInt(0)) range = `>= 0${n} and < 2${n} ** ${(byteLength + 1) * 8}${n}`;
-            else range = `>= -(2${n} ** ${(byteLength + 1) * 8 - 1}${n}) and < 2 ** ` + `${(byteLength + 1) * 8 - 1}${n}`;
-        } else range = `>= ${min}${n} and <= ${max}${n}`;
-        throw new errors.ERR_OUT_OF_RANGE("value", range, value);
-    }
-    checkBounds(buf, offset, byteLength);
-}
-function validateNumber(value, name) {
-    if (typeof value !== "number") throw new errors.ERR_INVALID_ARG_TYPE(name, "number", value);
-}
-function boundsError(value, length, type) {
-    if (Math.floor(value) !== value) {
-        validateNumber(value, type);
-        throw new errors.ERR_OUT_OF_RANGE(type || "offset", "an integer", value);
-    }
-    if (length < 0) throw new errors.ERR_BUFFER_OUT_OF_BOUNDS();
-    throw new errors.ERR_OUT_OF_RANGE(type || "offset", `>= ${type ? 1 : 0} and <= ${length}`, value);
-}
-// HELPER FUNCTIONS
-// ================
-const INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
-function base64clean(str) {
-    // Node takes equal signs as end of the Base64 encoding
-    str = str.split("=")[0];
-    // Node strips out invalid characters like \n and \t from the string, base64-js does not
-    str = str.trim().replace(INVALID_BASE64_RE, "");
-    // Node converts strings with length < 2 to ''
-    if (str.length < 2) return "";
-    // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
-    while(str.length % 4 !== 0)str = str + "=";
-    return str;
-}
-function utf8ToBytes(string, units) {
-    units = units || Infinity;
-    let codePoint;
-    const length = string.length;
-    let leadSurrogate = null;
-    const bytes = [];
-    for(let i = 0; i < length; ++i){
-        codePoint = string.charCodeAt(i);
-        // is surrogate component
-        if (codePoint > 0xD7FF && codePoint < 0xE000) {
-            // last char was a lead
-            if (!leadSurrogate) {
-                // no lead yet
-                if (codePoint > 0xDBFF) {
-                    // unexpected trail
-                    if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-                    continue;
-                } else if (i + 1 === length) {
-                    // unpaired lead
-                    if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-                    continue;
+            if (match[3]) {
+                for(i = 0, l = isoTimesLen; i < l; i++)if (isoTimes[i][1].exec(match[3])) {
+                    // match[2] should be 'T' or space
+                    timeFormat = (match[2] || " ") + isoTimes[i][0];
+                    break;
                 }
-                // valid lead
-                leadSurrogate = codePoint;
-                continue;
-            }
-            // 2 leads in a row
-            if (codePoint < 0xDC00) {
-                if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-                leadSurrogate = codePoint;
-                continue;
-            }
-            // valid surrogate pair
-            codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000;
-        } else if (leadSurrogate) // valid bmp char, but last char was a lead
-        {
-            if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-        }
-        leadSurrogate = null;
-        // encode utf8
-        if (codePoint < 0x80) {
-            if ((units -= 1) < 0) break;
-            bytes.push(codePoint);
-        } else if (codePoint < 0x800) {
-            if ((units -= 2) < 0) break;
-            bytes.push(codePoint >> 0x6 | 0xC0, codePoint & 0x3F | 0x80);
-        } else if (codePoint < 0x10000) {
-            if ((units -= 3) < 0) break;
-            bytes.push(codePoint >> 0xC | 0xE0, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
-        } else if (codePoint < 0x110000) {
-            if ((units -= 4) < 0) break;
-            bytes.push(codePoint >> 0x12 | 0xF0, codePoint >> 0xC & 0x3F | 0x80, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
-        } else throw new Error("Invalid code point");
-    }
-    return bytes;
-}
-function asciiToBytes(str) {
-    const byteArray = [];
-    for(let i = 0; i < str.length; ++i)// Node's code seems to be doing this and not & 0x7F..
-    byteArray.push(str.charCodeAt(i) & 0xFF);
-    return byteArray;
-}
-function utf16leToBytes(str, units) {
-    let c, hi, lo;
-    const byteArray = [];
-    for(let i = 0; i < str.length; ++i){
-        if ((units -= 2) < 0) break;
-        c = str.charCodeAt(i);
-        hi = c >> 8;
-        lo = c % 256;
-        byteArray.push(lo);
-        byteArray.push(hi);
-    }
-    return byteArray;
-}
-function base64ToBytes(str) {
-    return base64.toByteArray(base64clean(str));
-}
-function blitBuffer(src, dst, offset, length) {
-    let i;
-    for(i = 0; i < length; ++i){
-        if (i + offset >= dst.length || i >= src.length) break;
-        dst[i + offset] = src[i];
-    }
-    return i;
-}
-// ArrayBuffer or Uint8Array objects from other contexts (i.e. iframes) do not pass
-// the `instanceof` check but they should be treated as of that type.
-// See: https://github.com/feross/buffer/issues/166
-function isInstance(obj, type) {
-    return obj instanceof type || obj != null && obj.constructor != null && obj.constructor.name != null && obj.constructor.name === type.name;
-}
-function numberIsNaN(obj) {
-    // For IE11 support
-    return obj !== obj // eslint-disable-line no-self-compare
-    ;
-}
-// Create lookup table for `toString('hex')`
-// See: https://github.com/feross/buffer/issues/219
-const hexSliceLookupTable = function() {
-    const alphabet = "0123456789abcdef";
-    const table = new Array(256);
-    for(let i = 0; i < 16; ++i){
-        const i16 = i * 16;
-        for(let j = 0; j < 16; ++j)table[i16 + j] = alphabet[i] + alphabet[j];
-    }
-    return table;
-}();
-// Return not function with Error if BigInt not supported
-function defineBigIntMethod(fn) {
-    return typeof BigInt === "undefined" ? BufferBigIntNotDefined : fn;
-}
-function BufferBigIntNotDefined() {
-    throw new Error("BigInt not supported");
-}
-
-},{"9c62938f1dccc73c":"eIiSV","aceacb6a4531a9d2":"cO95r"}],"eIiSV":[function(require,module,exports) {
-"use strict";
-exports.byteLength = byteLength;
-exports.toByteArray = toByteArray;
-exports.fromByteArray = fromByteArray;
-var lookup = [];
-var revLookup = [];
-var Arr = typeof Uint8Array !== "undefined" ? Uint8Array : Array;
-var code = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-for(var i = 0, len = code.length; i < len; ++i){
-    lookup[i] = code[i];
-    revLookup[code.charCodeAt(i)] = i;
-}
-// Support decoding URL-safe base64 strings, as Node.js does.
-// See: https://en.wikipedia.org/wiki/Base64#URL_applications
-revLookup["-".charCodeAt(0)] = 62;
-revLookup["_".charCodeAt(0)] = 63;
-function getLens(b64) {
-    var len = b64.length;
-    if (len % 4 > 0) throw new Error("Invalid string. Length must be a multiple of 4");
-    // Trim off extra bytes after placeholder bytes are found
-    // See: https://github.com/beatgammit/base64-js/issues/42
-    var validLen = b64.indexOf("=");
-    if (validLen === -1) validLen = len;
-    var placeHoldersLen = validLen === len ? 0 : 4 - validLen % 4;
-    return [
-        validLen,
-        placeHoldersLen
-    ];
-}
-// base64 is 4/3 + up to two characters of the original data
-function byteLength(b64) {
-    var lens = getLens(b64);
-    var validLen = lens[0];
-    var placeHoldersLen = lens[1];
-    return (validLen + placeHoldersLen) * 3 / 4 - placeHoldersLen;
-}
-function _byteLength(b64, validLen, placeHoldersLen) {
-    return (validLen + placeHoldersLen) * 3 / 4 - placeHoldersLen;
-}
-function toByteArray(b64) {
-    var tmp;
-    var lens = getLens(b64);
-    var validLen = lens[0];
-    var placeHoldersLen = lens[1];
-    var arr = new Arr(_byteLength(b64, validLen, placeHoldersLen));
-    var curByte = 0;
-    // if there are placeholders, only get up to the last complete 4 chars
-    var len = placeHoldersLen > 0 ? validLen - 4 : validLen;
-    var i;
-    for(i = 0; i < len; i += 4){
-        tmp = revLookup[b64.charCodeAt(i)] << 18 | revLookup[b64.charCodeAt(i + 1)] << 12 | revLookup[b64.charCodeAt(i + 2)] << 6 | revLookup[b64.charCodeAt(i + 3)];
-        arr[curByte++] = tmp >> 16 & 0xFF;
-        arr[curByte++] = tmp >> 8 & 0xFF;
-        arr[curByte++] = tmp & 0xFF;
-    }
-    if (placeHoldersLen === 2) {
-        tmp = revLookup[b64.charCodeAt(i)] << 2 | revLookup[b64.charCodeAt(i + 1)] >> 4;
-        arr[curByte++] = tmp & 0xFF;
-    }
-    if (placeHoldersLen === 1) {
-        tmp = revLookup[b64.charCodeAt(i)] << 10 | revLookup[b64.charCodeAt(i + 1)] << 4 | revLookup[b64.charCodeAt(i + 2)] >> 2;
-        arr[curByte++] = tmp >> 8 & 0xFF;
-        arr[curByte++] = tmp & 0xFF;
-    }
-    return arr;
-}
-function tripletToBase64(num) {
-    return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F];
-}
-function encodeChunk(uint8, start, end) {
-    var tmp;
-    var output = [];
-    for(var i = start; i < end; i += 3){
-        tmp = (uint8[i] << 16 & 0xFF0000) + (uint8[i + 1] << 8 & 0xFF00) + (uint8[i + 2] & 0xFF);
-        output.push(tripletToBase64(tmp));
-    }
-    return output.join("");
-}
-function fromByteArray(uint8) {
-    var tmp;
-    var len = uint8.length;
-    var extraBytes = len % 3 // if we have 1 byte left, pad 2 bytes
-    ;
-    var parts = [];
-    var maxChunkLength = 16383 // must be multiple of 3
-    ;
-    // go through the array every three bytes, we'll deal with trailing stuff later
-    for(var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength)parts.push(encodeChunk(uint8, i, i + maxChunkLength > len2 ? len2 : i + maxChunkLength));
-    // pad the end with zeros, but make sure to not forget the extra bytes
-    if (extraBytes === 1) {
-        tmp = uint8[len - 1];
-        parts.push(lookup[tmp >> 2] + lookup[tmp << 4 & 0x3F] + "==");
-    } else if (extraBytes === 2) {
-        tmp = (uint8[len - 2] << 8) + uint8[len - 1];
-        parts.push(lookup[tmp >> 10] + lookup[tmp >> 4 & 0x3F] + lookup[tmp << 2 & 0x3F] + "=");
-    }
-    return parts.join("");
-}
-
-},{}],"cO95r":[function(require,module,exports) {
-/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */ exports.read = function(buffer, offset, isLE, mLen, nBytes) {
-    var e, m;
-    var eLen = nBytes * 8 - mLen - 1;
-    var eMax = (1 << eLen) - 1;
-    var eBias = eMax >> 1;
-    var nBits = -7;
-    var i = isLE ? nBytes - 1 : 0;
-    var d = isLE ? -1 : 1;
-    var s = buffer[offset + i];
-    i += d;
-    e = s & (1 << -nBits) - 1;
-    s >>= -nBits;
-    nBits += eLen;
-    for(; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8);
-    m = e & (1 << -nBits) - 1;
-    e >>= -nBits;
-    nBits += mLen;
-    for(; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8);
-    if (e === 0) e = 1 - eBias;
-    else if (e === eMax) return m ? NaN : (s ? -1 : 1) * Infinity;
-    else {
-        m = m + Math.pow(2, mLen);
-        e = e - eBias;
-    }
-    return (s ? -1 : 1) * m * Math.pow(2, e - mLen);
-};
-exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
-    var e, m, c;
-    var eLen = nBytes * 8 - mLen - 1;
-    var eMax = (1 << eLen) - 1;
-    var eBias = eMax >> 1;
-    var rt = mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0;
-    var i = isLE ? 0 : nBytes - 1;
-    var d = isLE ? 1 : -1;
-    var s = value < 0 || value === 0 && 1 / value < 0 ? 1 : 0;
-    value = Math.abs(value);
-    if (isNaN(value) || value === Infinity) {
-        m = isNaN(value) ? 1 : 0;
-        e = eMax;
-    } else {
-        e = Math.floor(Math.log(value) / Math.LN2);
-        if (value * (c = Math.pow(2, -e)) < 1) {
-            e--;
-            c *= 2;
-        }
-        if (e + eBias >= 1) value += rt / c;
-        else value += rt * Math.pow(2, 1 - eBias);
-        if (value * c >= 2) {
-            e++;
-            c /= 2;
-        }
-        if (e + eBias >= eMax) {
-            m = 0;
-            e = eMax;
-        } else if (e + eBias >= 1) {
-            m = (value * c - 1) * Math.pow(2, mLen);
-            e = e + eBias;
-        } else {
-            m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
-            e = 0;
-        }
-    }
-    for(; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8);
-    e = e << mLen | m;
-    eLen += mLen;
-    for(; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8);
-    buffer[offset + i - d] |= s * 128;
-};
-
-},{}],"3ENKs":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-"use strict";
-/**
- * Create an Error with the specified message, config, error code, request and response.
- *
- * @param {string} message The error message.
- * @param {string} [code] The error code (for example, 'ECONNABORTED').
- * @param {Object} [config] The config.
- * @param {Object} [request] The request.
- * @param {Object} [response] The response.
- *
- * @returns {Error} The created error.
- */ function AxiosError(message, code, config, request, response) {
-    Error.call(this);
-    if (Error.captureStackTrace) Error.captureStackTrace(this, this.constructor);
-    else this.stack = new Error().stack;
-    this.message = message;
-    this.name = "AxiosError";
-    code && (this.code = code);
-    config && (this.config = config);
-    request && (this.request = request);
-    response && (this.response = response);
-}
-(0, _utilsJsDefault.default).inherits(AxiosError, Error, {
-    toJSON: function toJSON() {
-        return {
-            // Standard
-            message: this.message,
-            name: this.name,
-            // Microsoft
-            description: this.description,
-            number: this.number,
-            // Mozilla
-            fileName: this.fileName,
-            lineNumber: this.lineNumber,
-            columnNumber: this.columnNumber,
-            stack: this.stack,
-            // Axios
-            config: (0, _utilsJsDefault.default).toJSONObject(this.config),
-            code: this.code,
-            status: this.response && this.response.status ? this.response.status : null
-        };
-    }
-});
-const prototype = AxiosError.prototype;
-const descriptors = {};
-[
-    "ERR_BAD_OPTION_VALUE",
-    "ERR_BAD_OPTION",
-    "ECONNABORTED",
-    "ETIMEDOUT",
-    "ERR_NETWORK",
-    "ERR_FR_TOO_MANY_REDIRECTS",
-    "ERR_DEPRECATED",
-    "ERR_BAD_RESPONSE",
-    "ERR_BAD_REQUEST",
-    "ERR_CANCELED",
-    "ERR_NOT_SUPPORT",
-    "ERR_INVALID_URL"
-].forEach((code)=>{
-    descriptors[code] = {
-        value: code
-    };
-});
-Object.defineProperties(AxiosError, descriptors);
-Object.defineProperty(prototype, "isAxiosError", {
-    value: true
-});
-// eslint-disable-next-line func-names
-AxiosError.from = (error, code, config, request, response, customProps)=>{
-    const axiosError = Object.create(prototype);
-    (0, _utilsJsDefault.default).toFlatObject(error, axiosError, function filter(obj) {
-        return obj !== Error.prototype;
-    }, (prop)=>{
-        return prop !== "isAxiosError";
-    });
-    AxiosError.call(axiosError, error.message, code, config, request, response);
-    axiosError.cause = error;
-    axiosError.name = error.name;
-    customProps && Object.assign(axiosError, customProps);
-    return axiosError;
-};
-exports.default = AxiosError;
-
-},{"../utils.js":"k4bLS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6IkIZ":[function(require,module,exports) {
-// eslint-disable-next-line strict
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-exports.default = null;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hyiSI":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("./../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-"use strict";
-class InterceptorManager {
-    constructor(){
-        this.handlers = [];
-    }
-    /**
-   * Add a new interceptor to the stack
-   *
-   * @param {Function} fulfilled The function to handle `then` for a `Promise`
-   * @param {Function} rejected The function to handle `reject` for a `Promise`
-   *
-   * @return {Number} An ID used to remove interceptor later
-   */ use(fulfilled, rejected, options) {
-        this.handlers.push({
-            fulfilled,
-            rejected,
-            synchronous: options ? options.synchronous : false,
-            runWhen: options ? options.runWhen : null
-        });
-        return this.handlers.length - 1;
-    }
-    /**
-   * Remove an interceptor from the stack
-   *
-   * @param {Number} id The ID that was returned by `use`
-   *
-   * @returns {Boolean} `true` if the interceptor was removed, `false` otherwise
-   */ eject(id) {
-        if (this.handlers[id]) this.handlers[id] = null;
-    }
-    /**
-   * Clear all interceptors from the stack
-   *
-   * @returns {void}
-   */ clear() {
-        if (this.handlers) this.handlers = [];
-    }
-    /**
-   * Iterate over all the registered interceptors
-   *
-   * This method is particularly useful for skipping over any
-   * interceptors that may have become `null` calling `eject`.
-   *
-   * @param {Function} fn The function to call for each interceptor
-   *
-   * @returns {void}
-   */ forEach(fn) {
-        (0, _utilsJsDefault.default).forEach(this.handlers, function forEachHandler(h) {
-            if (h !== null) fn(h);
-        });
-    }
-}
-exports.default = InterceptorManager;
-
-},{"./../utils.js":"k4bLS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3m06o":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>dispatchRequest);
-var _transformDataJs = require("./transformData.js");
-var _transformDataJsDefault = parcelHelpers.interopDefault(_transformDataJs);
-var _isCancelJs = require("../cancel/isCancel.js");
-var _isCancelJsDefault = parcelHelpers.interopDefault(_isCancelJs);
-var _indexJs = require("../defaults/index.js");
-var _indexJsDefault = parcelHelpers.interopDefault(_indexJs);
-var _canceledErrorJs = require("../cancel/CanceledError.js");
-var _canceledErrorJsDefault = parcelHelpers.interopDefault(_canceledErrorJs);
-var _axiosHeadersJs = require("../core/AxiosHeaders.js");
-var _axiosHeadersJsDefault = parcelHelpers.interopDefault(_axiosHeadersJs);
-var _adaptersJs = require("../adapters/adapters.js");
-var _adaptersJsDefault = parcelHelpers.interopDefault(_adaptersJs);
-"use strict";
-/**
- * Throws a `CanceledError` if cancellation has been requested.
- *
- * @param {Object} config The config that is to be used for the request
- *
- * @returns {void}
- */ function throwIfCancellationRequested(config) {
-    if (config.cancelToken) config.cancelToken.throwIfRequested();
-    if (config.signal && config.signal.aborted) throw new (0, _canceledErrorJsDefault.default)(null, config);
-}
-function dispatchRequest(config) {
-    throwIfCancellationRequested(config);
-    config.headers = (0, _axiosHeadersJsDefault.default).from(config.headers);
-    // Transform request data
-    config.data = (0, _transformDataJsDefault.default).call(config, config.transformRequest);
-    if ([
-        "post",
-        "put",
-        "patch"
-    ].indexOf(config.method) !== -1) config.headers.setContentType("application/x-www-form-urlencoded", false);
-    const adapter = (0, _adaptersJsDefault.default).getAdapter(config.adapter || (0, _indexJsDefault.default).adapter);
-    return adapter(config).then(function onAdapterResolution(response) {
-        throwIfCancellationRequested(config);
-        // Transform response data
-        response.data = (0, _transformDataJsDefault.default).call(config, config.transformResponse, response);
-        response.headers = (0, _axiosHeadersJsDefault.default).from(response.headers);
-        return response;
-    }, function onAdapterRejection(reason) {
-        if (!(0, _isCancelJsDefault.default)(reason)) {
-            throwIfCancellationRequested(config);
-            // Transform response data
-            if (reason && reason.response) {
-                reason.response.data = (0, _transformDataJsDefault.default).call(config, config.transformResponse, reason.response);
-                reason.response.headers = (0, _axiosHeadersJsDefault.default).from(reason.response.headers);
-            }
-        }
-        return Promise.reject(reason);
-    });
-}
-
-},{"./transformData.js":"bXF5y","../cancel/isCancel.js":"dqDry","../defaults/index.js":"4OxOl","../cancel/CanceledError.js":"brm73","../core/AxiosHeaders.js":"fYuyb","../adapters/adapters.js":"fYQVc","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bXF5y":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>transformData);
-var _utilsJs = require("./../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _indexJs = require("../defaults/index.js");
-var _indexJsDefault = parcelHelpers.interopDefault(_indexJs);
-var _axiosHeadersJs = require("../core/AxiosHeaders.js");
-var _axiosHeadersJsDefault = parcelHelpers.interopDefault(_axiosHeadersJs);
-"use strict";
-function transformData(fns, response) {
-    const config = this || (0, _indexJsDefault.default);
-    const context = response || config;
-    const headers = (0, _axiosHeadersJsDefault.default).from(context.headers);
-    let data = context.data;
-    (0, _utilsJsDefault.default).forEach(fns, function transform(fn) {
-        data = fn.call(config, data, headers.normalize(), response ? response.status : undefined);
-    });
-    headers.normalize();
-    return data;
-}
-
-},{"./../utils.js":"k4bLS","../defaults/index.js":"4OxOl","../core/AxiosHeaders.js":"fYuyb","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4OxOl":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _axiosErrorJs = require("../core/AxiosError.js");
-var _axiosErrorJsDefault = parcelHelpers.interopDefault(_axiosErrorJs);
-var _transitionalJs = require("./transitional.js");
-var _transitionalJsDefault = parcelHelpers.interopDefault(_transitionalJs);
-var _toFormDataJs = require("../helpers/toFormData.js");
-var _toFormDataJsDefault = parcelHelpers.interopDefault(_toFormDataJs);
-var _toURLEncodedFormJs = require("../helpers/toURLEncodedForm.js");
-var _toURLEncodedFormJsDefault = parcelHelpers.interopDefault(_toURLEncodedFormJs);
-var _indexJs = require("../platform/index.js");
-var _indexJsDefault = parcelHelpers.interopDefault(_indexJs);
-var _formDataToJSONJs = require("../helpers/formDataToJSON.js");
-var _formDataToJSONJsDefault = parcelHelpers.interopDefault(_formDataToJSONJs);
-"use strict";
-/**
- * It takes a string, tries to parse it, and if it fails, it returns the stringified version
- * of the input
- *
- * @param {any} rawValue - The value to be stringified.
- * @param {Function} parser - A function that parses a string into a JavaScript object.
- * @param {Function} encoder - A function that takes a value and returns a string.
- *
- * @returns {string} A stringified version of the rawValue.
- */ function stringifySafely(rawValue, parser, encoder) {
-    if ((0, _utilsJsDefault.default).isString(rawValue)) try {
-        (parser || JSON.parse)(rawValue);
-        return (0, _utilsJsDefault.default).trim(rawValue);
-    } catch (e) {
-        if (e.name !== "SyntaxError") throw e;
-    }
-    return (encoder || JSON.stringify)(rawValue);
-}
-const defaults = {
-    transitional: (0, _transitionalJsDefault.default),
-    adapter: [
-        "xhr",
-        "http"
-    ],
-    transformRequest: [
-        function transformRequest(data, headers) {
-            const contentType = headers.getContentType() || "";
-            const hasJSONContentType = contentType.indexOf("application/json") > -1;
-            const isObjectPayload = (0, _utilsJsDefault.default).isObject(data);
-            if (isObjectPayload && (0, _utilsJsDefault.default).isHTMLForm(data)) data = new FormData(data);
-            const isFormData = (0, _utilsJsDefault.default).isFormData(data);
-            if (isFormData) {
-                if (!hasJSONContentType) return data;
-                return hasJSONContentType ? JSON.stringify((0, _formDataToJSONJsDefault.default)(data)) : data;
-            }
-            if ((0, _utilsJsDefault.default).isArrayBuffer(data) || (0, _utilsJsDefault.default).isBuffer(data) || (0, _utilsJsDefault.default).isStream(data) || (0, _utilsJsDefault.default).isFile(data) || (0, _utilsJsDefault.default).isBlob(data)) return data;
-            if ((0, _utilsJsDefault.default).isArrayBufferView(data)) return data.buffer;
-            if ((0, _utilsJsDefault.default).isURLSearchParams(data)) {
-                headers.setContentType("application/x-www-form-urlencoded;charset=utf-8", false);
-                return data.toString();
-            }
-            let isFileList;
-            if (isObjectPayload) {
-                if (contentType.indexOf("application/x-www-form-urlencoded") > -1) return (0, _toURLEncodedFormJsDefault.default)(data, this.formSerializer).toString();
-                if ((isFileList = (0, _utilsJsDefault.default).isFileList(data)) || contentType.indexOf("multipart/form-data") > -1) {
-                    const _FormData = this.env && this.env.FormData;
-                    return (0, _toFormDataJsDefault.default)(isFileList ? {
-                        "files[]": data
-                    } : data, _FormData && new _FormData(), this.formSerializer);
+                if (timeFormat == null) {
+                    config._isValid = false;
+                    return;
                 }
             }
-            if (isObjectPayload || hasJSONContentType) {
-                headers.setContentType("application/json", false);
-                return stringifySafely(data);
+            if (!allowTime && timeFormat != null) {
+                config._isValid = false;
+                return;
             }
-            return data;
-        }
-    ],
-    transformResponse: [
-        function transformResponse(data) {
-            const transitional = this.transitional || defaults.transitional;
-            const forcedJSONParsing = transitional && transitional.forcedJSONParsing;
-            const JSONRequested = this.responseType === "json";
-            if (data && (0, _utilsJsDefault.default).isString(data) && (forcedJSONParsing && !this.responseType || JSONRequested)) {
-                const silentJSONParsing = transitional && transitional.silentJSONParsing;
-                const strictJSONParsing = !silentJSONParsing && JSONRequested;
-                try {
-                    return JSON.parse(data);
-                } catch (e) {
-                    if (strictJSONParsing) {
-                        if (e.name === "SyntaxError") throw (0, _axiosErrorJsDefault.default).from(e, (0, _axiosErrorJsDefault.default).ERR_BAD_RESPONSE, this, null, this.response);
-                        throw e;
-                    }
+            if (match[4]) {
+                if (tzRegex.exec(match[4])) tzFormat = "Z";
+                else {
+                    config._isValid = false;
+                    return;
                 }
             }
-            return data;
-        }
-    ],
-    /**
-   * A timeout in milliseconds to abort a request. If set to 0 (default) a
-   * timeout is not created.
-   */ timeout: 0,
-    xsrfCookieName: "XSRF-TOKEN",
-    xsrfHeaderName: "X-XSRF-TOKEN",
-    maxContentLength: -1,
-    maxBodyLength: -1,
-    env: {
-        FormData: (0, _indexJsDefault.default).classes.FormData,
-        Blob: (0, _indexJsDefault.default).classes.Blob
-    },
-    validateStatus: function validateStatus(status) {
-        return status >= 200 && status < 300;
-    },
-    headers: {
-        common: {
-            "Accept": "application/json, text/plain, */*",
-            "Content-Type": undefined
-        }
+            config._f = dateFormat + (timeFormat || "") + (tzFormat || "");
+            configFromStringAndFormat(config);
+        } else config._isValid = false;
     }
-};
-(0, _utilsJsDefault.default).forEach([
-    "delete",
-    "get",
-    "head",
-    "post",
-    "put",
-    "patch"
-], (method)=>{
-    defaults.headers[method] = {};
-});
-exports.default = defaults;
-
-},{"../utils.js":"k4bLS","../core/AxiosError.js":"3ENKs","./transitional.js":"gZUpF","../helpers/toFormData.js":"bQGt0","../helpers/toURLEncodedForm.js":"dvtBA","../platform/index.js":"hANG0","../helpers/formDataToJSON.js":"7lCGj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gZUpF":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-"use strict";
-exports.default = {
-    silentJSONParsing: true,
-    forcedJSONParsing: true,
-    clarifyTimeoutError: false
-};
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dvtBA":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>toURLEncodedForm);
-var _utilsJs = require("../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _toFormDataJs = require("./toFormData.js");
-var _toFormDataJsDefault = parcelHelpers.interopDefault(_toFormDataJs);
-var _indexJs = require("../platform/index.js");
-var _indexJsDefault = parcelHelpers.interopDefault(_indexJs);
-"use strict";
-function toURLEncodedForm(data, options) {
-    return (0, _toFormDataJsDefault.default)(data, new (0, _indexJsDefault.default).classes.URLSearchParams(), Object.assign({
-        visitor: function(value, key, path, helpers) {
-            if ((0, _indexJsDefault.default).isNode && (0, _utilsJsDefault.default).isBuffer(value)) {
-                this.append(key, value.toString("base64"));
+    function extractFromRFC2822Strings(yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr) {
+        var result = [
+            untruncateYear(yearStr),
+            defaultLocaleMonthsShort.indexOf(monthStr),
+            parseInt(dayStr, 10),
+            parseInt(hourStr, 10),
+            parseInt(minuteStr, 10)
+        ];
+        if (secondStr) result.push(parseInt(secondStr, 10));
+        return result;
+    }
+    function untruncateYear(yearStr) {
+        var year = parseInt(yearStr, 10);
+        if (year <= 49) return 2000 + year;
+        else if (year <= 999) return 1900 + year;
+        return year;
+    }
+    function preprocessRFC2822(s) {
+        // Remove comments and folding whitespace and replace multiple-spaces with a single space
+        return s.replace(/\([^()]*\)|[\n\t]/g, " ").replace(/(\s\s+)/g, " ").replace(/^\s\s*/, "").replace(/\s\s*$/, "");
+    }
+    function checkWeekday(weekdayStr, parsedInput, config) {
+        if (weekdayStr) {
+            // TODO: Replace the vanilla JS Date object with an independent day-of-week check.
+            var weekdayProvided = defaultLocaleWeekdaysShort.indexOf(weekdayStr), weekdayActual = new Date(parsedInput[0], parsedInput[1], parsedInput[2]).getDay();
+            if (weekdayProvided !== weekdayActual) {
+                getParsingFlags(config).weekdayMismatch = true;
+                config._isValid = false;
                 return false;
             }
-            return helpers.defaultVisitor.apply(this, arguments);
         }
-    }, options));
-}
-
-},{"../utils.js":"k4bLS","./toFormData.js":"bQGt0","../platform/index.js":"hANG0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hANG0":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _indexJs = require("./node/index.js");
-var _indexJsDefault = parcelHelpers.interopDefault(_indexJs);
-var _utilsJs = require("./common/utils.js");
-exports.default = {
-    ..._utilsJs,
-    ...(0, _indexJsDefault.default)
-};
-
-},{"./node/index.js":"jM1hF","./common/utils.js":"7OSKs","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jM1hF":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _urlsearchParamsJs = require("./classes/URLSearchParams.js");
-var _urlsearchParamsJsDefault = parcelHelpers.interopDefault(_urlsearchParamsJs);
-var _formDataJs = require("./classes/FormData.js");
-var _formDataJsDefault = parcelHelpers.interopDefault(_formDataJs);
-var _blobJs = require("./classes/Blob.js");
-var _blobJsDefault = parcelHelpers.interopDefault(_blobJs);
-exports.default = {
-    isBrowser: true,
-    classes: {
-        URLSearchParams: (0, _urlsearchParamsJsDefault.default),
-        FormData: (0, _formDataJsDefault.default),
-        Blob: (0, _blobJsDefault.default)
-    },
-    protocols: [
-        "http",
-        "https",
-        "file",
-        "blob",
-        "url",
-        "data"
-    ]
-};
-
-},{"./classes/URLSearchParams.js":"1QRhH","./classes/FormData.js":"3XqBo","./classes/Blob.js":"fGlNo","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1QRhH":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _axiosURLSearchParamsJs = require("../../../helpers/AxiosURLSearchParams.js");
-var _axiosURLSearchParamsJsDefault = parcelHelpers.interopDefault(_axiosURLSearchParamsJs);
-"use strict";
-exports.default = typeof URLSearchParams !== "undefined" ? URLSearchParams : (0, _axiosURLSearchParamsJsDefault.default);
-
-},{"../../../helpers/AxiosURLSearchParams.js":"gRLON","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3XqBo":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-"use strict";
-exports.default = typeof FormData !== "undefined" ? FormData : null;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fGlNo":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-"use strict";
-exports.default = typeof Blob !== "undefined" ? Blob : null;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7OSKs":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "hasBrowserEnv", ()=>hasBrowserEnv);
-parcelHelpers.export(exports, "hasStandardBrowserWebWorkerEnv", ()=>hasStandardBrowserWebWorkerEnv);
-parcelHelpers.export(exports, "hasStandardBrowserEnv", ()=>hasStandardBrowserEnv);
-const hasBrowserEnv = typeof window !== "undefined" && typeof document !== "undefined";
-/**
- * Determine if we're running in a standard browser environment
- *
- * This allows axios to run in a web worker, and react-native.
- * Both environments support XMLHttpRequest, but not fully standard globals.
- *
- * web workers:
- *  typeof window -> undefined
- *  typeof document -> undefined
- *
- * react-native:
- *  navigator.product -> 'ReactNative'
- * nativescript
- *  navigator.product -> 'NativeScript' or 'NS'
- *
- * @returns {boolean}
- */ const hasStandardBrowserEnv = ((product)=>{
-    return hasBrowserEnv && [
-        "ReactNative",
-        "NativeScript",
-        "NS"
-    ].indexOf(product) < 0;
-})(typeof navigator !== "undefined" && navigator.product);
-/**
- * Determine if we're running in a standard browser webWorker environment
- *
- * Although the `isStandardBrowserEnv` method indicates that
- * `allows axios to run in a web worker`, the WebWorker will still be
- * filtered out due to its judgment standard
- * `typeof window !== 'undefined' && typeof document !== 'undefined'`.
- * This leads to a problem when axios post `FormData` in webWorker
- */ const hasStandardBrowserWebWorkerEnv = (()=>{
-    return typeof WorkerGlobalScope !== "undefined" && // eslint-disable-next-line no-undef
-    self instanceof WorkerGlobalScope && typeof self.importScripts === "function";
-})();
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7lCGj":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-"use strict";
-/**
- * It takes a string like `foo[x][y][z]` and returns an array like `['foo', 'x', 'y', 'z']
- *
- * @param {string} name - The name of the property to get.
- *
- * @returns An array of strings.
- */ function parsePropPath(name) {
-    // foo[x][y][z]
-    // foo.x.y.z
-    // foo-x-y-z
-    // foo x y z
-    return (0, _utilsJsDefault.default).matchAll(/\w+|\[(\w*)]/g, name).map((match)=>{
-        return match[0] === "[]" ? "" : match[1] || match[0];
+        return true;
+    }
+    function calculateOffset(obsOffset, militaryOffset, numOffset) {
+        if (obsOffset) return obsOffsets[obsOffset];
+        else if (militaryOffset) // the only allowed military tz is Z
+        return 0;
+        else {
+            var hm = parseInt(numOffset, 10), m = hm % 100, h = (hm - m) / 100;
+            return h * 60 + m;
+        }
+    }
+    // date and time from ref 2822 format
+    function configFromRFC2822(config) {
+        var match = rfc2822.exec(preprocessRFC2822(config._i)), parsedArray;
+        if (match) {
+            parsedArray = extractFromRFC2822Strings(match[4], match[3], match[2], match[5], match[6], match[7]);
+            if (!checkWeekday(match[1], parsedArray, config)) return;
+            config._a = parsedArray;
+            config._tzm = calculateOffset(match[8], match[9], match[10]);
+            config._d = createUTCDate.apply(null, config._a);
+            config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
+            getParsingFlags(config).rfc2822 = true;
+        } else config._isValid = false;
+    }
+    // date from 1) ASP.NET, 2) ISO, 3) RFC 2822 formats, or 4) optional fallback if parsing isn't strict
+    function configFromString(config) {
+        var matched = aspNetJsonRegex.exec(config._i);
+        if (matched !== null) {
+            config._d = new Date(+matched[1]);
+            return;
+        }
+        configFromISO(config);
+        if (config._isValid === false) delete config._isValid;
+        else return;
+        configFromRFC2822(config);
+        if (config._isValid === false) delete config._isValid;
+        else return;
+        if (config._strict) config._isValid = false;
+        else // Final attempt, use Input Fallback
+        hooks.createFromInputFallback(config);
+    }
+    hooks.createFromInputFallback = deprecate("value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are discouraged. Please refer to http://momentjs.com/guides/#/warnings/js-date/ for more info.", function(config) {
+        config._d = new Date(config._i + (config._useUTC ? " UTC" : ""));
     });
-}
-/**
- * Convert an array to an object.
- *
- * @param {Array<any>} arr - The array to convert to an object.
- *
- * @returns An object with the same keys and values as the array.
- */ function arrayToObject(arr) {
-    const obj = {};
-    const keys = Object.keys(arr);
-    let i;
-    const len = keys.length;
-    let key;
-    for(i = 0; i < len; i++){
-        key = keys[i];
-        obj[key] = arr[key];
+    // Pick the first defined of two or three arguments.
+    function defaults(a, b, c) {
+        if (a != null) return a;
+        if (b != null) return b;
+        return c;
     }
-    return obj;
-}
-/**
- * It takes a FormData object and returns a JavaScript object
- *
- * @param {string} formData The FormData object to convert to JSON.
- *
- * @returns {Object<string, any> | null} The converted object.
- */ function formDataToJSON(formData) {
-    function buildPath(path, value, target, index) {
-        let name = path[index++];
-        const isNumericKey = Number.isFinite(+name);
-        const isLast = index >= path.length;
-        name = !name && (0, _utilsJsDefault.default).isArray(target) ? target.length : name;
-        if (isLast) {
-            if ((0, _utilsJsDefault.default).hasOwnProp(target, name)) target[name] = [
-                target[name],
-                value
-            ];
-            else target[name] = value;
-            return !isNumericKey;
+    function currentDateArray(config) {
+        // hooks is actually the exported moment object
+        var nowValue = new Date(hooks.now());
+        if (config._useUTC) return [
+            nowValue.getUTCFullYear(),
+            nowValue.getUTCMonth(),
+            nowValue.getUTCDate()
+        ];
+        return [
+            nowValue.getFullYear(),
+            nowValue.getMonth(),
+            nowValue.getDate()
+        ];
+    }
+    // convert an array to a date.
+    // the array should mirror the parameters below
+    // note: all values past the year are optional and will default to the lowest possible value.
+    // [year, month, day , hour, minute, second, millisecond]
+    function configFromArray(config) {
+        var i, date, input = [], currentDate, expectedWeekday, yearToUse;
+        if (config._d) return;
+        currentDate = currentDateArray(config);
+        //compute day of the year from weeks and weekdays
+        if (config._w && config._a[DATE] == null && config._a[MONTH] == null) dayOfYearFromWeekInfo(config);
+        //if the day of the year is set, figure out what it is
+        if (config._dayOfYear != null) {
+            yearToUse = defaults(config._a[YEAR], currentDate[YEAR]);
+            if (config._dayOfYear > daysInYear(yearToUse) || config._dayOfYear === 0) getParsingFlags(config)._overflowDayOfYear = true;
+            date = createUTCDate(yearToUse, 0, config._dayOfYear);
+            config._a[MONTH] = date.getUTCMonth();
+            config._a[DATE] = date.getUTCDate();
         }
-        if (!target[name] || !(0, _utilsJsDefault.default).isObject(target[name])) target[name] = [];
-        const result = buildPath(path, value, target[name], index);
-        if (result && (0, _utilsJsDefault.default).isArray(target[name])) target[name] = arrayToObject(target[name]);
-        return !isNumericKey;
+        // Default to current date.
+        // * if no year, month, day of month are given, default to today
+        // * if day of month is given, default month and year
+        // * if month is given, default only year
+        // * if year is given, don't default anything
+        for(i = 0; i < 3 && config._a[i] == null; ++i)config._a[i] = input[i] = currentDate[i];
+        // Zero out whatever was not defaulted, including time
+        for(; i < 7; i++)config._a[i] = input[i] = config._a[i] == null ? i === 2 ? 1 : 0 : config._a[i];
+        // Check for 24:00:00.000
+        if (config._a[HOUR] === 24 && config._a[MINUTE] === 0 && config._a[SECOND] === 0 && config._a[MILLISECOND] === 0) {
+            config._nextDay = true;
+            config._a[HOUR] = 0;
+        }
+        config._d = (config._useUTC ? createUTCDate : createDate).apply(null, input);
+        expectedWeekday = config._useUTC ? config._d.getUTCDay() : config._d.getDay();
+        // Apply timezone offset from input. The actual utcOffset can be changed
+        // with parseZone.
+        if (config._tzm != null) config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
+        if (config._nextDay) config._a[HOUR] = 24;
+        // check for mismatching day of week
+        if (config._w && typeof config._w.d !== "undefined" && config._w.d !== expectedWeekday) getParsingFlags(config).weekdayMismatch = true;
     }
-    if ((0, _utilsJsDefault.default).isFormData(formData) && (0, _utilsJsDefault.default).isFunction(formData.entries)) {
-        const obj = {};
-        (0, _utilsJsDefault.default).forEachEntry(formData, (name, value)=>{
-            buildPath(parsePropPath(name), value, obj, 0);
+    function dayOfYearFromWeekInfo(config) {
+        var w, weekYear, week, weekday, dow, doy, temp, weekdayOverflow, curWeek;
+        w = config._w;
+        if (w.GG != null || w.W != null || w.E != null) {
+            dow = 1;
+            doy = 4;
+            // TODO: We need to take the current isoWeekYear, but that depends on
+            // how we interpret now (local, utc, fixed offset). So create
+            // a now version of current config (take local/utc/offset flags, and
+            // create now).
+            weekYear = defaults(w.GG, config._a[YEAR], weekOfYear(createLocal(), 1, 4).year);
+            week = defaults(w.W, 1);
+            weekday = defaults(w.E, 1);
+            if (weekday < 1 || weekday > 7) weekdayOverflow = true;
+        } else {
+            dow = config._locale._week.dow;
+            doy = config._locale._week.doy;
+            curWeek = weekOfYear(createLocal(), dow, doy);
+            weekYear = defaults(w.gg, config._a[YEAR], curWeek.year);
+            // Default to current week.
+            week = defaults(w.w, curWeek.week);
+            if (w.d != null) {
+                // weekday -- low day numbers are considered next week
+                weekday = w.d;
+                if (weekday < 0 || weekday > 6) weekdayOverflow = true;
+            } else if (w.e != null) {
+                // local weekday -- counting starts from beginning of week
+                weekday = w.e + dow;
+                if (w.e < 0 || w.e > 6) weekdayOverflow = true;
+            } else // default to beginning of week
+            weekday = dow;
+        }
+        if (week < 1 || week > weeksInYear(weekYear, dow, doy)) getParsingFlags(config)._overflowWeeks = true;
+        else if (weekdayOverflow != null) getParsingFlags(config)._overflowWeekday = true;
+        else {
+            temp = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy);
+            config._a[YEAR] = temp.year;
+            config._dayOfYear = temp.dayOfYear;
+        }
+    }
+    // constant that refers to the ISO standard
+    hooks.ISO_8601 = function() {};
+    // constant that refers to the RFC 2822 form
+    hooks.RFC_2822 = function() {};
+    // date from string and format string
+    function configFromStringAndFormat(config) {
+        // TODO: Move this to another part of the creation flow to prevent circular deps
+        if (config._f === hooks.ISO_8601) {
+            configFromISO(config);
+            return;
+        }
+        if (config._f === hooks.RFC_2822) {
+            configFromRFC2822(config);
+            return;
+        }
+        config._a = [];
+        getParsingFlags(config).empty = true;
+        // This array is used to make a Date, either with `new Date` or `Date.UTC`
+        var string = "" + config._i, i, parsedInput, tokens, token, skipped, stringLength = string.length, totalParsedInputLength = 0, era, tokenLen;
+        tokens = expandFormat(config._f, config._locale).match(formattingTokens) || [];
+        tokenLen = tokens.length;
+        for(i = 0; i < tokenLen; i++){
+            token = tokens[i];
+            parsedInput = (string.match(getParseRegexForToken(token, config)) || [])[0];
+            if (parsedInput) {
+                skipped = string.substr(0, string.indexOf(parsedInput));
+                if (skipped.length > 0) getParsingFlags(config).unusedInput.push(skipped);
+                string = string.slice(string.indexOf(parsedInput) + parsedInput.length);
+                totalParsedInputLength += parsedInput.length;
+            }
+            // don't parse if it's not a known token
+            if (formatTokenFunctions[token]) {
+                if (parsedInput) getParsingFlags(config).empty = false;
+                else getParsingFlags(config).unusedTokens.push(token);
+                addTimeToArrayFromToken(token, parsedInput, config);
+            } else if (config._strict && !parsedInput) getParsingFlags(config).unusedTokens.push(token);
+        }
+        // add remaining unparsed input length to the string
+        getParsingFlags(config).charsLeftOver = stringLength - totalParsedInputLength;
+        if (string.length > 0) getParsingFlags(config).unusedInput.push(string);
+        // clear _12h flag if hour is <= 12
+        if (config._a[HOUR] <= 12 && getParsingFlags(config).bigHour === true && config._a[HOUR] > 0) getParsingFlags(config).bigHour = undefined;
+        getParsingFlags(config).parsedDateParts = config._a.slice(0);
+        getParsingFlags(config).meridiem = config._meridiem;
+        // handle meridiem
+        config._a[HOUR] = meridiemFixWrap(config._locale, config._a[HOUR], config._meridiem);
+        // handle era
+        era = getParsingFlags(config).era;
+        if (era !== null) config._a[YEAR] = config._locale.erasConvertYear(era, config._a[YEAR]);
+        configFromArray(config);
+        checkOverflow(config);
+    }
+    function meridiemFixWrap(locale, hour, meridiem) {
+        var isPm;
+        if (meridiem == null) // nothing to do
+        return hour;
+        if (locale.meridiemHour != null) return locale.meridiemHour(hour, meridiem);
+        else if (locale.isPM != null) {
+            // Fallback
+            isPm = locale.isPM(meridiem);
+            if (isPm && hour < 12) hour += 12;
+            if (!isPm && hour === 12) hour = 0;
+            return hour;
+        } else // this is not supposed to happen
+        return hour;
+    }
+    // date from string and array of format strings
+    function configFromStringAndArray(config) {
+        var tempConfig, bestMoment, scoreToBeat, i, currentScore, validFormatFound, bestFormatIsValid = false, configfLen = config._f.length;
+        if (configfLen === 0) {
+            getParsingFlags(config).invalidFormat = true;
+            config._d = new Date(NaN);
+            return;
+        }
+        for(i = 0; i < configfLen; i++){
+            currentScore = 0;
+            validFormatFound = false;
+            tempConfig = copyConfig({}, config);
+            if (config._useUTC != null) tempConfig._useUTC = config._useUTC;
+            tempConfig._f = config._f[i];
+            configFromStringAndFormat(tempConfig);
+            if (isValid(tempConfig)) validFormatFound = true;
+            // if there is any input that was not parsed add a penalty for that format
+            currentScore += getParsingFlags(tempConfig).charsLeftOver;
+            //or tokens
+            currentScore += getParsingFlags(tempConfig).unusedTokens.length * 10;
+            getParsingFlags(tempConfig).score = currentScore;
+            if (!bestFormatIsValid) {
+                if (scoreToBeat == null || currentScore < scoreToBeat || validFormatFound) {
+                    scoreToBeat = currentScore;
+                    bestMoment = tempConfig;
+                    if (validFormatFound) bestFormatIsValid = true;
+                }
+            } else if (currentScore < scoreToBeat) {
+                scoreToBeat = currentScore;
+                bestMoment = tempConfig;
+            }
+        }
+        extend(config, bestMoment || tempConfig);
+    }
+    function configFromObject(config) {
+        if (config._d) return;
+        var i = normalizeObjectUnits(config._i), dayOrDate = i.day === undefined ? i.date : i.day;
+        config._a = map([
+            i.year,
+            i.month,
+            dayOrDate,
+            i.hour,
+            i.minute,
+            i.second,
+            i.millisecond
+        ], function(obj) {
+            return obj && parseInt(obj, 10);
         });
-        return obj;
+        configFromArray(config);
     }
-    return null;
-}
-exports.default = formDataToJSON;
-
-},{"../utils.js":"k4bLS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fYuyb":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _parseHeadersJs = require("../helpers/parseHeaders.js");
-var _parseHeadersJsDefault = parcelHelpers.interopDefault(_parseHeadersJs);
-"use strict";
-const $internals = Symbol("internals");
-function normalizeHeader(header) {
-    return header && String(header).trim().toLowerCase();
-}
-function normalizeValue(value) {
-    if (value === false || value == null) return value;
-    return (0, _utilsJsDefault.default).isArray(value) ? value.map(normalizeValue) : String(value);
-}
-function parseTokens(str) {
-    const tokens = Object.create(null);
-    const tokensRE = /([^\s,;=]+)\s*(?:=\s*([^,;]+))?/g;
-    let match;
-    while(match = tokensRE.exec(str))tokens[match[1]] = match[2];
-    return tokens;
-}
-const isValidHeaderName = (str)=>/^[-_a-zA-Z0-9^`|~,!#$%&'*+.]+$/.test(str.trim());
-function matchHeaderValue(context, value, header, filter, isHeaderNameFilter) {
-    if ((0, _utilsJsDefault.default).isFunction(filter)) return filter.call(this, value, header);
-    if (isHeaderNameFilter) value = header;
-    if (!(0, _utilsJsDefault.default).isString(value)) return;
-    if ((0, _utilsJsDefault.default).isString(filter)) return value.indexOf(filter) !== -1;
-    if ((0, _utilsJsDefault.default).isRegExp(filter)) return filter.test(value);
-}
-function formatHeader(header) {
-    return header.trim().toLowerCase().replace(/([a-z\d])(\w*)/g, (w, char, str)=>{
-        return char.toUpperCase() + str;
-    });
-}
-function buildAccessors(obj, header) {
-    const accessorName = (0, _utilsJsDefault.default).toCamelCase(" " + header);
-    [
-        "get",
-        "set",
-        "has"
-    ].forEach((methodName)=>{
-        Object.defineProperty(obj, methodName + accessorName, {
-            value: function(arg1, arg2, arg3) {
-                return this[methodName].call(this, header, arg1, arg2, arg3);
-            },
-            configurable: true
-        });
-    });
-}
-class AxiosHeaders {
-    constructor(headers){
-        headers && this.set(headers);
-    }
-    set(header, valueOrRewrite, rewrite) {
-        const self = this;
-        function setHeader(_value, _header, _rewrite) {
-            const lHeader = normalizeHeader(_header);
-            if (!lHeader) throw new Error("header name must be a non-empty string");
-            const key = (0, _utilsJsDefault.default).findKey(self, lHeader);
-            if (!key || self[key] === undefined || _rewrite === true || _rewrite === undefined && self[key] !== false) self[key || _header] = normalizeValue(_value);
+    function createFromConfig(config) {
+        var res = new Moment(checkOverflow(prepareConfig(config)));
+        if (res._nextDay) {
+            // Adding is smart enough around DST
+            res.add(1, "d");
+            res._nextDay = undefined;
         }
-        const setHeaders = (headers, _rewrite)=>(0, _utilsJsDefault.default).forEach(headers, (_value, _header)=>setHeader(_value, _header, _rewrite));
-        if ((0, _utilsJsDefault.default).isPlainObject(header) || header instanceof this.constructor) setHeaders(header, valueOrRewrite);
-        else if ((0, _utilsJsDefault.default).isString(header) && (header = header.trim()) && !isValidHeaderName(header)) setHeaders((0, _parseHeadersJsDefault.default)(header), valueOrRewrite);
-        else header != null && setHeader(valueOrRewrite, header, rewrite);
+        return res;
+    }
+    function prepareConfig(config) {
+        var input = config._i, format = config._f;
+        config._locale = config._locale || getLocale(config._l);
+        if (input === null || format === undefined && input === "") return createInvalid({
+            nullInput: true
+        });
+        if (typeof input === "string") config._i = input = config._locale.preparse(input);
+        if (isMoment(input)) return new Moment(checkOverflow(input));
+        else if (isDate(input)) config._d = input;
+        else if (isArray(format)) configFromStringAndArray(config);
+        else if (format) configFromStringAndFormat(config);
+        else configFromInput(config);
+        if (!isValid(config)) config._d = null;
+        return config;
+    }
+    function configFromInput(config) {
+        var input = config._i;
+        if (isUndefined(input)) config._d = new Date(hooks.now());
+        else if (isDate(input)) config._d = new Date(input.valueOf());
+        else if (typeof input === "string") configFromString(config);
+        else if (isArray(input)) {
+            config._a = map(input.slice(0), function(obj) {
+                return parseInt(obj, 10);
+            });
+            configFromArray(config);
+        } else if (isObject(input)) configFromObject(config);
+        else if (isNumber(input)) // from milliseconds
+        config._d = new Date(input);
+        else hooks.createFromInputFallback(config);
+    }
+    function createLocalOrUTC(input, format, locale, strict, isUTC) {
+        var c = {};
+        if (format === true || format === false) {
+            strict = format;
+            format = undefined;
+        }
+        if (locale === true || locale === false) {
+            strict = locale;
+            locale = undefined;
+        }
+        if (isObject(input) && isObjectEmpty(input) || isArray(input) && input.length === 0) input = undefined;
+        // object construction must be done this way.
+        // https://github.com/moment/moment/issues/1423
+        c._isAMomentObject = true;
+        c._useUTC = c._isUTC = isUTC;
+        c._l = locale;
+        c._i = input;
+        c._f = format;
+        c._strict = strict;
+        return createFromConfig(c);
+    }
+    function createLocal(input, format, locale, strict) {
+        return createLocalOrUTC(input, format, locale, strict, false);
+    }
+    var prototypeMin = deprecate("moment().min is deprecated, use moment.max instead. http://momentjs.com/guides/#/warnings/min-max/", function() {
+        var other = createLocal.apply(null, arguments);
+        if (this.isValid() && other.isValid()) return other < this ? this : other;
+        else return createInvalid();
+    }), prototypeMax = deprecate("moment().max is deprecated, use moment.min instead. http://momentjs.com/guides/#/warnings/min-max/", function() {
+        var other = createLocal.apply(null, arguments);
+        if (this.isValid() && other.isValid()) return other > this ? this : other;
+        else return createInvalid();
+    });
+    // Pick a moment m from moments so that m[fn](other) is true for all
+    // other. This relies on the function fn to be transitive.
+    //
+    // moments should either be an array of moment objects or an array, whose
+    // first element is an array of moment objects.
+    function pickBy(fn, moments) {
+        var res, i;
+        if (moments.length === 1 && isArray(moments[0])) moments = moments[0];
+        if (!moments.length) return createLocal();
+        res = moments[0];
+        for(i = 1; i < moments.length; ++i)if (!moments[i].isValid() || moments[i][fn](res)) res = moments[i];
+        return res;
+    }
+    // TODO: Use [].sort instead?
+    function min() {
+        var args = [].slice.call(arguments, 0);
+        return pickBy("isBefore", args);
+    }
+    function max() {
+        var args = [].slice.call(arguments, 0);
+        return pickBy("isAfter", args);
+    }
+    var now = function() {
+        return Date.now ? Date.now() : +new Date();
+    };
+    var ordering = [
+        "year",
+        "quarter",
+        "month",
+        "week",
+        "day",
+        "hour",
+        "minute",
+        "second",
+        "millisecond"
+    ];
+    function isDurationValid(m) {
+        var key, unitHasDecimal = false, i, orderLen = ordering.length;
+        for(key in m){
+            if (hasOwnProp(m, key) && !(indexOf.call(ordering, key) !== -1 && (m[key] == null || !isNaN(m[key])))) return false;
+        }
+        for(i = 0; i < orderLen; ++i)if (m[ordering[i]]) {
+            if (unitHasDecimal) return false; // only allow non-integers for smallest unit
+            if (parseFloat(m[ordering[i]]) !== toInt(m[ordering[i]])) unitHasDecimal = true;
+        }
+        return true;
+    }
+    function isValid$1() {
+        return this._isValid;
+    }
+    function createInvalid$1() {
+        return createDuration(NaN);
+    }
+    function Duration(duration) {
+        var normalizedInput = normalizeObjectUnits(duration), years = normalizedInput.year || 0, quarters = normalizedInput.quarter || 0, months = normalizedInput.month || 0, weeks = normalizedInput.week || normalizedInput.isoWeek || 0, days = normalizedInput.day || 0, hours = normalizedInput.hour || 0, minutes = normalizedInput.minute || 0, seconds = normalizedInput.second || 0, milliseconds = normalizedInput.millisecond || 0;
+        this._isValid = isDurationValid(normalizedInput);
+        // representation for dateAddRemove
+        this._milliseconds = +milliseconds + seconds * 1e3 + // 1000
+        minutes * 6e4 + // 1000 * 60
+        hours * 3600000; //using 1000 * 60 * 60 instead of 36e5 to avoid floating point rounding errors https://github.com/moment/moment/issues/2978
+        // Because of dateAddRemove treats 24 hours as different from a
+        // day when working around DST, we need to store them separately
+        this._days = +days + weeks * 7;
+        // It is impossible to translate months into days without knowing
+        // which months you are are talking about, so we have to store
+        // it separately.
+        this._months = +months + quarters * 3 + years * 12;
+        this._data = {};
+        this._locale = getLocale();
+        this._bubble();
+    }
+    function isDuration(obj) {
+        return obj instanceof Duration;
+    }
+    function absRound(number) {
+        if (number < 0) return Math.round(-1 * number) * -1;
+        else return Math.round(number);
+    }
+    // compare two arrays, return the number of differences
+    function compareArrays(array1, array2, dontConvert) {
+        var len = Math.min(array1.length, array2.length), lengthDiff = Math.abs(array1.length - array2.length), diffs = 0, i;
+        for(i = 0; i < len; i++)if (dontConvert && array1[i] !== array2[i] || !dontConvert && toInt(array1[i]) !== toInt(array2[i])) diffs++;
+        return diffs + lengthDiff;
+    }
+    // FORMATTING
+    function offset(token, separator) {
+        addFormatToken(token, 0, 0, function() {
+            var offset = this.utcOffset(), sign = "+";
+            if (offset < 0) {
+                offset = -offset;
+                sign = "-";
+            }
+            return sign + zeroFill(~~(offset / 60), 2) + separator + zeroFill(~~offset % 60, 2);
+        });
+    }
+    offset("Z", ":");
+    offset("ZZ", "");
+    // PARSING
+    addRegexToken("Z", matchShortOffset);
+    addRegexToken("ZZ", matchShortOffset);
+    addParseToken([
+        "Z",
+        "ZZ"
+    ], function(input, array, config) {
+        config._useUTC = true;
+        config._tzm = offsetFromString(matchShortOffset, input);
+    });
+    // HELPERS
+    // timezone chunker
+    // '+10:00' > ['10',  '00']
+    // '-1530'  > ['-15', '30']
+    var chunkOffset = /([\+\-]|\d\d)/gi;
+    function offsetFromString(matcher, string) {
+        var matches = (string || "").match(matcher), chunk, parts, minutes;
+        if (matches === null) return null;
+        chunk = matches[matches.length - 1] || [];
+        parts = (chunk + "").match(chunkOffset) || [
+            "-",
+            0,
+            0
+        ];
+        minutes = +(parts[1] * 60) + toInt(parts[2]);
+        return minutes === 0 ? 0 : parts[0] === "+" ? minutes : -minutes;
+    }
+    // Return a moment from input, that is local/utc/zone equivalent to model.
+    function cloneWithOffset(input, model) {
+        var res, diff;
+        if (model._isUTC) {
+            res = model.clone();
+            diff = (isMoment(input) || isDate(input) ? input.valueOf() : createLocal(input).valueOf()) - res.valueOf();
+            // Use low-level api, because this fn is low-level api.
+            res._d.setTime(res._d.valueOf() + diff);
+            hooks.updateOffset(res, false);
+            return res;
+        } else return createLocal(input).local();
+    }
+    function getDateOffset(m) {
+        // On Firefox.24 Date#getTimezoneOffset returns a floating point.
+        // https://github.com/moment/moment/pull/1871
+        return -Math.round(m._d.getTimezoneOffset());
+    }
+    // HOOKS
+    // This function will be called whenever a moment is mutated.
+    // It is intended to keep the offset in sync with the timezone.
+    hooks.updateOffset = function() {};
+    // MOMENTS
+    // keepLocalTime = true means only change the timezone, without
+    // affecting the local hour. So 5:31:26 +0300 --[utcOffset(2, true)]-->
+    // 5:31:26 +0200 It is possible that 5:31:26 doesn't exist with offset
+    // +0200, so we adjust the time as needed, to be valid.
+    //
+    // Keeping the time actually adds/subtracts (one hour)
+    // from the actual represented time. That is why we call updateOffset
+    // a second time. In case it wants us to change the offset again
+    // _changeInProgress == true case, then we have to adjust, because
+    // there is no such time in the given timezone.
+    function getSetOffset(input, keepLocalTime, keepMinutes) {
+        var offset = this._offset || 0, localAdjust;
+        if (!this.isValid()) return input != null ? this : NaN;
+        if (input != null) {
+            if (typeof input === "string") {
+                input = offsetFromString(matchShortOffset, input);
+                if (input === null) return this;
+            } else if (Math.abs(input) < 16 && !keepMinutes) input = input * 60;
+            if (!this._isUTC && keepLocalTime) localAdjust = getDateOffset(this);
+            this._offset = input;
+            this._isUTC = true;
+            if (localAdjust != null) this.add(localAdjust, "m");
+            if (offset !== input) {
+                if (!keepLocalTime || this._changeInProgress) addSubtract(this, createDuration(input - offset, "m"), 1, false);
+                else if (!this._changeInProgress) {
+                    this._changeInProgress = true;
+                    hooks.updateOffset(this, true);
+                    this._changeInProgress = null;
+                }
+            }
+            return this;
+        } else return this._isUTC ? offset : getDateOffset(this);
+    }
+    function getSetZone(input, keepLocalTime) {
+        if (input != null) {
+            if (typeof input !== "string") input = -input;
+            this.utcOffset(input, keepLocalTime);
+            return this;
+        } else return -this.utcOffset();
+    }
+    function setOffsetToUTC(keepLocalTime) {
+        return this.utcOffset(0, keepLocalTime);
+    }
+    function setOffsetToLocal(keepLocalTime) {
+        if (this._isUTC) {
+            this.utcOffset(0, keepLocalTime);
+            this._isUTC = false;
+            if (keepLocalTime) this.subtract(getDateOffset(this), "m");
+        }
         return this;
     }
-    get(header, parser) {
-        header = normalizeHeader(header);
-        if (header) {
-            const key = (0, _utilsJsDefault.default).findKey(this, header);
-            if (key) {
-                const value = this[key];
-                if (!parser) return value;
-                if (parser === true) return parseTokens(value);
-                if ((0, _utilsJsDefault.default).isFunction(parser)) return parser.call(this, value, key);
-                if ((0, _utilsJsDefault.default).isRegExp(parser)) return parser.exec(value);
-                throw new TypeError("parser must be boolean|regexp|function");
+    function setOffsetToParsedOffset() {
+        if (this._tzm != null) this.utcOffset(this._tzm, false, true);
+        else if (typeof this._i === "string") {
+            var tZone = offsetFromString(matchOffset, this._i);
+            if (tZone != null) this.utcOffset(tZone);
+            else this.utcOffset(0, true);
+        }
+        return this;
+    }
+    function hasAlignedHourOffset(input) {
+        if (!this.isValid()) return false;
+        input = input ? createLocal(input).utcOffset() : 0;
+        return (this.utcOffset() - input) % 60 === 0;
+    }
+    function isDaylightSavingTime() {
+        return this.utcOffset() > this.clone().month(0).utcOffset() || this.utcOffset() > this.clone().month(5).utcOffset();
+    }
+    function isDaylightSavingTimeShifted() {
+        if (!isUndefined(this._isDSTShifted)) return this._isDSTShifted;
+        var c = {}, other;
+        copyConfig(c, this);
+        c = prepareConfig(c);
+        if (c._a) {
+            other = c._isUTC ? createUTC(c._a) : createLocal(c._a);
+            this._isDSTShifted = this.isValid() && compareArrays(c._a, other.toArray()) > 0;
+        } else this._isDSTShifted = false;
+        return this._isDSTShifted;
+    }
+    function isLocal() {
+        return this.isValid() ? !this._isUTC : false;
+    }
+    function isUtcOffset() {
+        return this.isValid() ? this._isUTC : false;
+    }
+    function isUtc() {
+        return this.isValid() ? this._isUTC && this._offset === 0 : false;
+    }
+    // ASP.NET json date format regex
+    var aspNetRegex = /^(-|\+)?(?:(\d*)[. ])?(\d+):(\d+)(?::(\d+)(\.\d*)?)?$/, // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
+    // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
+    // and further modified to allow for strings containing both week and day
+    isoRegex = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;
+    function createDuration(input, key) {
+        var duration = input, // matching against regexp is expensive, do it on demand
+        match = null, sign, ret, diffRes;
+        if (isDuration(input)) duration = {
+            ms: input._milliseconds,
+            d: input._days,
+            M: input._months
+        };
+        else if (isNumber(input) || !isNaN(+input)) {
+            duration = {};
+            if (key) duration[key] = +input;
+            else duration.milliseconds = +input;
+        } else if (match = aspNetRegex.exec(input)) {
+            sign = match[1] === "-" ? -1 : 1;
+            duration = {
+                y: 0,
+                d: toInt(match[DATE]) * sign,
+                h: toInt(match[HOUR]) * sign,
+                m: toInt(match[MINUTE]) * sign,
+                s: toInt(match[SECOND]) * sign,
+                ms: toInt(absRound(match[MILLISECOND] * 1000)) * sign
+            };
+        } else if (match = isoRegex.exec(input)) {
+            sign = match[1] === "-" ? -1 : 1;
+            duration = {
+                y: parseIso(match[2], sign),
+                M: parseIso(match[3], sign),
+                w: parseIso(match[4], sign),
+                d: parseIso(match[5], sign),
+                h: parseIso(match[6], sign),
+                m: parseIso(match[7], sign),
+                s: parseIso(match[8], sign)
+            };
+        } else if (duration == null) // checks for null or undefined
+        duration = {};
+        else if (typeof duration === "object" && ("from" in duration || "to" in duration)) {
+            diffRes = momentsDifference(createLocal(duration.from), createLocal(duration.to));
+            duration = {};
+            duration.ms = diffRes.milliseconds;
+            duration.M = diffRes.months;
+        }
+        ret = new Duration(duration);
+        if (isDuration(input) && hasOwnProp(input, "_locale")) ret._locale = input._locale;
+        if (isDuration(input) && hasOwnProp(input, "_isValid")) ret._isValid = input._isValid;
+        return ret;
+    }
+    createDuration.fn = Duration.prototype;
+    createDuration.invalid = createInvalid$1;
+    function parseIso(inp, sign) {
+        // We'd normally use ~~inp for this, but unfortunately it also
+        // converts floats to ints.
+        // inp may be undefined, so careful calling replace on it.
+        var res = inp && parseFloat(inp.replace(",", "."));
+        // apply sign while we're at it
+        return (isNaN(res) ? 0 : res) * sign;
+    }
+    function positiveMomentsDifference(base, other) {
+        var res = {};
+        res.months = other.month() - base.month() + (other.year() - base.year()) * 12;
+        if (base.clone().add(res.months, "M").isAfter(other)) --res.months;
+        res.milliseconds = +other - +base.clone().add(res.months, "M");
+        return res;
+    }
+    function momentsDifference(base, other) {
+        var res;
+        if (!(base.isValid() && other.isValid())) return {
+            milliseconds: 0,
+            months: 0
+        };
+        other = cloneWithOffset(other, base);
+        if (base.isBefore(other)) res = positiveMomentsDifference(base, other);
+        else {
+            res = positiveMomentsDifference(other, base);
+            res.milliseconds = -res.milliseconds;
+            res.months = -res.months;
+        }
+        return res;
+    }
+    // TODO: remove 'name' arg after deprecation is removed
+    function createAdder(direction, name) {
+        return function(val, period) {
+            var dur, tmp;
+            //invert the arguments, but complain about it
+            if (period !== null && !isNaN(+period)) {
+                deprecateSimple(name, "moment()." + name + "(period, number) is deprecated. Please use moment()." + name + "(number, period). " + "See http://momentjs.com/guides/#/warnings/add-inverted-param/ for more info.");
+                tmp = val;
+                val = period;
+                period = tmp;
+            }
+            dur = createDuration(val, period);
+            addSubtract(this, dur, direction);
+            return this;
+        };
+    }
+    function addSubtract(mom, duration, isAdding, updateOffset) {
+        var milliseconds = duration._milliseconds, days = absRound(duration._days), months = absRound(duration._months);
+        if (!mom.isValid()) // No op
+        return;
+        updateOffset = updateOffset == null ? true : updateOffset;
+        if (months) setMonth(mom, get(mom, "Month") + months * isAdding);
+        if (days) set$1(mom, "Date", get(mom, "Date") + days * isAdding);
+        if (milliseconds) mom._d.setTime(mom._d.valueOf() + milliseconds * isAdding);
+        if (updateOffset) hooks.updateOffset(mom, days || months);
+    }
+    var add = createAdder(1, "add"), subtract = createAdder(-1, "subtract");
+    function isString(input) {
+        return typeof input === "string" || input instanceof String;
+    }
+    // type MomentInput = Moment | Date | string | number | (number | string)[] | MomentInputObject | void; // null | undefined
+    function isMomentInput(input) {
+        return isMoment(input) || isDate(input) || isString(input) || isNumber(input) || isNumberOrStringArray(input) || isMomentInputObject(input) || input === null || input === undefined;
+    }
+    function isMomentInputObject(input) {
+        var objectTest = isObject(input) && !isObjectEmpty(input), propertyTest = false, properties = [
+            "years",
+            "year",
+            "y",
+            "months",
+            "month",
+            "M",
+            "days",
+            "day",
+            "d",
+            "dates",
+            "date",
+            "D",
+            "hours",
+            "hour",
+            "h",
+            "minutes",
+            "minute",
+            "m",
+            "seconds",
+            "second",
+            "s",
+            "milliseconds",
+            "millisecond",
+            "ms"
+        ], i, property, propertyLen = properties.length;
+        for(i = 0; i < propertyLen; i += 1){
+            property = properties[i];
+            propertyTest = propertyTest || hasOwnProp(input, property);
+        }
+        return objectTest && propertyTest;
+    }
+    function isNumberOrStringArray(input) {
+        var arrayTest = isArray(input), dataTypeTest = false;
+        if (arrayTest) dataTypeTest = input.filter(function(item) {
+            return !isNumber(item) && isString(input);
+        }).length === 0;
+        return arrayTest && dataTypeTest;
+    }
+    function isCalendarSpec(input) {
+        var objectTest = isObject(input) && !isObjectEmpty(input), propertyTest = false, properties = [
+            "sameDay",
+            "nextDay",
+            "lastDay",
+            "nextWeek",
+            "lastWeek",
+            "sameElse"
+        ], i, property;
+        for(i = 0; i < properties.length; i += 1){
+            property = properties[i];
+            propertyTest = propertyTest || hasOwnProp(input, property);
+        }
+        return objectTest && propertyTest;
+    }
+    function getCalendarFormat(myMoment, now) {
+        var diff = myMoment.diff(now, "days", true);
+        return diff < -6 ? "sameElse" : diff < -1 ? "lastWeek" : diff < 0 ? "lastDay" : diff < 1 ? "sameDay" : diff < 2 ? "nextDay" : diff < 7 ? "nextWeek" : "sameElse";
+    }
+    function calendar$1(time, formats) {
+        // Support for single parameter, formats only overload to the calendar function
+        if (arguments.length === 1) {
+            if (!arguments[0]) {
+                time = undefined;
+                formats = undefined;
+            } else if (isMomentInput(arguments[0])) {
+                time = arguments[0];
+                formats = undefined;
+            } else if (isCalendarSpec(arguments[0])) {
+                formats = arguments[0];
+                time = undefined;
+            }
+        }
+        // We want to compare the start of today, vs this.
+        // Getting start-of-today depends on whether we're local/utc/offset or not.
+        var now = time || createLocal(), sod = cloneWithOffset(now, this).startOf("day"), format = hooks.calendarFormat(this, sod) || "sameElse", output = formats && (isFunction(formats[format]) ? formats[format].call(this, now) : formats[format]);
+        return this.format(output || this.localeData().calendar(format, this, createLocal(now)));
+    }
+    function clone() {
+        return new Moment(this);
+    }
+    function isAfter(input, units) {
+        var localInput = isMoment(input) ? input : createLocal(input);
+        if (!(this.isValid() && localInput.isValid())) return false;
+        units = normalizeUnits(units) || "millisecond";
+        if (units === "millisecond") return this.valueOf() > localInput.valueOf();
+        else return localInput.valueOf() < this.clone().startOf(units).valueOf();
+    }
+    function isBefore(input, units) {
+        var localInput = isMoment(input) ? input : createLocal(input);
+        if (!(this.isValid() && localInput.isValid())) return false;
+        units = normalizeUnits(units) || "millisecond";
+        if (units === "millisecond") return this.valueOf() < localInput.valueOf();
+        else return this.clone().endOf(units).valueOf() < localInput.valueOf();
+    }
+    function isBetween(from, to, units, inclusivity) {
+        var localFrom = isMoment(from) ? from : createLocal(from), localTo = isMoment(to) ? to : createLocal(to);
+        if (!(this.isValid() && localFrom.isValid() && localTo.isValid())) return false;
+        inclusivity = inclusivity || "()";
+        return (inclusivity[0] === "(" ? this.isAfter(localFrom, units) : !this.isBefore(localFrom, units)) && (inclusivity[1] === ")" ? this.isBefore(localTo, units) : !this.isAfter(localTo, units));
+    }
+    function isSame(input, units) {
+        var localInput = isMoment(input) ? input : createLocal(input), inputMs;
+        if (!(this.isValid() && localInput.isValid())) return false;
+        units = normalizeUnits(units) || "millisecond";
+        if (units === "millisecond") return this.valueOf() === localInput.valueOf();
+        else {
+            inputMs = localInput.valueOf();
+            return this.clone().startOf(units).valueOf() <= inputMs && inputMs <= this.clone().endOf(units).valueOf();
+        }
+    }
+    function isSameOrAfter(input, units) {
+        return this.isSame(input, units) || this.isAfter(input, units);
+    }
+    function isSameOrBefore(input, units) {
+        return this.isSame(input, units) || this.isBefore(input, units);
+    }
+    function diff(input, units, asFloat) {
+        var that, zoneDelta, output;
+        if (!this.isValid()) return NaN;
+        that = cloneWithOffset(input, this);
+        if (!that.isValid()) return NaN;
+        zoneDelta = (that.utcOffset() - this.utcOffset()) * 6e4;
+        units = normalizeUnits(units);
+        switch(units){
+            case "year":
+                output = monthDiff(this, that) / 12;
+                break;
+            case "month":
+                output = monthDiff(this, that);
+                break;
+            case "quarter":
+                output = monthDiff(this, that) / 3;
+                break;
+            case "second":
+                output = (this - that) / 1e3;
+                break; // 1000
+            case "minute":
+                output = (this - that) / 6e4;
+                break; // 1000 * 60
+            case "hour":
+                output = (this - that) / 36e5;
+                break; // 1000 * 60 * 60
+            case "day":
+                output = (this - that - zoneDelta) / 864e5;
+                break; // 1000 * 60 * 60 * 24, negate dst
+            case "week":
+                output = (this - that - zoneDelta) / 6048e5;
+                break; // 1000 * 60 * 60 * 24 * 7, negate dst
+            default:
+                output = this - that;
+        }
+        return asFloat ? output : absFloor(output);
+    }
+    function monthDiff(a, b) {
+        if (a.date() < b.date()) // end-of-month calculations work correct when the start month has more
+        // days than the end month.
+        return -monthDiff(b, a);
+        // difference in months
+        var wholeMonthDiff = (b.year() - a.year()) * 12 + (b.month() - a.month()), // b is in (anchor - 1 month, anchor + 1 month)
+        anchor = a.clone().add(wholeMonthDiff, "months"), anchor2, adjust;
+        if (b - anchor < 0) {
+            anchor2 = a.clone().add(wholeMonthDiff - 1, "months");
+            // linear across the month
+            adjust = (b - anchor) / (anchor - anchor2);
+        } else {
+            anchor2 = a.clone().add(wholeMonthDiff + 1, "months");
+            // linear across the month
+            adjust = (b - anchor) / (anchor2 - anchor);
+        }
+        //check for negative zero, return zero if negative zero
+        return -(wholeMonthDiff + adjust) || 0;
+    }
+    hooks.defaultFormat = "YYYY-MM-DDTHH:mm:ssZ";
+    hooks.defaultFormatUtc = "YYYY-MM-DDTHH:mm:ss[Z]";
+    function toString() {
+        return this.clone().locale("en").format("ddd MMM DD YYYY HH:mm:ss [GMT]ZZ");
+    }
+    function toISOString(keepOffset) {
+        if (!this.isValid()) return null;
+        var utc = keepOffset !== true, m = utc ? this.clone().utc() : this;
+        if (m.year() < 0 || m.year() > 9999) return formatMoment(m, utc ? "YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]" : "YYYYYY-MM-DD[T]HH:mm:ss.SSSZ");
+        if (isFunction(Date.prototype.toISOString)) {
+            // native implementation is ~50x faster, use it when we can
+            if (utc) return this.toDate().toISOString();
+            else return new Date(this.valueOf() + this.utcOffset() * 60000).toISOString().replace("Z", formatMoment(m, "Z"));
+        }
+        return formatMoment(m, utc ? "YYYY-MM-DD[T]HH:mm:ss.SSS[Z]" : "YYYY-MM-DD[T]HH:mm:ss.SSSZ");
+    }
+    /**
+     * Return a human readable representation of a moment that can
+     * also be evaluated to get a new moment which is the same
+     *
+     * @link https://nodejs.org/dist/latest/docs/api/util.html#util_custom_inspect_function_on_objects
+     */ function inspect() {
+        if (!this.isValid()) return "moment.invalid(/* " + this._i + " */)";
+        var func = "moment", zone = "", prefix, year, datetime, suffix;
+        if (!this.isLocal()) {
+            func = this.utcOffset() === 0 ? "moment.utc" : "moment.parseZone";
+            zone = "Z";
+        }
+        prefix = "[" + func + '("]';
+        year = 0 <= this.year() && this.year() <= 9999 ? "YYYY" : "YYYYYY";
+        datetime = "-MM-DD[T]HH:mm:ss.SSS";
+        suffix = zone + '[")]';
+        return this.format(prefix + year + datetime + suffix);
+    }
+    function format(inputString) {
+        if (!inputString) inputString = this.isUtc() ? hooks.defaultFormatUtc : hooks.defaultFormat;
+        var output = formatMoment(this, inputString);
+        return this.localeData().postformat(output);
+    }
+    function from(time, withoutSuffix) {
+        if (this.isValid() && (isMoment(time) && time.isValid() || createLocal(time).isValid())) return createDuration({
+            to: this,
+            from: time
+        }).locale(this.locale()).humanize(!withoutSuffix);
+        else return this.localeData().invalidDate();
+    }
+    function fromNow(withoutSuffix) {
+        return this.from(createLocal(), withoutSuffix);
+    }
+    function to(time, withoutSuffix) {
+        if (this.isValid() && (isMoment(time) && time.isValid() || createLocal(time).isValid())) return createDuration({
+            from: this,
+            to: time
+        }).locale(this.locale()).humanize(!withoutSuffix);
+        else return this.localeData().invalidDate();
+    }
+    function toNow(withoutSuffix) {
+        return this.to(createLocal(), withoutSuffix);
+    }
+    // If passed a locale key, it will set the locale for this
+    // instance.  Otherwise, it will return the locale configuration
+    // variables for this instance.
+    function locale(key) {
+        var newLocaleData;
+        if (key === undefined) return this._locale._abbr;
+        else {
+            newLocaleData = getLocale(key);
+            if (newLocaleData != null) this._locale = newLocaleData;
+            return this;
+        }
+    }
+    var lang = deprecate("moment().lang() is deprecated. Instead, use moment().localeData() to get the language configuration. Use moment().locale() to change languages.", function(key) {
+        if (key === undefined) return this.localeData();
+        else return this.locale(key);
+    });
+    function localeData() {
+        return this._locale;
+    }
+    var MS_PER_SECOND = 1000, MS_PER_MINUTE = 60 * MS_PER_SECOND, MS_PER_HOUR = 60 * MS_PER_MINUTE, MS_PER_400_YEARS = 3506328 * MS_PER_HOUR;
+    // actual modulo - handles negative numbers (for dates before 1970):
+    function mod$1(dividend, divisor) {
+        return (dividend % divisor + divisor) % divisor;
+    }
+    function localStartOfDate(y, m, d) {
+        // the date constructor remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0) // preserve leap years using a full 400 year cycle, then reset
+        return new Date(y + 400, m, d) - MS_PER_400_YEARS;
+        else return new Date(y, m, d).valueOf();
+    }
+    function utcStartOfDate(y, m, d) {
+        // Date.UTC remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0) // preserve leap years using a full 400 year cycle, then reset
+        return Date.UTC(y + 400, m, d) - MS_PER_400_YEARS;
+        else return Date.UTC(y, m, d);
+    }
+    function startOf(units) {
+        var time, startOfDate;
+        units = normalizeUnits(units);
+        if (units === undefined || units === "millisecond" || !this.isValid()) return this;
+        startOfDate = this._isUTC ? utcStartOfDate : localStartOfDate;
+        switch(units){
+            case "year":
+                time = startOfDate(this.year(), 0, 1);
+                break;
+            case "quarter":
+                time = startOfDate(this.year(), this.month() - this.month() % 3, 1);
+                break;
+            case "month":
+                time = startOfDate(this.year(), this.month(), 1);
+                break;
+            case "week":
+                time = startOfDate(this.year(), this.month(), this.date() - this.weekday());
+                break;
+            case "isoWeek":
+                time = startOfDate(this.year(), this.month(), this.date() - (this.isoWeekday() - 1));
+                break;
+            case "day":
+            case "date":
+                time = startOfDate(this.year(), this.month(), this.date());
+                break;
+            case "hour":
+                time = this._d.valueOf();
+                time -= mod$1(time + (this._isUTC ? 0 : this.utcOffset() * MS_PER_MINUTE), MS_PER_HOUR);
+                break;
+            case "minute":
+                time = this._d.valueOf();
+                time -= mod$1(time, MS_PER_MINUTE);
+                break;
+            case "second":
+                time = this._d.valueOf();
+                time -= mod$1(time, MS_PER_SECOND);
+                break;
+        }
+        this._d.setTime(time);
+        hooks.updateOffset(this, true);
+        return this;
+    }
+    function endOf(units) {
+        var time, startOfDate;
+        units = normalizeUnits(units);
+        if (units === undefined || units === "millisecond" || !this.isValid()) return this;
+        startOfDate = this._isUTC ? utcStartOfDate : localStartOfDate;
+        switch(units){
+            case "year":
+                time = startOfDate(this.year() + 1, 0, 1) - 1;
+                break;
+            case "quarter":
+                time = startOfDate(this.year(), this.month() - this.month() % 3 + 3, 1) - 1;
+                break;
+            case "month":
+                time = startOfDate(this.year(), this.month() + 1, 1) - 1;
+                break;
+            case "week":
+                time = startOfDate(this.year(), this.month(), this.date() - this.weekday() + 7) - 1;
+                break;
+            case "isoWeek":
+                time = startOfDate(this.year(), this.month(), this.date() - (this.isoWeekday() - 1) + 7) - 1;
+                break;
+            case "day":
+            case "date":
+                time = startOfDate(this.year(), this.month(), this.date() + 1) - 1;
+                break;
+            case "hour":
+                time = this._d.valueOf();
+                time += MS_PER_HOUR - mod$1(time + (this._isUTC ? 0 : this.utcOffset() * MS_PER_MINUTE), MS_PER_HOUR) - 1;
+                break;
+            case "minute":
+                time = this._d.valueOf();
+                time += MS_PER_MINUTE - mod$1(time, MS_PER_MINUTE) - 1;
+                break;
+            case "second":
+                time = this._d.valueOf();
+                time += MS_PER_SECOND - mod$1(time, MS_PER_SECOND) - 1;
+                break;
+        }
+        this._d.setTime(time);
+        hooks.updateOffset(this, true);
+        return this;
+    }
+    function valueOf() {
+        return this._d.valueOf() - (this._offset || 0) * 60000;
+    }
+    function unix() {
+        return Math.floor(this.valueOf() / 1000);
+    }
+    function toDate() {
+        return new Date(this.valueOf());
+    }
+    function toArray() {
+        var m = this;
+        return [
+            m.year(),
+            m.month(),
+            m.date(),
+            m.hour(),
+            m.minute(),
+            m.second(),
+            m.millisecond()
+        ];
+    }
+    function toObject() {
+        var m = this;
+        return {
+            years: m.year(),
+            months: m.month(),
+            date: m.date(),
+            hours: m.hours(),
+            minutes: m.minutes(),
+            seconds: m.seconds(),
+            milliseconds: m.milliseconds()
+        };
+    }
+    function toJSON() {
+        // new Date(NaN).toJSON() === null
+        return this.isValid() ? this.toISOString() : null;
+    }
+    function isValid$2() {
+        return isValid(this);
+    }
+    function parsingFlags() {
+        return extend({}, getParsingFlags(this));
+    }
+    function invalidAt() {
+        return getParsingFlags(this).overflow;
+    }
+    function creationData() {
+        return {
+            input: this._i,
+            format: this._f,
+            locale: this._locale,
+            isUTC: this._isUTC,
+            strict: this._strict
+        };
+    }
+    addFormatToken("N", 0, 0, "eraAbbr");
+    addFormatToken("NN", 0, 0, "eraAbbr");
+    addFormatToken("NNN", 0, 0, "eraAbbr");
+    addFormatToken("NNNN", 0, 0, "eraName");
+    addFormatToken("NNNNN", 0, 0, "eraNarrow");
+    addFormatToken("y", [
+        "y",
+        1
+    ], "yo", "eraYear");
+    addFormatToken("y", [
+        "yy",
+        2
+    ], 0, "eraYear");
+    addFormatToken("y", [
+        "yyy",
+        3
+    ], 0, "eraYear");
+    addFormatToken("y", [
+        "yyyy",
+        4
+    ], 0, "eraYear");
+    addRegexToken("N", matchEraAbbr);
+    addRegexToken("NN", matchEraAbbr);
+    addRegexToken("NNN", matchEraAbbr);
+    addRegexToken("NNNN", matchEraName);
+    addRegexToken("NNNNN", matchEraNarrow);
+    addParseToken([
+        "N",
+        "NN",
+        "NNN",
+        "NNNN",
+        "NNNNN"
+    ], function(input, array, config, token) {
+        var era = config._locale.erasParse(input, token, config._strict);
+        if (era) getParsingFlags(config).era = era;
+        else getParsingFlags(config).invalidEra = input;
+    });
+    addRegexToken("y", matchUnsigned);
+    addRegexToken("yy", matchUnsigned);
+    addRegexToken("yyy", matchUnsigned);
+    addRegexToken("yyyy", matchUnsigned);
+    addRegexToken("yo", matchEraYearOrdinal);
+    addParseToken([
+        "y",
+        "yy",
+        "yyy",
+        "yyyy"
+    ], YEAR);
+    addParseToken([
+        "yo"
+    ], function(input, array, config, token) {
+        var match;
+        if (config._locale._eraYearOrdinalRegex) match = input.match(config._locale._eraYearOrdinalRegex);
+        if (config._locale.eraYearOrdinalParse) array[YEAR] = config._locale.eraYearOrdinalParse(input, match);
+        else array[YEAR] = parseInt(input, 10);
+    });
+    function localeEras(m, format) {
+        var i, l, date, eras = this._eras || getLocale("en")._eras;
+        for(i = 0, l = eras.length; i < l; ++i){
+            switch(typeof eras[i].since){
+                case "string":
+                    // truncate time
+                    date = hooks(eras[i].since).startOf("day");
+                    eras[i].since = date.valueOf();
+                    break;
+            }
+            switch(typeof eras[i].until){
+                case "undefined":
+                    eras[i].until = Infinity;
+                    break;
+                case "string":
+                    // truncate time
+                    date = hooks(eras[i].until).startOf("day").valueOf();
+                    eras[i].until = date.valueOf();
+                    break;
+            }
+        }
+        return eras;
+    }
+    function localeErasParse(eraName, format, strict) {
+        var i, l, eras = this.eras(), name, abbr, narrow;
+        eraName = eraName.toUpperCase();
+        for(i = 0, l = eras.length; i < l; ++i){
+            name = eras[i].name.toUpperCase();
+            abbr = eras[i].abbr.toUpperCase();
+            narrow = eras[i].narrow.toUpperCase();
+            if (strict) switch(format){
+                case "N":
+                case "NN":
+                case "NNN":
+                    if (abbr === eraName) return eras[i];
+                    break;
+                case "NNNN":
+                    if (name === eraName) return eras[i];
+                    break;
+                case "NNNNN":
+                    if (narrow === eraName) return eras[i];
+                    break;
+            }
+            else if ([
+                name,
+                abbr,
+                narrow
+            ].indexOf(eraName) >= 0) return eras[i];
+        }
+    }
+    function localeErasConvertYear(era, year) {
+        var dir = era.since <= era.until ? 1 : -1;
+        if (year === undefined) return hooks(era.since).year();
+        else return hooks(era.since).year() + (year - era.offset) * dir;
+    }
+    function getEraName() {
+        var i, l, val, eras = this.localeData().eras();
+        for(i = 0, l = eras.length; i < l; ++i){
+            // truncate time
+            val = this.clone().startOf("day").valueOf();
+            if (eras[i].since <= val && val <= eras[i].until) return eras[i].name;
+            if (eras[i].until <= val && val <= eras[i].since) return eras[i].name;
+        }
+        return "";
+    }
+    function getEraNarrow() {
+        var i, l, val, eras = this.localeData().eras();
+        for(i = 0, l = eras.length; i < l; ++i){
+            // truncate time
+            val = this.clone().startOf("day").valueOf();
+            if (eras[i].since <= val && val <= eras[i].until) return eras[i].narrow;
+            if (eras[i].until <= val && val <= eras[i].since) return eras[i].narrow;
+        }
+        return "";
+    }
+    function getEraAbbr() {
+        var i, l, val, eras = this.localeData().eras();
+        for(i = 0, l = eras.length; i < l; ++i){
+            // truncate time
+            val = this.clone().startOf("day").valueOf();
+            if (eras[i].since <= val && val <= eras[i].until) return eras[i].abbr;
+            if (eras[i].until <= val && val <= eras[i].since) return eras[i].abbr;
+        }
+        return "";
+    }
+    function getEraYear() {
+        var i, l, dir, val, eras = this.localeData().eras();
+        for(i = 0, l = eras.length; i < l; ++i){
+            dir = eras[i].since <= eras[i].until ? 1 : -1;
+            // truncate time
+            val = this.clone().startOf("day").valueOf();
+            if (eras[i].since <= val && val <= eras[i].until || eras[i].until <= val && val <= eras[i].since) return (this.year() - hooks(eras[i].since).year()) * dir + eras[i].offset;
+        }
+        return this.year();
+    }
+    function erasNameRegex(isStrict) {
+        if (!hasOwnProp(this, "_erasNameRegex")) computeErasParse.call(this);
+        return isStrict ? this._erasNameRegex : this._erasRegex;
+    }
+    function erasAbbrRegex(isStrict) {
+        if (!hasOwnProp(this, "_erasAbbrRegex")) computeErasParse.call(this);
+        return isStrict ? this._erasAbbrRegex : this._erasRegex;
+    }
+    function erasNarrowRegex(isStrict) {
+        if (!hasOwnProp(this, "_erasNarrowRegex")) computeErasParse.call(this);
+        return isStrict ? this._erasNarrowRegex : this._erasRegex;
+    }
+    function matchEraAbbr(isStrict, locale) {
+        return locale.erasAbbrRegex(isStrict);
+    }
+    function matchEraName(isStrict, locale) {
+        return locale.erasNameRegex(isStrict);
+    }
+    function matchEraNarrow(isStrict, locale) {
+        return locale.erasNarrowRegex(isStrict);
+    }
+    function matchEraYearOrdinal(isStrict, locale) {
+        return locale._eraYearOrdinalRegex || matchUnsigned;
+    }
+    function computeErasParse() {
+        var abbrPieces = [], namePieces = [], narrowPieces = [], mixedPieces = [], i, l, erasName, erasAbbr, erasNarrow, eras = this.eras();
+        for(i = 0, l = eras.length; i < l; ++i){
+            erasName = regexEscape(eras[i].name);
+            erasAbbr = regexEscape(eras[i].abbr);
+            erasNarrow = regexEscape(eras[i].narrow);
+            namePieces.push(erasName);
+            abbrPieces.push(erasAbbr);
+            narrowPieces.push(erasNarrow);
+            mixedPieces.push(erasName);
+            mixedPieces.push(erasAbbr);
+            mixedPieces.push(erasNarrow);
+        }
+        this._erasRegex = new RegExp("^(" + mixedPieces.join("|") + ")", "i");
+        this._erasNameRegex = new RegExp("^(" + namePieces.join("|") + ")", "i");
+        this._erasAbbrRegex = new RegExp("^(" + abbrPieces.join("|") + ")", "i");
+        this._erasNarrowRegex = new RegExp("^(" + narrowPieces.join("|") + ")", "i");
+    }
+    // FORMATTING
+    addFormatToken(0, [
+        "gg",
+        2
+    ], 0, function() {
+        return this.weekYear() % 100;
+    });
+    addFormatToken(0, [
+        "GG",
+        2
+    ], 0, function() {
+        return this.isoWeekYear() % 100;
+    });
+    function addWeekYearFormatToken(token, getter) {
+        addFormatToken(0, [
+            token,
+            token.length
+        ], 0, getter);
+    }
+    addWeekYearFormatToken("gggg", "weekYear");
+    addWeekYearFormatToken("ggggg", "weekYear");
+    addWeekYearFormatToken("GGGG", "isoWeekYear");
+    addWeekYearFormatToken("GGGGG", "isoWeekYear");
+    // ALIASES
+    // PARSING
+    addRegexToken("G", matchSigned);
+    addRegexToken("g", matchSigned);
+    addRegexToken("GG", match1to2, match2);
+    addRegexToken("gg", match1to2, match2);
+    addRegexToken("GGGG", match1to4, match4);
+    addRegexToken("gggg", match1to4, match4);
+    addRegexToken("GGGGG", match1to6, match6);
+    addRegexToken("ggggg", match1to6, match6);
+    addWeekParseToken([
+        "gggg",
+        "ggggg",
+        "GGGG",
+        "GGGGG"
+    ], function(input, week, config, token) {
+        week[token.substr(0, 2)] = toInt(input);
+    });
+    addWeekParseToken([
+        "gg",
+        "GG"
+    ], function(input, week, config, token) {
+        week[token] = hooks.parseTwoDigitYear(input);
+    });
+    // MOMENTS
+    function getSetWeekYear(input) {
+        return getSetWeekYearHelper.call(this, input, this.week(), this.weekday() + this.localeData()._week.dow, this.localeData()._week.dow, this.localeData()._week.doy);
+    }
+    function getSetISOWeekYear(input) {
+        return getSetWeekYearHelper.call(this, input, this.isoWeek(), this.isoWeekday(), 1, 4);
+    }
+    function getISOWeeksInYear() {
+        return weeksInYear(this.year(), 1, 4);
+    }
+    function getISOWeeksInISOWeekYear() {
+        return weeksInYear(this.isoWeekYear(), 1, 4);
+    }
+    function getWeeksInYear() {
+        var weekInfo = this.localeData()._week;
+        return weeksInYear(this.year(), weekInfo.dow, weekInfo.doy);
+    }
+    function getWeeksInWeekYear() {
+        var weekInfo = this.localeData()._week;
+        return weeksInYear(this.weekYear(), weekInfo.dow, weekInfo.doy);
+    }
+    function getSetWeekYearHelper(input, week, weekday, dow, doy) {
+        var weeksTarget;
+        if (input == null) return weekOfYear(this, dow, doy).year;
+        else {
+            weeksTarget = weeksInYear(input, dow, doy);
+            if (week > weeksTarget) week = weeksTarget;
+            return setWeekAll.call(this, input, week, weekday, dow, doy);
+        }
+    }
+    function setWeekAll(weekYear, week, weekday, dow, doy) {
+        var dayOfYearData = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy), date = createUTCDate(dayOfYearData.year, 0, dayOfYearData.dayOfYear);
+        this.year(date.getUTCFullYear());
+        this.month(date.getUTCMonth());
+        this.date(date.getUTCDate());
+        return this;
+    }
+    // FORMATTING
+    addFormatToken("Q", 0, "Qo", "quarter");
+    // PARSING
+    addRegexToken("Q", match1);
+    addParseToken("Q", function(input, array) {
+        array[MONTH] = (toInt(input) - 1) * 3;
+    });
+    // MOMENTS
+    function getSetQuarter(input) {
+        return input == null ? Math.ceil((this.month() + 1) / 3) : this.month((input - 1) * 3 + this.month() % 3);
+    }
+    // FORMATTING
+    addFormatToken("D", [
+        "DD",
+        2
+    ], "Do", "date");
+    // PARSING
+    addRegexToken("D", match1to2, match1to2NoLeadingZero);
+    addRegexToken("DD", match1to2, match2);
+    addRegexToken("Do", function(isStrict, locale) {
+        // TODO: Remove "ordinalParse" fallback in next major release.
+        return isStrict ? locale._dayOfMonthOrdinalParse || locale._ordinalParse : locale._dayOfMonthOrdinalParseLenient;
+    });
+    addParseToken([
+        "D",
+        "DD"
+    ], DATE);
+    addParseToken("Do", function(input, array) {
+        array[DATE] = toInt(input.match(match1to2)[0]);
+    });
+    // MOMENTS
+    var getSetDayOfMonth = makeGetSet("Date", true);
+    // FORMATTING
+    addFormatToken("DDD", [
+        "DDDD",
+        3
+    ], "DDDo", "dayOfYear");
+    // PARSING
+    addRegexToken("DDD", match1to3);
+    addRegexToken("DDDD", match3);
+    addParseToken([
+        "DDD",
+        "DDDD"
+    ], function(input, array, config) {
+        config._dayOfYear = toInt(input);
+    });
+    // HELPERS
+    // MOMENTS
+    function getSetDayOfYear(input) {
+        var dayOfYear = Math.round((this.clone().startOf("day") - this.clone().startOf("year")) / 864e5) + 1;
+        return input == null ? dayOfYear : this.add(input - dayOfYear, "d");
+    }
+    // FORMATTING
+    addFormatToken("m", [
+        "mm",
+        2
+    ], 0, "minute");
+    // PARSING
+    addRegexToken("m", match1to2, match1to2HasZero);
+    addRegexToken("mm", match1to2, match2);
+    addParseToken([
+        "m",
+        "mm"
+    ], MINUTE);
+    // MOMENTS
+    var getSetMinute = makeGetSet("Minutes", false);
+    // FORMATTING
+    addFormatToken("s", [
+        "ss",
+        2
+    ], 0, "second");
+    // PARSING
+    addRegexToken("s", match1to2, match1to2HasZero);
+    addRegexToken("ss", match1to2, match2);
+    addParseToken([
+        "s",
+        "ss"
+    ], SECOND);
+    // MOMENTS
+    var getSetSecond = makeGetSet("Seconds", false);
+    // FORMATTING
+    addFormatToken("S", 0, 0, function() {
+        return ~~(this.millisecond() / 100);
+    });
+    addFormatToken(0, [
+        "SS",
+        2
+    ], 0, function() {
+        return ~~(this.millisecond() / 10);
+    });
+    addFormatToken(0, [
+        "SSS",
+        3
+    ], 0, "millisecond");
+    addFormatToken(0, [
+        "SSSS",
+        4
+    ], 0, function() {
+        return this.millisecond() * 10;
+    });
+    addFormatToken(0, [
+        "SSSSS",
+        5
+    ], 0, function() {
+        return this.millisecond() * 100;
+    });
+    addFormatToken(0, [
+        "SSSSSS",
+        6
+    ], 0, function() {
+        return this.millisecond() * 1000;
+    });
+    addFormatToken(0, [
+        "SSSSSSS",
+        7
+    ], 0, function() {
+        return this.millisecond() * 10000;
+    });
+    addFormatToken(0, [
+        "SSSSSSSS",
+        8
+    ], 0, function() {
+        return this.millisecond() * 100000;
+    });
+    addFormatToken(0, [
+        "SSSSSSSSS",
+        9
+    ], 0, function() {
+        return this.millisecond() * 1000000;
+    });
+    // PARSING
+    addRegexToken("S", match1to3, match1);
+    addRegexToken("SS", match1to3, match2);
+    addRegexToken("SSS", match1to3, match3);
+    var token, getSetMillisecond;
+    for(token = "SSSS"; token.length <= 9; token += "S")addRegexToken(token, matchUnsigned);
+    function parseMs(input, array) {
+        array[MILLISECOND] = toInt(("0." + input) * 1000);
+    }
+    for(token = "S"; token.length <= 9; token += "S")addParseToken(token, parseMs);
+    getSetMillisecond = makeGetSet("Milliseconds", false);
+    // FORMATTING
+    addFormatToken("z", 0, 0, "zoneAbbr");
+    addFormatToken("zz", 0, 0, "zoneName");
+    // MOMENTS
+    function getZoneAbbr() {
+        return this._isUTC ? "UTC" : "";
+    }
+    function getZoneName() {
+        return this._isUTC ? "Coordinated Universal Time" : "";
+    }
+    var proto = Moment.prototype;
+    proto.add = add;
+    proto.calendar = calendar$1;
+    proto.clone = clone;
+    proto.diff = diff;
+    proto.endOf = endOf;
+    proto.format = format;
+    proto.from = from;
+    proto.fromNow = fromNow;
+    proto.to = to;
+    proto.toNow = toNow;
+    proto.get = stringGet;
+    proto.invalidAt = invalidAt;
+    proto.isAfter = isAfter;
+    proto.isBefore = isBefore;
+    proto.isBetween = isBetween;
+    proto.isSame = isSame;
+    proto.isSameOrAfter = isSameOrAfter;
+    proto.isSameOrBefore = isSameOrBefore;
+    proto.isValid = isValid$2;
+    proto.lang = lang;
+    proto.locale = locale;
+    proto.localeData = localeData;
+    proto.max = prototypeMax;
+    proto.min = prototypeMin;
+    proto.parsingFlags = parsingFlags;
+    proto.set = stringSet;
+    proto.startOf = startOf;
+    proto.subtract = subtract;
+    proto.toArray = toArray;
+    proto.toObject = toObject;
+    proto.toDate = toDate;
+    proto.toISOString = toISOString;
+    proto.inspect = inspect;
+    if (typeof Symbol !== "undefined" && Symbol.for != null) proto[Symbol.for("nodejs.util.inspect.custom")] = function() {
+        return "Moment<" + this.format() + ">";
+    };
+    proto.toJSON = toJSON;
+    proto.toString = toString;
+    proto.unix = unix;
+    proto.valueOf = valueOf;
+    proto.creationData = creationData;
+    proto.eraName = getEraName;
+    proto.eraNarrow = getEraNarrow;
+    proto.eraAbbr = getEraAbbr;
+    proto.eraYear = getEraYear;
+    proto.year = getSetYear;
+    proto.isLeapYear = getIsLeapYear;
+    proto.weekYear = getSetWeekYear;
+    proto.isoWeekYear = getSetISOWeekYear;
+    proto.quarter = proto.quarters = getSetQuarter;
+    proto.month = getSetMonth;
+    proto.daysInMonth = getDaysInMonth;
+    proto.week = proto.weeks = getSetWeek;
+    proto.isoWeek = proto.isoWeeks = getSetISOWeek;
+    proto.weeksInYear = getWeeksInYear;
+    proto.weeksInWeekYear = getWeeksInWeekYear;
+    proto.isoWeeksInYear = getISOWeeksInYear;
+    proto.isoWeeksInISOWeekYear = getISOWeeksInISOWeekYear;
+    proto.date = getSetDayOfMonth;
+    proto.day = proto.days = getSetDayOfWeek;
+    proto.weekday = getSetLocaleDayOfWeek;
+    proto.isoWeekday = getSetISODayOfWeek;
+    proto.dayOfYear = getSetDayOfYear;
+    proto.hour = proto.hours = getSetHour;
+    proto.minute = proto.minutes = getSetMinute;
+    proto.second = proto.seconds = getSetSecond;
+    proto.millisecond = proto.milliseconds = getSetMillisecond;
+    proto.utcOffset = getSetOffset;
+    proto.utc = setOffsetToUTC;
+    proto.local = setOffsetToLocal;
+    proto.parseZone = setOffsetToParsedOffset;
+    proto.hasAlignedHourOffset = hasAlignedHourOffset;
+    proto.isDST = isDaylightSavingTime;
+    proto.isLocal = isLocal;
+    proto.isUtcOffset = isUtcOffset;
+    proto.isUtc = isUtc;
+    proto.isUTC = isUtc;
+    proto.zoneAbbr = getZoneAbbr;
+    proto.zoneName = getZoneName;
+    proto.dates = deprecate("dates accessor is deprecated. Use date instead.", getSetDayOfMonth);
+    proto.months = deprecate("months accessor is deprecated. Use month instead", getSetMonth);
+    proto.years = deprecate("years accessor is deprecated. Use year instead", getSetYear);
+    proto.zone = deprecate("moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/", getSetZone);
+    proto.isDSTShifted = deprecate("isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information", isDaylightSavingTimeShifted);
+    function createUnix(input) {
+        return createLocal(input * 1000);
+    }
+    function createInZone() {
+        return createLocal.apply(null, arguments).parseZone();
+    }
+    function preParsePostFormat(string) {
+        return string;
+    }
+    var proto$1 = Locale.prototype;
+    proto$1.calendar = calendar;
+    proto$1.longDateFormat = longDateFormat;
+    proto$1.invalidDate = invalidDate;
+    proto$1.ordinal = ordinal;
+    proto$1.preparse = preParsePostFormat;
+    proto$1.postformat = preParsePostFormat;
+    proto$1.relativeTime = relativeTime;
+    proto$1.pastFuture = pastFuture;
+    proto$1.set = set;
+    proto$1.eras = localeEras;
+    proto$1.erasParse = localeErasParse;
+    proto$1.erasConvertYear = localeErasConvertYear;
+    proto$1.erasAbbrRegex = erasAbbrRegex;
+    proto$1.erasNameRegex = erasNameRegex;
+    proto$1.erasNarrowRegex = erasNarrowRegex;
+    proto$1.months = localeMonths;
+    proto$1.monthsShort = localeMonthsShort;
+    proto$1.monthsParse = localeMonthsParse;
+    proto$1.monthsRegex = monthsRegex;
+    proto$1.monthsShortRegex = monthsShortRegex;
+    proto$1.week = localeWeek;
+    proto$1.firstDayOfYear = localeFirstDayOfYear;
+    proto$1.firstDayOfWeek = localeFirstDayOfWeek;
+    proto$1.weekdays = localeWeekdays;
+    proto$1.weekdaysMin = localeWeekdaysMin;
+    proto$1.weekdaysShort = localeWeekdaysShort;
+    proto$1.weekdaysParse = localeWeekdaysParse;
+    proto$1.weekdaysRegex = weekdaysRegex;
+    proto$1.weekdaysShortRegex = weekdaysShortRegex;
+    proto$1.weekdaysMinRegex = weekdaysMinRegex;
+    proto$1.isPM = localeIsPM;
+    proto$1.meridiem = localeMeridiem;
+    function get$1(format, index, field, setter) {
+        var locale = getLocale(), utc = createUTC().set(setter, index);
+        return locale[field](utc, format);
+    }
+    function listMonthsImpl(format, index, field) {
+        if (isNumber(format)) {
+            index = format;
+            format = undefined;
+        }
+        format = format || "";
+        if (index != null) return get$1(format, index, field, "month");
+        var i, out = [];
+        for(i = 0; i < 12; i++)out[i] = get$1(format, i, field, "month");
+        return out;
+    }
+    // ()
+    // (5)
+    // (fmt, 5)
+    // (fmt)
+    // (true)
+    // (true, 5)
+    // (true, fmt, 5)
+    // (true, fmt)
+    function listWeekdaysImpl(localeSorted, format, index, field) {
+        if (typeof localeSorted === "boolean") {
+            if (isNumber(format)) {
+                index = format;
+                format = undefined;
+            }
+            format = format || "";
+        } else {
+            format = localeSorted;
+            index = format;
+            localeSorted = false;
+            if (isNumber(format)) {
+                index = format;
+                format = undefined;
+            }
+            format = format || "";
+        }
+        var locale = getLocale(), shift = localeSorted ? locale._week.dow : 0, i, out = [];
+        if (index != null) return get$1(format, (index + shift) % 7, field, "day");
+        for(i = 0; i < 7; i++)out[i] = get$1(format, (i + shift) % 7, field, "day");
+        return out;
+    }
+    function listMonths(format, index) {
+        return listMonthsImpl(format, index, "months");
+    }
+    function listMonthsShort(format, index) {
+        return listMonthsImpl(format, index, "monthsShort");
+    }
+    function listWeekdays(localeSorted, format, index) {
+        return listWeekdaysImpl(localeSorted, format, index, "weekdays");
+    }
+    function listWeekdaysShort(localeSorted, format, index) {
+        return listWeekdaysImpl(localeSorted, format, index, "weekdaysShort");
+    }
+    function listWeekdaysMin(localeSorted, format, index) {
+        return listWeekdaysImpl(localeSorted, format, index, "weekdaysMin");
+    }
+    getSetGlobalLocale("en", {
+        eras: [
+            {
+                since: "0001-01-01",
+                until: Infinity,
+                offset: 1,
+                name: "Anno Domini",
+                narrow: "AD",
+                abbr: "AD"
+            },
+            {
+                since: "0000-12-31",
+                until: -Infinity,
+                offset: 1,
+                name: "Before Christ",
+                narrow: "BC",
+                abbr: "BC"
+            }
+        ],
+        dayOfMonthOrdinalParse: /\d{1,2}(th|st|nd|rd)/,
+        ordinal: function(number) {
+            var b = number % 10, output = toInt(number % 100 / 10) === 1 ? "th" : b === 1 ? "st" : b === 2 ? "nd" : b === 3 ? "rd" : "th";
+            return number + output;
+        }
+    });
+    // Side effect imports
+    hooks.lang = deprecate("moment.lang is deprecated. Use moment.locale instead.", getSetGlobalLocale);
+    hooks.langData = deprecate("moment.langData is deprecated. Use moment.localeData instead.", getLocale);
+    var mathAbs = Math.abs;
+    function abs() {
+        var data = this._data;
+        this._milliseconds = mathAbs(this._milliseconds);
+        this._days = mathAbs(this._days);
+        this._months = mathAbs(this._months);
+        data.milliseconds = mathAbs(data.milliseconds);
+        data.seconds = mathAbs(data.seconds);
+        data.minutes = mathAbs(data.minutes);
+        data.hours = mathAbs(data.hours);
+        data.months = mathAbs(data.months);
+        data.years = mathAbs(data.years);
+        return this;
+    }
+    function addSubtract$1(duration, input, value, direction) {
+        var other = createDuration(input, value);
+        duration._milliseconds += direction * other._milliseconds;
+        duration._days += direction * other._days;
+        duration._months += direction * other._months;
+        return duration._bubble();
+    }
+    // supports only 2.0-style add(1, 's') or add(duration)
+    function add$1(input, value) {
+        return addSubtract$1(this, input, value, 1);
+    }
+    // supports only 2.0-style subtract(1, 's') or subtract(duration)
+    function subtract$1(input, value) {
+        return addSubtract$1(this, input, value, -1);
+    }
+    function absCeil(number) {
+        if (number < 0) return Math.floor(number);
+        else return Math.ceil(number);
+    }
+    function bubble() {
+        var milliseconds = this._milliseconds, days = this._days, months = this._months, data = this._data, seconds, minutes, hours, years, monthsFromDays;
+        // if we have a mix of positive and negative values, bubble down first
+        // check: https://github.com/moment/moment/issues/2166
+        if (!(milliseconds >= 0 && days >= 0 && months >= 0 || milliseconds <= 0 && days <= 0 && months <= 0)) {
+            milliseconds += absCeil(monthsToDays(months) + days) * 864e5;
+            days = 0;
+            months = 0;
+        }
+        // The following code bubbles up values, see the tests for
+        // examples of what that means.
+        data.milliseconds = milliseconds % 1000;
+        seconds = absFloor(milliseconds / 1000);
+        data.seconds = seconds % 60;
+        minutes = absFloor(seconds / 60);
+        data.minutes = minutes % 60;
+        hours = absFloor(minutes / 60);
+        data.hours = hours % 24;
+        days += absFloor(hours / 24);
+        // convert days to months
+        monthsFromDays = absFloor(daysToMonths(days));
+        months += monthsFromDays;
+        days -= absCeil(monthsToDays(monthsFromDays));
+        // 12 months -> 1 year
+        years = absFloor(months / 12);
+        months %= 12;
+        data.days = days;
+        data.months = months;
+        data.years = years;
+        return this;
+    }
+    function daysToMonths(days) {
+        // 400 years have 146097 days (taking into account leap year rules)
+        // 400 years have 12 months === 4800
+        return days * 4800 / 146097;
+    }
+    function monthsToDays(months) {
+        // the reverse of daysToMonths
+        return months * 146097 / 4800;
+    }
+    function as(units) {
+        if (!this.isValid()) return NaN;
+        var days, months, milliseconds = this._milliseconds;
+        units = normalizeUnits(units);
+        if (units === "month" || units === "quarter" || units === "year") {
+            days = this._days + milliseconds / 864e5;
+            months = this._months + daysToMonths(days);
+            switch(units){
+                case "month":
+                    return months;
+                case "quarter":
+                    return months / 3;
+                case "year":
+                    return months / 12;
+            }
+        } else {
+            // handle milliseconds separately because of floating point math errors (issue #1867)
+            days = this._days + Math.round(monthsToDays(this._months));
+            switch(units){
+                case "week":
+                    return days / 7 + milliseconds / 6048e5;
+                case "day":
+                    return days + milliseconds / 864e5;
+                case "hour":
+                    return days * 24 + milliseconds / 36e5;
+                case "minute":
+                    return days * 1440 + milliseconds / 6e4;
+                case "second":
+                    return days * 86400 + milliseconds / 1000;
+                // Math.floor prevents floating point math errors here
+                case "millisecond":
+                    return Math.floor(days * 864e5) + milliseconds;
+                default:
+                    throw new Error("Unknown unit " + units);
             }
         }
     }
-    has(header, matcher) {
-        header = normalizeHeader(header);
-        if (header) {
-            const key = (0, _utilsJsDefault.default).findKey(this, header);
-            return !!(key && this[key] !== undefined && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
+    function makeAs(alias) {
+        return function() {
+            return this.as(alias);
+        };
+    }
+    var asMilliseconds = makeAs("ms"), asSeconds = makeAs("s"), asMinutes = makeAs("m"), asHours = makeAs("h"), asDays = makeAs("d"), asWeeks = makeAs("w"), asMonths = makeAs("M"), asQuarters = makeAs("Q"), asYears = makeAs("y"), valueOf$1 = asMilliseconds;
+    function clone$1() {
+        return createDuration(this);
+    }
+    function get$2(units) {
+        units = normalizeUnits(units);
+        return this.isValid() ? this[units + "s"]() : NaN;
+    }
+    function makeGetter(name) {
+        return function() {
+            return this.isValid() ? this._data[name] : NaN;
+        };
+    }
+    var milliseconds = makeGetter("milliseconds"), seconds = makeGetter("seconds"), minutes = makeGetter("minutes"), hours = makeGetter("hours"), days = makeGetter("days"), months = makeGetter("months"), years = makeGetter("years");
+    function weeks() {
+        return absFloor(this.days() / 7);
+    }
+    var round = Math.round, thresholds = {
+        ss: 44,
+        s: 45,
+        m: 45,
+        h: 22,
+        d: 26,
+        w: null,
+        M: 11
+    };
+    // helper function for moment.fn.from, moment.fn.fromNow, and moment.duration.fn.humanize
+    function substituteTimeAgo(string, number, withoutSuffix, isFuture, locale) {
+        return locale.relativeTime(number || 1, !!withoutSuffix, string, isFuture);
+    }
+    function relativeTime$1(posNegDuration, withoutSuffix, thresholds, locale) {
+        var duration = createDuration(posNegDuration).abs(), seconds = round(duration.as("s")), minutes = round(duration.as("m")), hours = round(duration.as("h")), days = round(duration.as("d")), months = round(duration.as("M")), weeks = round(duration.as("w")), years = round(duration.as("y")), a = seconds <= thresholds.ss && [
+            "s",
+            seconds
+        ] || seconds < thresholds.s && [
+            "ss",
+            seconds
+        ] || minutes <= 1 && [
+            "m"
+        ] || minutes < thresholds.m && [
+            "mm",
+            minutes
+        ] || hours <= 1 && [
+            "h"
+        ] || hours < thresholds.h && [
+            "hh",
+            hours
+        ] || days <= 1 && [
+            "d"
+        ] || days < thresholds.d && [
+            "dd",
+            days
+        ];
+        if (thresholds.w != null) a = a || weeks <= 1 && [
+            "w"
+        ] || weeks < thresholds.w && [
+            "ww",
+            weeks
+        ];
+        a = a || months <= 1 && [
+            "M"
+        ] || months < thresholds.M && [
+            "MM",
+            months
+        ] || years <= 1 && [
+            "y"
+        ] || [
+            "yy",
+            years
+        ];
+        a[2] = withoutSuffix;
+        a[3] = +posNegDuration > 0;
+        a[4] = locale;
+        return substituteTimeAgo.apply(null, a);
+    }
+    // This function allows you to set the rounding function for relative time strings
+    function getSetRelativeTimeRounding(roundingFunction) {
+        if (roundingFunction === undefined) return round;
+        if (typeof roundingFunction === "function") {
+            round = roundingFunction;
+            return true;
         }
         return false;
     }
-    delete(header, matcher) {
-        const self = this;
-        let deleted = false;
-        function deleteHeader(_header) {
-            _header = normalizeHeader(_header);
-            if (_header) {
-                const key = (0, _utilsJsDefault.default).findKey(self, _header);
-                if (key && (!matcher || matchHeaderValue(self, self[key], key, matcher))) {
-                    delete self[key];
-                    deleted = true;
-                }
-            }
-        }
-        if ((0, _utilsJsDefault.default).isArray(header)) header.forEach(deleteHeader);
-        else deleteHeader(header);
-        return deleted;
-    }
-    clear(matcher) {
-        const keys = Object.keys(this);
-        let i = keys.length;
-        let deleted = false;
-        while(i--){
-            const key = keys[i];
-            if (!matcher || matchHeaderValue(this, this[key], key, matcher, true)) {
-                delete this[key];
-                deleted = true;
-            }
-        }
-        return deleted;
-    }
-    normalize(format) {
-        const self = this;
-        const headers = {};
-        (0, _utilsJsDefault.default).forEach(this, (value, header)=>{
-            const key = (0, _utilsJsDefault.default).findKey(headers, header);
-            if (key) {
-                self[key] = normalizeValue(value);
-                delete self[header];
-                return;
-            }
-            const normalized = format ? formatHeader(header) : String(header).trim();
-            if (normalized !== header) delete self[header];
-            self[normalized] = normalizeValue(value);
-            headers[normalized] = true;
-        });
-        return this;
-    }
-    concat(...targets) {
-        return this.constructor.concat(this, ...targets);
-    }
-    toJSON(asStrings) {
-        const obj = Object.create(null);
-        (0, _utilsJsDefault.default).forEach(this, (value, header)=>{
-            value != null && value !== false && (obj[header] = asStrings && (0, _utilsJsDefault.default).isArray(value) ? value.join(", ") : value);
-        });
-        return obj;
-    }
-    [Symbol.iterator]() {
-        return Object.entries(this.toJSON())[Symbol.iterator]();
-    }
-    toString() {
-        return Object.entries(this.toJSON()).map(([header, value])=>header + ": " + value).join("\n");
-    }
-    get [Symbol.toStringTag]() {
-        return "AxiosHeaders";
-    }
-    static from(thing) {
-        return thing instanceof this ? thing : new this(thing);
-    }
-    static concat(first, ...targets) {
-        const computed = new this(first);
-        targets.forEach((target)=>computed.set(target));
-        return computed;
-    }
-    static accessor(header) {
-        const internals = this[$internals] = this[$internals] = {
-            accessors: {}
-        };
-        const accessors = internals.accessors;
-        const prototype = this.prototype;
-        function defineAccessor(_header) {
-            const lHeader = normalizeHeader(_header);
-            if (!accessors[lHeader]) {
-                buildAccessors(prototype, _header);
-                accessors[lHeader] = true;
-            }
-        }
-        (0, _utilsJsDefault.default).isArray(header) ? header.forEach(defineAccessor) : defineAccessor(header);
-        return this;
-    }
-}
-AxiosHeaders.accessor([
-    "Content-Type",
-    "Content-Length",
-    "Accept",
-    "Accept-Encoding",
-    "User-Agent",
-    "Authorization"
-]);
-// reserved names hotfix
-(0, _utilsJsDefault.default).reduceDescriptors(AxiosHeaders.prototype, ({ value }, key)=>{
-    let mapped = key[0].toUpperCase() + key.slice(1); // map `set` => `Set`
-    return {
-        get: ()=>value,
-        set (headerValue) {
-            this[mapped] = headerValue;
-        }
-    };
-});
-(0, _utilsJsDefault.default).freezeMethods(AxiosHeaders);
-exports.default = AxiosHeaders;
-
-},{"../utils.js":"k4bLS","../helpers/parseHeaders.js":"ahLcq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ahLcq":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("./../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-"use strict";
-// RawAxiosHeaders whose duplicates are ignored by node
-// c.f. https://nodejs.org/api/http.html#http_message_headers
-const ignoreDuplicateOf = (0, _utilsJsDefault.default).toObjectSet([
-    "age",
-    "authorization",
-    "content-length",
-    "content-type",
-    "etag",
-    "expires",
-    "from",
-    "host",
-    "if-modified-since",
-    "if-unmodified-since",
-    "last-modified",
-    "location",
-    "max-forwards",
-    "proxy-authorization",
-    "referer",
-    "retry-after",
-    "user-agent"
-]);
-/**
- * Parse headers into an object
- *
- * ```
- * Date: Wed, 27 Aug 2014 08:58:49 GMT
- * Content-Type: application/json
- * Connection: keep-alive
- * Transfer-Encoding: chunked
- * ```
- *
- * @param {String} rawHeaders Headers needing to be parsed
- *
- * @returns {Object} Headers parsed into an object
- */ exports.default = (rawHeaders)=>{
-    const parsed = {};
-    let key;
-    let val;
-    let i;
-    rawHeaders && rawHeaders.split("\n").forEach(function parser(line) {
-        i = line.indexOf(":");
-        key = line.substring(0, i).trim().toLowerCase();
-        val = line.substring(i + 1).trim();
-        if (!key || parsed[key] && ignoreDuplicateOf[key]) return;
-        if (key === "set-cookie") {
-            if (parsed[key]) parsed[key].push(val);
-            else parsed[key] = [
-                val
-            ];
-        } else parsed[key] = parsed[key] ? parsed[key] + ", " + val : val;
-    });
-    return parsed;
-};
-
-},{"./../utils.js":"k4bLS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dqDry":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>isCancel);
-"use strict";
-function isCancel(value) {
-    return !!(value && value.__CANCEL__);
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"brm73":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _axiosErrorJs = require("../core/AxiosError.js");
-var _axiosErrorJsDefault = parcelHelpers.interopDefault(_axiosErrorJs);
-var _utilsJs = require("../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-"use strict";
-/**
- * A `CanceledError` is an object that is thrown when an operation is canceled.
- *
- * @param {string=} message The message.
- * @param {Object=} config The config.
- * @param {Object=} request The request.
- *
- * @returns {CanceledError} The created error.
- */ function CanceledError(message, config, request) {
-    // eslint-disable-next-line no-eq-null,eqeqeq
-    (0, _axiosErrorJsDefault.default).call(this, message == null ? "canceled" : message, (0, _axiosErrorJsDefault.default).ERR_CANCELED, config, request);
-    this.name = "CanceledError";
-}
-(0, _utilsJsDefault.default).inherits(CanceledError, (0, _axiosErrorJsDefault.default), {
-    __CANCEL__: true
-});
-exports.default = CanceledError;
-
-},{"../core/AxiosError.js":"3ENKs","../utils.js":"k4bLS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fYQVc":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _httpJs = require("./http.js");
-var _httpJsDefault = parcelHelpers.interopDefault(_httpJs);
-var _xhrJs = require("./xhr.js");
-var _xhrJsDefault = parcelHelpers.interopDefault(_xhrJs);
-var _axiosErrorJs = require("../core/AxiosError.js");
-var _axiosErrorJsDefault = parcelHelpers.interopDefault(_axiosErrorJs);
-const knownAdapters = {
-    http: (0, _httpJsDefault.default),
-    xhr: (0, _xhrJsDefault.default)
-};
-(0, _utilsJsDefault.default).forEach(knownAdapters, (fn, value)=>{
-    if (fn) {
-        try {
-            Object.defineProperty(fn, "name", {
-                value
-            });
-        } catch (e) {
-        // eslint-disable-next-line no-empty
-        }
-        Object.defineProperty(fn, "adapterName", {
-            value
-        });
-    }
-});
-const renderReason = (reason)=>`- ${reason}`;
-const isResolvedHandle = (adapter)=>(0, _utilsJsDefault.default).isFunction(adapter) || adapter === null || adapter === false;
-exports.default = {
-    getAdapter: (adapters)=>{
-        adapters = (0, _utilsJsDefault.default).isArray(adapters) ? adapters : [
-            adapters
-        ];
-        const { length } = adapters;
-        let nameOrAdapter;
-        let adapter;
-        const rejectedReasons = {};
-        for(let i = 0; i < length; i++){
-            nameOrAdapter = adapters[i];
-            let id;
-            adapter = nameOrAdapter;
-            if (!isResolvedHandle(nameOrAdapter)) {
-                adapter = knownAdapters[(id = String(nameOrAdapter)).toLowerCase()];
-                if (adapter === undefined) throw new (0, _axiosErrorJsDefault.default)(`Unknown adapter '${id}'`);
-            }
-            if (adapter) break;
-            rejectedReasons[id || "#" + i] = adapter;
-        }
-        if (!adapter) {
-            const reasons = Object.entries(rejectedReasons).map(([id, state])=>`adapter ${id} ` + (state === false ? "is not supported by the environment" : "is not available in the build"));
-            let s = length ? reasons.length > 1 ? "since :\n" + reasons.map(renderReason).join("\n") : " " + renderReason(reasons[0]) : "as no adapter specified";
-            throw new (0, _axiosErrorJsDefault.default)(`There is no suitable adapter to dispatch the request ` + s, "ERR_NOT_SUPPORT");
-        }
-        return adapter;
-    },
-    adapters: knownAdapters
-};
-
-},{"../utils.js":"k4bLS","./http.js":"6IkIZ","./xhr.js":"gl4Nq","../core/AxiosError.js":"3ENKs","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gl4Nq":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("./../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _settleJs = require("./../core/settle.js");
-var _settleJsDefault = parcelHelpers.interopDefault(_settleJs);
-var _cookiesJs = require("./../helpers/cookies.js");
-var _cookiesJsDefault = parcelHelpers.interopDefault(_cookiesJs);
-var _buildURLJs = require("./../helpers/buildURL.js");
-var _buildURLJsDefault = parcelHelpers.interopDefault(_buildURLJs);
-var _buildFullPathJs = require("../core/buildFullPath.js");
-var _buildFullPathJsDefault = parcelHelpers.interopDefault(_buildFullPathJs);
-var _isURLSameOriginJs = require("./../helpers/isURLSameOrigin.js");
-var _isURLSameOriginJsDefault = parcelHelpers.interopDefault(_isURLSameOriginJs);
-var _transitionalJs = require("../defaults/transitional.js");
-var _transitionalJsDefault = parcelHelpers.interopDefault(_transitionalJs);
-var _axiosErrorJs = require("../core/AxiosError.js");
-var _axiosErrorJsDefault = parcelHelpers.interopDefault(_axiosErrorJs);
-var _canceledErrorJs = require("../cancel/CanceledError.js");
-var _canceledErrorJsDefault = parcelHelpers.interopDefault(_canceledErrorJs);
-var _parseProtocolJs = require("../helpers/parseProtocol.js");
-var _parseProtocolJsDefault = parcelHelpers.interopDefault(_parseProtocolJs);
-var _indexJs = require("../platform/index.js");
-var _indexJsDefault = parcelHelpers.interopDefault(_indexJs);
-var _axiosHeadersJs = require("../core/AxiosHeaders.js");
-var _axiosHeadersJsDefault = parcelHelpers.interopDefault(_axiosHeadersJs);
-var _speedometerJs = require("../helpers/speedometer.js");
-var _speedometerJsDefault = parcelHelpers.interopDefault(_speedometerJs);
-"use strict";
-function progressEventReducer(listener, isDownloadStream) {
-    let bytesNotified = 0;
-    const _speedometer = (0, _speedometerJsDefault.default)(50, 250);
-    return (e)=>{
-        const loaded = e.loaded;
-        const total = e.lengthComputable ? e.total : undefined;
-        const progressBytes = loaded - bytesNotified;
-        const rate = _speedometer(progressBytes);
-        const inRange = loaded <= total;
-        bytesNotified = loaded;
-        const data = {
-            loaded,
-            total,
-            progress: total ? loaded / total : undefined,
-            bytes: progressBytes,
-            rate: rate ? rate : undefined,
-            estimated: rate && total && inRange ? (total - loaded) / rate : undefined,
-            event: e
-        };
-        data[isDownloadStream ? "download" : "upload"] = true;
-        listener(data);
-    };
-}
-const isXHRAdapterSupported = typeof XMLHttpRequest !== "undefined";
-exports.default = isXHRAdapterSupported && function(config) {
-    return new Promise(function dispatchXhrRequest(resolve, reject) {
-        let requestData = config.data;
-        const requestHeaders = (0, _axiosHeadersJsDefault.default).from(config.headers).normalize();
-        let { responseType, withXSRFToken } = config;
-        let onCanceled;
-        function done() {
-            if (config.cancelToken) config.cancelToken.unsubscribe(onCanceled);
-            if (config.signal) config.signal.removeEventListener("abort", onCanceled);
-        }
-        let contentType;
-        if ((0, _utilsJsDefault.default).isFormData(requestData)) {
-            if ((0, _indexJsDefault.default).hasStandardBrowserEnv || (0, _indexJsDefault.default).hasStandardBrowserWebWorkerEnv) requestHeaders.setContentType(false); // Let the browser set it
-            else if ((contentType = requestHeaders.getContentType()) !== false) {
-                // fix semicolon duplication issue for ReactNative FormData implementation
-                const [type, ...tokens] = contentType ? contentType.split(";").map((token)=>token.trim()).filter(Boolean) : [];
-                requestHeaders.setContentType([
-                    type || "multipart/form-data",
-                    ...tokens
-                ].join("; "));
-            }
-        }
-        let request = new XMLHttpRequest();
-        // HTTP basic authentication
-        if (config.auth) {
-            const username = config.auth.username || "";
-            const password = config.auth.password ? unescape(encodeURIComponent(config.auth.password)) : "";
-            requestHeaders.set("Authorization", "Basic " + btoa(username + ":" + password));
-        }
-        const fullPath = (0, _buildFullPathJsDefault.default)(config.baseURL, config.url);
-        request.open(config.method.toUpperCase(), (0, _buildURLJsDefault.default)(fullPath, config.params, config.paramsSerializer), true);
-        // Set the request timeout in MS
-        request.timeout = config.timeout;
-        function onloadend() {
-            if (!request) return;
-            // Prepare the response
-            const responseHeaders = (0, _axiosHeadersJsDefault.default).from("getAllResponseHeaders" in request && request.getAllResponseHeaders());
-            const responseData = !responseType || responseType === "text" || responseType === "json" ? request.responseText : request.response;
-            const response = {
-                data: responseData,
-                status: request.status,
-                statusText: request.statusText,
-                headers: responseHeaders,
-                config,
-                request
-            };
-            (0, _settleJsDefault.default)(function _resolve(value) {
-                resolve(value);
-                done();
-            }, function _reject(err) {
-                reject(err);
-                done();
-            }, response);
-            // Clean up request
-            request = null;
-        }
-        if ("onloadend" in request) // Use onloadend if available
-        request.onloadend = onloadend;
-        else // Listen for ready state to emulate onloadend
-        request.onreadystatechange = function handleLoad() {
-            if (!request || request.readyState !== 4) return;
-            // The request errored out and we didn't get a response, this will be
-            // handled by onerror instead
-            // With one exception: request that using file: protocol, most browsers
-            // will return status as 0 even though it's a successful request
-            if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf("file:") === 0)) return;
-            // readystate handler is calling before onerror or ontimeout handlers,
-            // so we should call onloadend on the next 'tick'
-            setTimeout(onloadend);
-        };
-        // Handle browser request cancellation (as opposed to a manual cancellation)
-        request.onabort = function handleAbort() {
-            if (!request) return;
-            reject(new (0, _axiosErrorJsDefault.default)("Request aborted", (0, _axiosErrorJsDefault.default).ECONNABORTED, config, request));
-            // Clean up request
-            request = null;
-        };
-        // Handle low level network errors
-        request.onerror = function handleError() {
-            // Real errors are hidden from us by the browser
-            // onerror should only fire if it's a network error
-            reject(new (0, _axiosErrorJsDefault.default)("Network Error", (0, _axiosErrorJsDefault.default).ERR_NETWORK, config, request));
-            // Clean up request
-            request = null;
-        };
-        // Handle timeout
-        request.ontimeout = function handleTimeout() {
-            let timeoutErrorMessage = config.timeout ? "timeout of " + config.timeout + "ms exceeded" : "timeout exceeded";
-            const transitional = config.transitional || (0, _transitionalJsDefault.default);
-            if (config.timeoutErrorMessage) timeoutErrorMessage = config.timeoutErrorMessage;
-            reject(new (0, _axiosErrorJsDefault.default)(timeoutErrorMessage, transitional.clarifyTimeoutError ? (0, _axiosErrorJsDefault.default).ETIMEDOUT : (0, _axiosErrorJsDefault.default).ECONNABORTED, config, request));
-            // Clean up request
-            request = null;
-        };
-        // Add xsrf header
-        // This is only done if running in a standard browser environment.
-        // Specifically not if we're in a web worker, or react-native.
-        if ((0, _indexJsDefault.default).hasStandardBrowserEnv) {
-            withXSRFToken && (0, _utilsJsDefault.default).isFunction(withXSRFToken) && (withXSRFToken = withXSRFToken(config));
-            if (withXSRFToken || withXSRFToken !== false && (0, _isURLSameOriginJsDefault.default)(fullPath)) {
-                // Add xsrf header
-                const xsrfValue = config.xsrfHeaderName && config.xsrfCookieName && (0, _cookiesJsDefault.default).read(config.xsrfCookieName);
-                if (xsrfValue) requestHeaders.set(config.xsrfHeaderName, xsrfValue);
-            }
-        }
-        // Remove Content-Type if data is undefined
-        requestData === undefined && requestHeaders.setContentType(null);
-        // Add headers to the request
-        if ("setRequestHeader" in request) (0, _utilsJsDefault.default).forEach(requestHeaders.toJSON(), function setRequestHeader(val, key) {
-            request.setRequestHeader(key, val);
-        });
-        // Add withCredentials to request if needed
-        if (!(0, _utilsJsDefault.default).isUndefined(config.withCredentials)) request.withCredentials = !!config.withCredentials;
-        // Add responseType to request if needed
-        if (responseType && responseType !== "json") request.responseType = config.responseType;
-        // Handle progress if needed
-        if (typeof config.onDownloadProgress === "function") request.addEventListener("progress", progressEventReducer(config.onDownloadProgress, true));
-        // Not all browsers support upload events
-        if (typeof config.onUploadProgress === "function" && request.upload) request.upload.addEventListener("progress", progressEventReducer(config.onUploadProgress));
-        if (config.cancelToken || config.signal) {
-            // Handle cancellation
-            // eslint-disable-next-line func-names
-            onCanceled = (cancel)=>{
-                if (!request) return;
-                reject(!cancel || cancel.type ? new (0, _canceledErrorJsDefault.default)(null, config, request) : cancel);
-                request.abort();
-                request = null;
-            };
-            config.cancelToken && config.cancelToken.subscribe(onCanceled);
-            if (config.signal) config.signal.aborted ? onCanceled() : config.signal.addEventListener("abort", onCanceled);
-        }
-        const protocol = (0, _parseProtocolJsDefault.default)(fullPath);
-        if (protocol && (0, _indexJsDefault.default).protocols.indexOf(protocol) === -1) {
-            reject(new (0, _axiosErrorJsDefault.default)("Unsupported protocol " + protocol + ":", (0, _axiosErrorJsDefault.default).ERR_BAD_REQUEST, config));
-            return;
-        }
-        // Send the request
-        request.send(requestData || null);
-    });
-};
-
-},{"./../utils.js":"k4bLS","./../core/settle.js":"3NNkf","./../helpers/cookies.js":"azBYZ","./../helpers/buildURL.js":"eORZv","../core/buildFullPath.js":"9LAKr","./../helpers/isURLSameOrigin.js":"7WfKi","../defaults/transitional.js":"gZUpF","../core/AxiosError.js":"3ENKs","../cancel/CanceledError.js":"brm73","../helpers/parseProtocol.js":"41r81","../platform/index.js":"hANG0","../core/AxiosHeaders.js":"fYuyb","../helpers/speedometer.js":"lulL9","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3NNkf":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>settle);
-var _axiosErrorJs = require("./AxiosError.js");
-var _axiosErrorJsDefault = parcelHelpers.interopDefault(_axiosErrorJs);
-"use strict";
-function settle(resolve, reject, response) {
-    const validateStatus = response.config.validateStatus;
-    if (!response.status || !validateStatus || validateStatus(response.status)) resolve(response);
-    else reject(new (0, _axiosErrorJsDefault.default)("Request failed with status code " + response.status, [
-        (0, _axiosErrorJsDefault.default).ERR_BAD_REQUEST,
-        (0, _axiosErrorJsDefault.default).ERR_BAD_RESPONSE
-    ][Math.floor(response.status / 100) - 4], response.config, response.request, response));
-}
-
-},{"./AxiosError.js":"3ENKs","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"azBYZ":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("./../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _indexJs = require("../platform/index.js");
-var _indexJsDefault = parcelHelpers.interopDefault(_indexJs);
-exports.default = (0, _indexJsDefault.default).hasStandardBrowserEnv ? // Standard browser envs support document.cookie
-{
-    write (name, value, expires, path, domain, secure) {
-        const cookie = [
-            name + "=" + encodeURIComponent(value)
-        ];
-        (0, _utilsJsDefault.default).isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
-        (0, _utilsJsDefault.default).isString(path) && cookie.push("path=" + path);
-        (0, _utilsJsDefault.default).isString(domain) && cookie.push("domain=" + domain);
-        secure === true && cookie.push("secure");
-        document.cookie = cookie.join("; ");
-    },
-    read (name) {
-        const match = document.cookie.match(new RegExp("(^|;\\s*)(" + name + ")=([^;]*)"));
-        return match ? decodeURIComponent(match[3]) : null;
-    },
-    remove (name) {
-        this.write(name, "", Date.now() - 86400000);
-    }
-} : // Non-standard browser env (web workers, react-native) lack needed support.
-{
-    write () {},
-    read () {
-        return null;
-    },
-    remove () {}
-};
-
-},{"./../utils.js":"k4bLS","../platform/index.js":"hANG0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9LAKr":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>buildFullPath);
-var _isAbsoluteURLJs = require("../helpers/isAbsoluteURL.js");
-var _isAbsoluteURLJsDefault = parcelHelpers.interopDefault(_isAbsoluteURLJs);
-var _combineURLsJs = require("../helpers/combineURLs.js");
-var _combineURLsJsDefault = parcelHelpers.interopDefault(_combineURLsJs);
-"use strict";
-function buildFullPath(baseURL, requestedURL) {
-    if (baseURL && !(0, _isAbsoluteURLJsDefault.default)(requestedURL)) return (0, _combineURLsJsDefault.default)(baseURL, requestedURL);
-    return requestedURL;
-}
-
-},{"../helpers/isAbsoluteURL.js":"aNh0N","../helpers/combineURLs.js":"kN2Ii","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aNh0N":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>isAbsoluteURL);
-"use strict";
-function isAbsoluteURL(url) {
-    // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
-    // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
-    // by any combination of letters, digits, plus, period, or hyphen.
-    return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(url);
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kN2Ii":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>combineURLs);
-"use strict";
-function combineURLs(baseURL, relativeURL) {
-    return relativeURL ? baseURL.replace(/\/?\/$/, "") + "/" + relativeURL.replace(/^\/+/, "") : baseURL;
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7WfKi":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _utilsJs = require("./../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _indexJs = require("../platform/index.js");
-var _indexJsDefault = parcelHelpers.interopDefault(_indexJs);
-"use strict";
-exports.default = (0, _indexJsDefault.default).hasStandardBrowserEnv ? // Standard browser envs have full support of the APIs needed to test
-// whether the request URL is of the same origin as current location.
-function standardBrowserEnv() {
-    const msie = /(msie|trident)/i.test(navigator.userAgent);
-    const urlParsingNode = document.createElement("a");
-    let originURL;
-    /**
-    * Parse a URL to discover its components
-    *
-    * @param {String} url The URL to be parsed
-    * @returns {Object}
-    */ function resolveURL(url) {
-        let href = url;
-        if (msie) {
-            // IE needs attribute set twice to normalize properties
-            urlParsingNode.setAttribute("href", href);
-            href = urlParsingNode.href;
-        }
-        urlParsingNode.setAttribute("href", href);
-        // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
-        return {
-            href: urlParsingNode.href,
-            protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, "") : "",
-            host: urlParsingNode.host,
-            search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, "") : "",
-            hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, "") : "",
-            hostname: urlParsingNode.hostname,
-            port: urlParsingNode.port,
-            pathname: urlParsingNode.pathname.charAt(0) === "/" ? urlParsingNode.pathname : "/" + urlParsingNode.pathname
-        };
-    }
-    originURL = resolveURL(window.location.href);
-    /**
-    * Determine if a URL shares the same origin as the current location
-    *
-    * @param {String} requestURL The URL to test
-    * @returns {boolean} True if URL shares the same origin, otherwise false
-    */ return function isURLSameOrigin(requestURL) {
-        const parsed = (0, _utilsJsDefault.default).isString(requestURL) ? resolveURL(requestURL) : requestURL;
-        return parsed.protocol === originURL.protocol && parsed.host === originURL.host;
-    };
-}() : // Non standard browser envs (web workers, react-native) lack needed support.
-function nonStandardBrowserEnv() {
-    return function isURLSameOrigin() {
+    // This function allows you to set a threshold for relative time strings
+    function getSetRelativeTimeThreshold(threshold, limit) {
+        if (thresholds[threshold] === undefined) return false;
+        if (limit === undefined) return thresholds[threshold];
+        thresholds[threshold] = limit;
+        if (threshold === "s") thresholds.ss = limit - 1;
         return true;
-    };
-}();
-
-},{"./../utils.js":"k4bLS","../platform/index.js":"hANG0","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"41r81":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>parseProtocol);
-"use strict";
-function parseProtocol(url) {
-    const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
-    return match && match[1] || "";
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lulL9":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-"use strict";
-/**
- * Calculate data maxRate
- * @param {Number} [samplesCount= 10]
- * @param {Number} [min= 1000]
- * @returns {Function}
- */ function speedometer(samplesCount, min) {
-    samplesCount = samplesCount || 10;
-    const bytes = new Array(samplesCount);
-    const timestamps = new Array(samplesCount);
-    let head = 0;
-    let tail = 0;
-    let firstSampleTS;
-    min = min !== undefined ? min : 1000;
-    return function push(chunkLength) {
-        const now = Date.now();
-        const startedAt = timestamps[tail];
-        if (!firstSampleTS) firstSampleTS = now;
-        bytes[head] = chunkLength;
-        timestamps[head] = now;
-        let i = tail;
-        let bytesCount = 0;
-        while(i !== head){
-            bytesCount += bytes[i++];
-            i = i % samplesCount;
+    }
+    function humanize(argWithSuffix, argThresholds) {
+        if (!this.isValid()) return this.localeData().invalidDate();
+        var withSuffix = false, th = thresholds, locale, output;
+        if (typeof argWithSuffix === "object") {
+            argThresholds = argWithSuffix;
+            argWithSuffix = false;
         }
-        head = (head + 1) % samplesCount;
-        if (head === tail) tail = (tail + 1) % samplesCount;
-        if (now - firstSampleTS < min) return;
-        const passed = startedAt && now - startedAt;
-        return passed ? Math.round(bytesCount * 1000 / passed) : undefined;
-    };
-}
-exports.default = speedometer;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1s43p":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>mergeConfig);
-var _utilsJs = require("../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-var _axiosHeadersJs = require("./AxiosHeaders.js");
-var _axiosHeadersJsDefault = parcelHelpers.interopDefault(_axiosHeadersJs);
-"use strict";
-const headersToObject = (thing)=>thing instanceof (0, _axiosHeadersJsDefault.default) ? thing.toJSON() : thing;
-function mergeConfig(config1, config2) {
-    // eslint-disable-next-line no-param-reassign
-    config2 = config2 || {};
-    const config = {};
-    function getMergedValue(target, source, caseless) {
-        if ((0, _utilsJsDefault.default).isPlainObject(target) && (0, _utilsJsDefault.default).isPlainObject(source)) return (0, _utilsJsDefault.default).merge.call({
-            caseless
-        }, target, source);
-        else if ((0, _utilsJsDefault.default).isPlainObject(source)) return (0, _utilsJsDefault.default).merge({}, source);
-        else if ((0, _utilsJsDefault.default).isArray(source)) return source.slice();
-        return source;
+        if (typeof argWithSuffix === "boolean") withSuffix = argWithSuffix;
+        if (typeof argThresholds === "object") {
+            th = Object.assign({}, thresholds, argThresholds);
+            if (argThresholds.s != null && argThresholds.ss == null) th.ss = argThresholds.s - 1;
+        }
+        locale = this.localeData();
+        output = relativeTime$1(this, !withSuffix, th, locale);
+        if (withSuffix) output = locale.pastFuture(+this, output);
+        return locale.postformat(output);
     }
-    // eslint-disable-next-line consistent-return
-    function mergeDeepProperties(a, b, caseless) {
-        if (!(0, _utilsJsDefault.default).isUndefined(b)) return getMergedValue(a, b, caseless);
-        else if (!(0, _utilsJsDefault.default).isUndefined(a)) return getMergedValue(undefined, a, caseless);
+    var abs$1 = Math.abs;
+    function sign(x) {
+        return (x > 0) - (x < 0) || +x;
     }
-    // eslint-disable-next-line consistent-return
-    function valueFromConfig2(a, b) {
-        if (!(0, _utilsJsDefault.default).isUndefined(b)) return getMergedValue(undefined, b);
+    function toISOString$1() {
+        // for ISO strings we do not use the normal bubbling rules:
+        //  * milliseconds bubble up until they become hours
+        //  * days do not bubble at all
+        //  * months bubble up until they become years
+        // This is because there is no context-free conversion between hours and days
+        // (think of clock changes)
+        // and also not between days and months (28-31 days per month)
+        if (!this.isValid()) return this.localeData().invalidDate();
+        var seconds = abs$1(this._milliseconds) / 1000, days = abs$1(this._days), months = abs$1(this._months), minutes, hours, years, s, total = this.asSeconds(), totalSign, ymSign, daysSign, hmsSign;
+        if (!total) // this is the same as C#'s (Noda) and python (isodate)...
+        // but not other JS (goog.date)
+        return "P0D";
+        // 3600 seconds -> 60 minutes -> 1 hour
+        minutes = absFloor(seconds / 60);
+        hours = absFloor(minutes / 60);
+        seconds %= 60;
+        minutes %= 60;
+        // 12 months -> 1 year
+        years = absFloor(months / 12);
+        months %= 12;
+        // inspired by https://github.com/dordille/moment-isoduration/blob/master/moment.isoduration.js
+        s = seconds ? seconds.toFixed(3).replace(/\.?0+$/, "") : "";
+        totalSign = total < 0 ? "-" : "";
+        ymSign = sign(this._months) !== sign(total) ? "-" : "";
+        daysSign = sign(this._days) !== sign(total) ? "-" : "";
+        hmsSign = sign(this._milliseconds) !== sign(total) ? "-" : "";
+        return totalSign + "P" + (years ? ymSign + years + "Y" : "") + (months ? ymSign + months + "M" : "") + (days ? daysSign + days + "D" : "") + (hours || minutes || seconds ? "T" : "") + (hours ? hmsSign + hours + "H" : "") + (minutes ? hmsSign + minutes + "M" : "") + (seconds ? hmsSign + s + "S" : "");
     }
-    // eslint-disable-next-line consistent-return
-    function defaultToConfig2(a, b) {
-        if (!(0, _utilsJsDefault.default).isUndefined(b)) return getMergedValue(undefined, b);
-        else if (!(0, _utilsJsDefault.default).isUndefined(a)) return getMergedValue(undefined, a);
-    }
-    // eslint-disable-next-line consistent-return
-    function mergeDirectKeys(a, b, prop) {
-        if (prop in config2) return getMergedValue(a, b);
-        else if (prop in config1) return getMergedValue(undefined, a);
-    }
-    const mergeMap = {
-        url: valueFromConfig2,
-        method: valueFromConfig2,
-        data: valueFromConfig2,
-        baseURL: defaultToConfig2,
-        transformRequest: defaultToConfig2,
-        transformResponse: defaultToConfig2,
-        paramsSerializer: defaultToConfig2,
-        timeout: defaultToConfig2,
-        timeoutMessage: defaultToConfig2,
-        withCredentials: defaultToConfig2,
-        withXSRFToken: defaultToConfig2,
-        adapter: defaultToConfig2,
-        responseType: defaultToConfig2,
-        xsrfCookieName: defaultToConfig2,
-        xsrfHeaderName: defaultToConfig2,
-        onUploadProgress: defaultToConfig2,
-        onDownloadProgress: defaultToConfig2,
-        decompress: defaultToConfig2,
-        maxContentLength: defaultToConfig2,
-        maxBodyLength: defaultToConfig2,
-        beforeRedirect: defaultToConfig2,
-        transport: defaultToConfig2,
-        httpAgent: defaultToConfig2,
-        httpsAgent: defaultToConfig2,
-        cancelToken: defaultToConfig2,
-        socketPath: defaultToConfig2,
-        responseEncoding: defaultToConfig2,
-        validateStatus: mergeDirectKeys,
-        headers: (a, b)=>mergeDeepProperties(headersToObject(a), headersToObject(b), true)
-    };
-    (0, _utilsJsDefault.default).forEach(Object.keys(Object.assign({}, config1, config2)), function computeConfigValue(prop) {
-        const merge = mergeMap[prop] || mergeDeepProperties;
-        const configValue = merge(config1[prop], config2[prop], prop);
-        (0, _utilsJsDefault.default).isUndefined(configValue) && merge !== mergeDirectKeys || (config[prop] = configValue);
+    var proto$2 = Duration.prototype;
+    proto$2.isValid = isValid$1;
+    proto$2.abs = abs;
+    proto$2.add = add$1;
+    proto$2.subtract = subtract$1;
+    proto$2.as = as;
+    proto$2.asMilliseconds = asMilliseconds;
+    proto$2.asSeconds = asSeconds;
+    proto$2.asMinutes = asMinutes;
+    proto$2.asHours = asHours;
+    proto$2.asDays = asDays;
+    proto$2.asWeeks = asWeeks;
+    proto$2.asMonths = asMonths;
+    proto$2.asQuarters = asQuarters;
+    proto$2.asYears = asYears;
+    proto$2.valueOf = valueOf$1;
+    proto$2._bubble = bubble;
+    proto$2.clone = clone$1;
+    proto$2.get = get$2;
+    proto$2.milliseconds = milliseconds;
+    proto$2.seconds = seconds;
+    proto$2.minutes = minutes;
+    proto$2.hours = hours;
+    proto$2.days = days;
+    proto$2.weeks = weeks;
+    proto$2.months = months;
+    proto$2.years = years;
+    proto$2.humanize = humanize;
+    proto$2.toISOString = toISOString$1;
+    proto$2.toString = toISOString$1;
+    proto$2.toJSON = toISOString$1;
+    proto$2.locale = locale;
+    proto$2.localeData = localeData;
+    proto$2.toIsoString = deprecate("toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)", toISOString$1);
+    proto$2.lang = lang;
+    // FORMATTING
+    addFormatToken("X", 0, 0, "unix");
+    addFormatToken("x", 0, 0, "valueOf");
+    // PARSING
+    addRegexToken("x", matchSigned);
+    addRegexToken("X", matchTimestamp);
+    addParseToken("X", function(input, array, config) {
+        config._d = new Date(parseFloat(input) * 1000);
     });
-    return config;
-}
-
-},{"../utils.js":"k4bLS","./AxiosHeaders.js":"fYuyb","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gE0Xs":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _dataJs = require("../env/data.js");
-var _axiosErrorJs = require("../core/AxiosError.js");
-var _axiosErrorJsDefault = parcelHelpers.interopDefault(_axiosErrorJs);
-"use strict";
-const validators = {};
-// eslint-disable-next-line func-names
-[
-    "object",
-    "boolean",
-    "number",
-    "function",
-    "string",
-    "symbol"
-].forEach((type, i)=>{
-    validators[type] = function validator(thing) {
-        return typeof thing === type || "a" + (i < 1 ? "n " : " ") + type;
+    addParseToken("x", function(input, array, config) {
+        config._d = new Date(toInt(input));
+    });
+    //! moment.js
+    hooks.version = "2.30.1";
+    setHookCallback(createLocal);
+    hooks.fn = proto;
+    hooks.min = min;
+    hooks.max = max;
+    hooks.now = now;
+    hooks.utc = createUTC;
+    hooks.unix = createUnix;
+    hooks.months = listMonths;
+    hooks.isDate = isDate;
+    hooks.locale = getSetGlobalLocale;
+    hooks.invalid = createInvalid;
+    hooks.duration = createDuration;
+    hooks.isMoment = isMoment;
+    hooks.weekdays = listWeekdays;
+    hooks.parseZone = createInZone;
+    hooks.localeData = getLocale;
+    hooks.isDuration = isDuration;
+    hooks.monthsShort = listMonthsShort;
+    hooks.weekdaysMin = listWeekdaysMin;
+    hooks.defineLocale = defineLocale;
+    hooks.updateLocale = updateLocale;
+    hooks.locales = listLocales;
+    hooks.weekdaysShort = listWeekdaysShort;
+    hooks.normalizeUnits = normalizeUnits;
+    hooks.relativeTimeRounding = getSetRelativeTimeRounding;
+    hooks.relativeTimeThreshold = getSetRelativeTimeThreshold;
+    hooks.calendarFormat = getCalendarFormat;
+    hooks.prototype = proto;
+    // currently HTML5 input type only supports 24-hour formats
+    hooks.HTML5_FMT = {
+        DATETIME_LOCAL: "YYYY-MM-DDTHH:mm",
+        DATETIME_LOCAL_SECONDS: "YYYY-MM-DDTHH:mm:ss",
+        DATETIME_LOCAL_MS: "YYYY-MM-DDTHH:mm:ss.SSS",
+        DATE: "YYYY-MM-DD",
+        TIME: "HH:mm",
+        TIME_SECONDS: "HH:mm:ss",
+        TIME_MS: "HH:mm:ss.SSS",
+        WEEK: "GGGG-[W]WW",
+        MONTH: "YYYY-MM"
     };
+    return hooks;
 });
-const deprecatedWarnings = {};
-/**
- * Transitional option validator
- *
- * @param {function|boolean?} validator - set to false if the transitional option has been removed
- * @param {string?} version - deprecated version / removed since version
- * @param {string?} message - some message with additional info
- *
- * @returns {function}
- */ validators.transitional = function transitional(validator, version, message) {
-    function formatMessage(opt, desc) {
-        return "[Axios v" + (0, _dataJs.VERSION) + "] Transitional option '" + opt + "'" + desc + (message ? ". " + message : "");
-    }
-    // eslint-disable-next-line func-names
-    return (value, opt, opts)=>{
-        if (validator === false) throw new (0, _axiosErrorJsDefault.default)(formatMessage(opt, " has been removed" + (version ? " in " + version : "")), (0, _axiosErrorJsDefault.default).ERR_DEPRECATED);
-        if (version && !deprecatedWarnings[opt]) {
-            deprecatedWarnings[opt] = true;
-            // eslint-disable-next-line no-console
-            console.warn(formatMessage(opt, " has been deprecated since v" + version + " and will be removed in the near future"));
-        }
-        return validator ? validator(value, opt, opts) : true;
-    };
-};
-/**
- * Assert object's properties type
- *
- * @param {object} options
- * @param {object} schema
- * @param {boolean?} allowUnknown
- *
- * @returns {object}
- */ function assertOptions(options, schema, allowUnknown) {
-    if (typeof options !== "object") throw new (0, _axiosErrorJsDefault.default)("options must be an object", (0, _axiosErrorJsDefault.default).ERR_BAD_OPTION_VALUE);
-    const keys = Object.keys(options);
-    let i = keys.length;
-    while(i-- > 0){
-        const opt = keys[i];
-        const validator = schema[opt];
-        if (validator) {
-            const value = options[opt];
-            const result = value === undefined || validator(value, opt, options);
-            if (result !== true) throw new (0, _axiosErrorJsDefault.default)("option " + opt + " must be " + result, (0, _axiosErrorJsDefault.default).ERR_BAD_OPTION_VALUE);
-            continue;
-        }
-        if (allowUnknown !== true) throw new (0, _axiosErrorJsDefault.default)("Unknown option " + opt, (0, _axiosErrorJsDefault.default).ERR_BAD_OPTION);
-    }
-}
-exports.default = {
-    assertOptions,
-    validators
-};
 
-},{"../env/data.js":"lo7Yk","../core/AxiosError.js":"3ENKs","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lo7Yk":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "VERSION", ()=>VERSION);
-const VERSION = "1.6.3";
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lVwzz":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _canceledErrorJs = require("./CanceledError.js");
-var _canceledErrorJsDefault = parcelHelpers.interopDefault(_canceledErrorJs);
-"use strict";
-/**
- * A `CancelToken` is an object that can be used to request cancellation of an operation.
- *
- * @param {Function} executor The executor function.
- *
- * @returns {CancelToken}
- */ class CancelToken {
-    constructor(executor){
-        if (typeof executor !== "function") throw new TypeError("executor must be a function.");
-        let resolvePromise;
-        this.promise = new Promise(function promiseExecutor(resolve) {
-            resolvePromise = resolve;
-        });
-        const token = this;
-        // eslint-disable-next-line func-names
-        this.promise.then((cancel)=>{
-            if (!token._listeners) return;
-            let i = token._listeners.length;
-            while(i-- > 0)token._listeners[i](cancel);
-            token._listeners = null;
-        });
-        // eslint-disable-next-line func-names
-        this.promise.then = (onfulfilled)=>{
-            let _resolve;
-            // eslint-disable-next-line func-names
-            const promise = new Promise((resolve)=>{
-                token.subscribe(resolve);
-                _resolve = resolve;
-            }).then(onfulfilled);
-            promise.cancel = function reject() {
-                token.unsubscribe(_resolve);
-            };
-            return promise;
-        };
-        executor(function cancel(message, config, request) {
-            if (token.reason) // Cancellation has already been requested
-            return;
-            token.reason = new (0, _canceledErrorJsDefault.default)(message, config, request);
-            resolvePromise(token.reason);
-        });
-    }
-    /**
-   * Throws a `CanceledError` if cancellation has been requested.
-   */ throwIfRequested() {
-        if (this.reason) throw this.reason;
-    }
-    /**
-   * Subscribe to the cancel signal
-   */ subscribe(listener) {
-        if (this.reason) {
-            listener(this.reason);
-            return;
-        }
-        if (this._listeners) this._listeners.push(listener);
-        else this._listeners = [
-            listener
-        ];
-    }
-    /**
-   * Unsubscribe from the cancel signal
-   */ unsubscribe(listener) {
-        if (!this._listeners) return;
-        const index = this._listeners.indexOf(listener);
-        if (index !== -1) this._listeners.splice(index, 1);
-    }
-    /**
-   * Returns an object that contains a new `CancelToken` and a function that, when called,
-   * cancels the `CancelToken`.
-   */ static source() {
-        let cancel;
-        const token = new CancelToken(function executor(c) {
-            cancel = c;
-        });
-        return {
-            token,
-            cancel
-        };
-    }
-}
-exports.default = CancelToken;
-
-},{"./CanceledError.js":"brm73","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3a07o":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>spread);
-"use strict";
-function spread(callback) {
-    return function wrap(arr) {
-        return callback.apply(null, arr);
-    };
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h2Ai5":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>isAxiosError);
-var _utilsJs = require("./../utils.js");
-var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
-"use strict";
-function isAxiosError(payload) {
-    return (0, _utilsJsDefault.default).isObject(payload) && payload.isAxiosError === true;
-}
-
-},{"./../utils.js":"k4bLS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hhjX6":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-const HttpStatusCode = {
-    Continue: 100,
-    SwitchingProtocols: 101,
-    Processing: 102,
-    EarlyHints: 103,
-    Ok: 200,
-    Created: 201,
-    Accepted: 202,
-    NonAuthoritativeInformation: 203,
-    NoContent: 204,
-    ResetContent: 205,
-    PartialContent: 206,
-    MultiStatus: 207,
-    AlreadyReported: 208,
-    ImUsed: 226,
-    MultipleChoices: 300,
-    MovedPermanently: 301,
-    Found: 302,
-    SeeOther: 303,
-    NotModified: 304,
-    UseProxy: 305,
-    Unused: 306,
-    TemporaryRedirect: 307,
-    PermanentRedirect: 308,
-    BadRequest: 400,
-    Unauthorized: 401,
-    PaymentRequired: 402,
-    Forbidden: 403,
-    NotFound: 404,
-    MethodNotAllowed: 405,
-    NotAcceptable: 406,
-    ProxyAuthenticationRequired: 407,
-    RequestTimeout: 408,
-    Conflict: 409,
-    Gone: 410,
-    LengthRequired: 411,
-    PreconditionFailed: 412,
-    PayloadTooLarge: 413,
-    UriTooLong: 414,
-    UnsupportedMediaType: 415,
-    RangeNotSatisfiable: 416,
-    ExpectationFailed: 417,
-    ImATeapot: 418,
-    MisdirectedRequest: 421,
-    UnprocessableEntity: 422,
-    Locked: 423,
-    FailedDependency: 424,
-    TooEarly: 425,
-    UpgradeRequired: 426,
-    PreconditionRequired: 428,
-    TooManyRequests: 429,
-    RequestHeaderFieldsTooLarge: 431,
-    UnavailableForLegalReasons: 451,
-    InternalServerError: 500,
-    NotImplemented: 501,
-    BadGateway: 502,
-    ServiceUnavailable: 503,
-    GatewayTimeout: 504,
-    HttpVersionNotSupported: 505,
-    VariantAlsoNegotiates: 506,
-    InsufficientStorage: 507,
-    LoopDetected: 508,
-    NotExtended: 510,
-    NetworkAuthenticationRequired: 511
-};
-Object.entries(HttpStatusCode).forEach(([key, value])=>{
-    HttpStatusCode[value] = key;
-});
-exports.default = HttpStatusCode;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eyKYH":[function() {},{}],"eyKYH":[function() {},{}],"lJZlQ":[function() {},{}],"i5LP7":[function() {},{}]},["d8m58","1xC6H","d8Dch"], "d8Dch", "parcelRequire9631")
+},{}],"lJZlQ":[function() {},{}],"i5LP7":[function() {},{}]},["d8m58","1xC6H","d8Dch"], "d8Dch", "parcelRequire9631")
 
 //# sourceMappingURL=index.b4b6dfad.js.map
