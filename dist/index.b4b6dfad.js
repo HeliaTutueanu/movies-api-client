@@ -27197,7 +27197,6 @@ const MainView = ()=>{
     const [movies, setMovies] = (0, _react.useState)([]);
     const [search, setSearch] = (0, _react.useState)("");
     const [selectedGenre, setSelectedGenre] = (0, _react.useState)("");
-    // Connect App to API with Hook
     (0, _react.useEffect)(()=>{
         if (!token) return;
         fetch("https://movies-api-sqg3.onrender.com/movies", {
@@ -27225,7 +27224,6 @@ const MainView = ()=>{
     }, [
         token
     ]);
-    // Add Favorite Movie
     const addFav = (id)=>{
         fetch(`https://movies-api-sqg3.onrender.com/users/${user.Username}/favorites/${id}`, {
             method: "POST",
@@ -27233,21 +27231,19 @@ const MainView = ()=>{
                 Authorization: `Bearer ${token}`
             }
         }).then((response)=>{
-            console.log("Add Response:", response); // Add this line for debugging
+            console.log("Add Response:", response); // line for debugging
             if (response.ok) return response.json();
             else alert("Failed to add");
         }).then((user)=>{
-            console.log("User after add:", user); // Add this line for debugging
+            console.log("User after add:", user); //  line for debugging
             if (user) {
                 localStorage.setItem("user", JSON.stringify(user));
                 setUser(user);
-            // setIsFavorite(true);
             }
         }).catch((error)=>{
             console.error("Error: ", error);
         });
     };
-    // Remove Favorite Movie
     const removeFav = (id)=>{
         fetch(`https://movies-api-sqg3.onrender.com/users/${user.Username}/favorites/${id}`, {
             method: "DELETE",
@@ -27255,15 +27251,14 @@ const MainView = ()=>{
                 Authorization: `Bearer ${token}`
             }
         }).then((response)=>{
-            console.log("Remove Response:", response); // Add this line for debugging
+            console.log("Remove Response:", response); // line for debugging
             if (response.ok) return response.json();
             else alert("Failed to remove");
         }).then((user)=>{
-            console.log("User after remove:", user); // Add this line for debugging
+            console.log("User after remove:", user); // line for debugging
             if (user) {
                 localStorage.setItem("user", JSON.stringify(user));
                 setUser(user);
-            // setIsFavorite(false);
             }
         }).catch((error)=>{
             console.error("Error: ", error);
@@ -27280,8 +27275,8 @@ const MainView = ()=>{
                 }
             }, void 0, false, {
                 fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 106,
-                columnNumber: 13
+                lineNumber: 97,
+                columnNumber: 7
             }, undefined),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Row), {
                 className: "justify-content-center my-5",
@@ -27299,8 +27294,8 @@ const MainView = ()=>{
                             }, void 0, false)
                         }, void 0, false, {
                             fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 117,
-                            columnNumber: 21
+                            lineNumber: 107,
+                            columnNumber: 11
                         }, undefined),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
                             path: "/login",
@@ -27319,8 +27314,8 @@ const MainView = ()=>{
                             }, void 0, false)
                         }, void 0, false, {
                             fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 132,
-                            columnNumber: 21
+                            lineNumber: 121,
+                            columnNumber: 11
                         }, undefined),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
                             path: "/movies/:movieId",
@@ -27341,8 +27336,8 @@ const MainView = ()=>{
                             }, void 0, false)
                         }, void 0, false, {
                             fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 152,
-                            columnNumber: 21
+                            lineNumber: 140,
+                            columnNumber: 11
                         }, undefined),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
                             path: "/",
@@ -27368,7 +27363,10 @@ const MainView = ()=>{
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactBootstrap.Form).Select, {
                                                     className: "ms-1 ms-md-3 w-25",
                                                     "aria-label": "Default select genre",
-                                                    onChange: (e)=>setSelectedGenre(e.target.value),
+                                                    onChange: (e)=>{
+                                                        console.log("Selected Genre:", e.target.value);
+                                                        setSelectedGenre(e.target.value);
+                                                    },
                                                     children: [
                                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("option", {
                                                             value: "",
@@ -27420,8 +27418,8 @@ const MainView = ()=>{
                             }, void 0, false)
                         }, void 0, false, {
                             fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 173,
-                            columnNumber: 21
+                            lineNumber: 160,
+                            columnNumber: 11
                         }, undefined),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
                             path: "/profile",
@@ -27441,25 +27439,25 @@ const MainView = ()=>{
                             }, void 0, false)
                         }, void 0, false, {
                             fileName: "src/components/main-view/main-view.jsx",
-                            lineNumber: 227,
-                            columnNumber: 21
+                            lineNumber: 219,
+                            columnNumber: 11
                         }, undefined)
                     ]
                 }, void 0, true, {
                     fileName: "src/components/main-view/main-view.jsx",
-                    lineNumber: 115,
-                    columnNumber: 17
+                    lineNumber: 106,
+                    columnNumber: 9
                 }, undefined)
             }, void 0, false, {
                 fileName: "src/components/main-view/main-view.jsx",
-                lineNumber: 114,
-                columnNumber: 13
+                lineNumber: 105,
+                columnNumber: 7
             }, undefined)
         ]
     }, void 0, true, {
         fileName: "src/components/main-view/main-view.jsx",
-        lineNumber: 105,
-        columnNumber: 9
+        lineNumber: 96,
+        columnNumber: 5
     }, undefined);
 };
 _s(MainView, "AnvOnhYbzfkTdsEaQR2pkhY78OM=");
