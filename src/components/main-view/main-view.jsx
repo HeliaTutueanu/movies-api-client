@@ -5,7 +5,7 @@ import { LoginView } from "../login-view/login-view.jsx";
 import { SignupView } from "../signup-view/signup-view.jsx";
 import { NavigationBar } from "../navigation-bar/navigation-bar.jsx";
 import { ProfileView } from "../profile-view/profile-view.jsx";
-// import "./main-view.scss";
+import "./main-view.scss";
 import { Row } from "react-bootstrap";
 import { Col, Form } from "react-bootstrap";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -183,11 +183,13 @@ export const MainView = () => {
                             setSelectedGenre(e.target.value);}}
                         >
                           <option value="" selected>Search by genre</option>
-                          <option value="Comedy Horror">Comedy Horror</option>
-                          <option value="Horror">Horror</option>
-                          <option value="Musical">Musical</option>
-                          <option value="Fantasy">Fantasy</option>
+                          <option value="Drama">Drama</option>
+                          <option value="Romance">Romance</option>
+                          <option value="Action">Action</option>
+                          <option value="Crime">Crime</option>
+                          <option value="Science Fiction">Science Fiction</option>
                           <option value="Thriller">Thriller</option>
+                          <option value="Adventure">Adventure</option>
                         </Form.Select>
                       </Form>
 
