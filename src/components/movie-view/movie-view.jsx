@@ -1,9 +1,9 @@
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 import { Button } from "react-bootstrap";
-import { Col, Row } from "react-bootstrap";
+import { Col, Row, Figure } from "react-bootstrap";
 import { MovieCard } from "../movie-card/movie-card";
-
+import './movie-view.scss';
 export const MovieView = ({ movies, removeFav, addFav}) => {
 
     const { movieId } = useParams();
@@ -27,7 +27,9 @@ export const MovieView = ({ movies, removeFav, addFav}) => {
         <>
             <Row className="my-5 justify-content-md-center">
                 <Col md={7} className="col-12">
-                    <img src={movie.ImagePath} alt="movie cover" className="mx-auto w-100" />
+                    <Figure className="figure">
+                    <img src={movie.ImagePath} alt="movie cover" className="movie-images mx-auto w-100" />
+                    </Figure>
                 </Col>
                 <Col md={5} className="col-12">
                     <div className="my-1">

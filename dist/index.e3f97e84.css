@@ -1,3 +1,12 @@
+.card-images {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 250px;
+  height: 400px;
+  position: relative;
+  overflow: hidden;
+}
+
 .back-button {
   color: #f5f5f5;
   background-color: #1e90ff;
@@ -26583,4 +26592,4 @@ textarea.form-control-lg {
   }
 }
 
-/*# sourceMappingURL=index.5f1df611.css.map */
+/*# sourceMappingURL=index.e3f97e84.css.map */
